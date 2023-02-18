@@ -11,6 +11,23 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""
-Test package.
-"""
+
+from msfx.db.meta import Types, Field, Order
+
+f_CARTICLE = Field()
+f_CARTICLE.set_name("CARTICLE")
+f_CARTICLE.set_type(Types.STRING)
+f_CARTICLE.set_length(40)
+
+f_CCOMPONENT = Field(f_CARTICLE)
+f_CCOMPONENT.set_name("CCOMPONENT")
+
+order: Order = Order()
+order.add_segment(f_CARTICLE)
+order.add_segment(f_CCOMPONENT, False)
+
+print(order)
+
+for segment in order:
+    print(segment.get_field())
+

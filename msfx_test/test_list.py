@@ -11,6 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""
-Test package.
-"""
+
+list1 = ["One", "Two", "Three"]
+list2 = list(list1)
+list2.append("Four")
+print(list1)
+print(list2)

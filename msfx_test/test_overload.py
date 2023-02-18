@@ -11,6 +11,17 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""
-Test package.
-"""
+
+def overload(index_or_key: int or str):
+    valid: bool = isinstance(index_or_key, int) or isinstance(index_or_key, str)
+    if not valid: raise Exception(f"Invalid type for argument {index_or_key}")
+    if isinstance(index_or_key, int): print(f"Index: {index_or_key}")
+    if isinstance(index_or_key, str): print(f"key: {index_or_key}")
+
+
+try:
+    overload(10)
+    overload("kas")
+    print(type(None))
+except Exception as exc:
+    print(exc)
