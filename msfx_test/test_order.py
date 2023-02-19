@@ -23,8 +23,8 @@ f_CCOMPONENT = Field(f_CARTICLE)
 f_CCOMPONENT.set_name("CCOMPONENT")
 
 order: Order = Order()
-order.add_segment(f_CARTICLE)
-order.add_segment(f_CCOMPONENT, False)
+order.append_segment(f_CARTICLE)
+order.append_segment(f_CCOMPONENT, False)
 
 print(order)
 
