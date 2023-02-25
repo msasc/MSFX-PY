@@ -17,8 +17,8 @@ The meta module packs the metadata definitions.
 
 import json
 from enum import Enum, EnumMeta
-from decimal import Decimal, ROUND_HALF_UP
 from datetime import date, time, datetime
+from decimal import Decimal, ROUND_HALF_UP
 
 # Forward class declarations to avoid circularities
 class Table: pass
@@ -142,13 +142,7 @@ class Value:
     def is_string(self) -> bool: return self.__type == Types.STRING
     def is_JSON(self) -> bool: return self.__type == Types.JSON
 
-    def is_numeric(self) -> bool:
-        if (self.__type == Types.DECIMAL or
-            self.__type == Types.INTEGER or
-            self.__type == Types.FLOAT or
-            self.__type == Types.COMPLEX):
-            return True
-        return False
+    def is_numeric(self) -> bool: return is_numeric_type(self.__type)
 
     def get_boolean(self) -> bool:
         if not self.is_boolean(): raise Exception("Type is not BOOLEAN")
@@ -158,16 +152,19 @@ class Value:
     def get_decimal(self) -> Decimal:
         if not self.is_numeric(): raise Exception("Type is not NUMERIC")
         if self.is_none(): return Decimal(0)
+        if self.is_complex(): return Decimal(self.__value.real)
         return Decimal(self.__value)
 
     def get_integer(self) -> int:
         if not self.is_numeric(): raise Exception("Type is not NUMERIC")
         if self.is_none(): return 0
+        if self.is_complex(): return int(self.__value.real)
         return int(self.__value)
 
     def get_float(self) -> float:
         if not self.is_numeric(): raise Exception("Type is not NUMERIC")
         if self.is_none(): return 0.0
+        if self.is_complex(): return float(self.__value.real)
         return float(self.__value)
 
     def get_complex(self) -> complex:
@@ -205,13 +202,12 @@ class Value:
         if self.is_none(): return JSON()
         return self.__value
 
-    def __lt__(self, other: object) -> bool: return super().__lt__(other)
-    def __le__(self, other: object) -> bool: return super().__le__(other)
+    def compare_to(self, other) -> int:
+        if self.__eq__(other): return 0
+        if self.__lt__(other): return -1
+        return 1
 
-    def __eq__(self, other: object) -> bool:
-        # Other is a Value.
-        if isinstance(other, Value): return self.__value == other.__value
-        # Other is comparable.
+    def __is_comparable__(self, other) -> bool:
         comparable: bool = False
         if self.is_boolean(): comparable = isinstance(other, bool)
         if self.is_numeric():
@@ -227,12 +223,37 @@ class Value:
         if self.is_binary(): comparable = isinstance(other, bytes)
         if self.is_string(): comparable = isinstance(other, str)
         if self.is_JSON(): comparable = isinstance(other, JSON)
-        if comparable: return self.__value == other
-        return False
+        return comparable
 
-    def __ne__(self, other: object) -> bool: return super().__ne__(other)
-    def __gt__(self, other: object) -> bool: return super().__gt__(other)
-    def __ge__(self, other: object) -> bool: return super().__ge__(other)
+    def __lt__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value < other.__value
+        if self.__is_comparable__(other): return self.__value < other
+        raise TypeError(f"Not comparable value {other}")
+
+    def __le__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value <= other.__value
+        if self.__is_comparable__(other): return self.__value <= other
+        raise TypeError(f"Not comparable value {other}")
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value == other.__value
+        if self.__is_comparable__(other): return self.__value == other
+        raise TypeError(f"Not comparable value {other}")
+
+    def __ne__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value != other.__value
+        if self.__is_comparable__(other): return self.__value != other
+        raise TypeError(f"Not comparable value {other}")
+
+    def __gt__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value > other.__value
+        if self.__is_comparable__(other): return self.__value > other
+        raise TypeError(f"Not comparable value {other}")
+
+    def __ge__(self, other) -> bool:
+        if isinstance(other, Value): return self.__value >= other.__value
+        if self.__is_comparable__(other): return self.__value >= other
+        raise TypeError(f"Not comparable value {other}")
 
     def __str__(self) -> str:
         if self.is_none(): return ""
@@ -402,6 +423,7 @@ class Fields:
 
         self.__persistent_fields: list = []
         self.__primary_key_fields: list = []
+        self.__primary_key_indexes: list = []
         self.__default_values: list = []
 
     def append_field(self, field: Field) -> None:
@@ -421,6 +443,7 @@ class Fields:
 
     def get_persistent_fields(self) -> list: return list(self.__persistent_fields)
     def get_primary_key_fields(self) -> list: return list(self.__primary_key_fields)
+    def get_primary_key_indexes(self) -> list: return list(self.__primary_key_indexes)
     def get_default_values(self) -> list: return list(self.__default_values)
 
     def index_of(self, key: str) -> int:
@@ -445,6 +468,7 @@ class Fields:
         self.__indexes.clear()
         self.__persistent_fields.clear()
         self.__primary_key_fields.clear()
+        self.__primary_key_indexes.clear()
         self.__default_values.clear()
 
         for i in range(len(self.__fields)):
@@ -452,8 +476,11 @@ class Fields:
             key: str = field.get_alias()
             self.__keys.append(key)
             self.__indexes[key] = i
-            if field.is_persistent(): self.__persistent_fields.append(field)
-            if field.is_primary_key(): self.__primary_key_fields.append(field)
+            if field.is_persistent():
+                self.__persistent_fields.append(field)
+            if field.is_primary_key():
+                self.__primary_key_fields.append(field)
+                self.__primary_key_indexes.append(i)
             self.__default_values.append(field.get_default_value())
 
     def __iter__(self):
@@ -467,21 +494,6 @@ class Fields:
     def __getitem__(self, index: int) -> Field:
         if not isinstance(index, int): raise Exception("Invalid type for 'index' argument")
         return self.__fields[index]
-
-class Record:
-    """ A record packs a list of values and their corresponding field definitions. """
-    def __init__(self, fields: Fields, values: list or None = None):
-        if not isinstance(fields, Fields):
-            raise Exception("Invalid type for argument 'fields'")
-        if values is not None and not isinstance(values, list):
-            raise Exception("Invalid type for argument 'values'")
-        self.__fields = fields
-        self.__values: list or None = None
-        if isinstance(values, list):
-            self.__values = values
-        else:
-            self.__values = fields.get_default_values()
-        pass
 
 class OrderSegment:
     """ An order segment definition. """
@@ -763,7 +775,6 @@ class View:
         self.__master_table = table
 
     def validate_and_setup(self) -> None:
-
         # Build the list with all involved tables.
         tables: list = []
         if self.__master_table is not None:
@@ -803,20 +814,215 @@ class View:
             if not self.__fields.contains(field):
                 raise Exception(f"Order by field {field} not contained in the field list")
 
-def create_field(name: str, type: Types, length: int or None = None, decimals: int or None = None) -> Field:
+class OrderKeySegment:
+    """ A segment of an order key, a pair made of a value and an ascending flag. """
+    def __init__(self, value: Value, asc: bool = True):
+        if not isinstance(value, Value): raise Exception("Invalid type for argument 'value'")
+        self.__value = value
+        self.__asc = asc
+
+    def get_value(self) -> Value: return self.__value
+    def is_asc(self) -> bool: return self.__asc
+
+    def compare_to(self, other) -> int:
+        if not isinstance(other, OrderKeySegment): raise TypeError(f"Not comparable argument {other}")
+        compare: int = self.__value.compare_to(other.__value)
+        mult: int = 1 if self.__asc else -1
+        return compare * mult
+
+    def __lt__(self, other) -> bool: return self.compare_to(other) < 0
+    def __le__(self, other) -> bool: return self.compare_to(other) <= 0
+    def __eq__(self, other) -> bool: return self.compare_to(other) == 0
+    def __ne__(self, other) -> bool: return self.compare_to(other) != 0
+    def __gt__(self, other) -> bool: return self.compare_to(other) > 0
+    def __ge__(self, other) -> bool: return self.compare_to(other) >= 0
+
+    def __str__(self) -> str: return "(" + str(self.__value) + ", " + str(self.__asc) + ")"
+
+class OrderKey:
+    """ An order key, a list of pairs [value, ascending flag]. """
+    def __init__(self):
+        self.__segments = []
+
+    def append_segment(self, value: Value, asc: bool = True):
+        if not isinstance(value, Value): value = Value(value)
+        self.__segments.append(OrderKeySegment(value, asc))
+
+    def compare_to(self, other) -> int:
+        if not isinstance(other, OrderKey): raise TypeError(f"Invalid type for argument {other}")
+        len_min: int = min(len(self.__segments), len(other.__segments))
+        for i in range(len_min):
+            seg_self: OrderKeySegment = self.__segments[i]
+            seg_comp: OrderKeySegment = other.__segments[i]
+            compare = seg_self.compare_to(seg_comp)
+            if compare != 0: return compare
+        if len(self.__segments) < len(other.__segments): return -1
+        if len(self.__segments) > len(other.__segments): return 1
+        return 0
+
+    def __len__(self) -> int: return len(self.__segments)
+
+    def __lt__(self, other) -> bool: return self.compare_to(other) < 0
+    def __le__(self, other) -> bool: return self.compare_to(other) <= 0
+    def __eq__(self, other) -> bool: return self.compare_to(other) == 0
+    def __ne__(self, other) -> bool: return self.compare_to(other) != 0
+    def __gt__(self, other) -> bool: return self.compare_to(other) > 0
+    def __ge__(self, other) -> bool: return self.compare_to(other) >= 0
+
+    def __str__(self) -> str:
+        string = "["
+        for i in range(len(self.__segments)):
+            if i > 0: string += ", "
+            string += str(self.__segments[i])
+        string += "]"
+        return string
+
+class Record:
+    """ A record packs a list of values and their corresponding field definitions. """
+    def __init__(self, fields: Fields, values: list or None = None):
+        if not isinstance(fields, Fields):
+            raise Exception("Invalid type for argument 'fields'")
+        if values is not None and not isinstance(values, list):
+            raise Exception("Invalid type for argument 'values'")
+
+        self.__fields = fields
+        self.__values: list or None = None
+        self.__modified: tuple or None = None
+
+        if isinstance(values, list): self.__values = values
+        else: self.__values = fields.get_default_values()
+        self.__modified = tuple(False for _ in range(len(self.__values)))
+
+    def get_field(self, key: int or str) -> Field: return self.__fields.get_field(key)
+    def get_value(self, key: int or str) -> Value:
+        index = 0
+        if isinstance(key, int): index = key
+        elif isinstance(key, str): index = self.__fields.index_of(key)
+        else: raise TypeError(f"Invalid argument {key}")
+        return self.__values[index]
+
+    def get_primay_key(self) -> OrderKey:
+        pk = OrderKey()
+        indexes = self.__fields.get_primary_key_indexes()
+        for index in indexes:
+            pk.append_segment(self.__values[index], True)
+        return pk
+
+    def set_value(self, key: int or str, value: object) -> None:
+        # Get the correct value and field index.
+        index = 0
+        if isinstance(key, int): index = key
+        elif isinstance(key, str): index = self.__fields.index_of(key)
+        else: raise TypeError(f"Invalid argument {key}")
+        if index < 0 or index >= len(self.__values):
+            raise IndexError(f"Invalid index {index}")
+
+        # Assign if the value is assignable.
+        field: Field = self.__fields.get_field(index)
+        type_field: Types = field.get_type()
+
+        # value is an instance of Value.
+        if isinstance(value, Value):
+            type_value = value.type()
+            # Not numeric, assign only if they are the same type.
+            if not (is_numeric_type(type_field) and is_numeric_type(type_value)):
+                if type_field == type_value:
+                    self.__values[index] = value
+                    return
+                raise TypeError(f"Invalid type of value argument {type_value}")
+            # Field and value types are numeric.
+            if type_field == Types.DECIMAL:
+                self.__values[index] = get_decimal(value.get_float(), field.get_decimals())
+                return
+            if type_field == Types.INTEGER:
+                self.__values[index] = Value(value.get_integer())
+                return
+            if type_field == Types.FLOAT:
+                self.__values[index] = Value(value.get_float())
+                return
+            if type_field == Types.COMPLEX:
+                self.__values[index] = Value(value.get_complex())
+                return
+
+        # value is not an instance of Value, ensure that the type is supported.
+        # This will throw a type error if value is not supported.
+        type_value = get_type(value)
+        # Not numeric, assign only if they are the same type.
+        if not (is_numeric_type(type_field) and is_numeric_type(type_value)):
+            if type_field == type_value:
+                self.__values[index] = Value(value)
+                return
+            raise TypeError(f"Invalid type of value argument {type_value}")
+        # Field and value types are numeric.
+        if type_field == Types.DECIMAL:
+            self.__values[index] = Value(get_decimal(value, field.get_decimals()))
+            return
+        if type_field == Types.INTEGER:
+            self.__values[index] = Value(get_integer(value))
+            return
+        if type_field == Types.FLOAT:
+            self.__values[index] = Value(get_float(value))
+            return
+        if type_field == Types.COMPLEX:
+            self.__values[index] = Value(get_complex(value))
+            return
+
+    def fields(self) -> list: return self.__fields.fields()
+    def values(self) -> list: return list(self.__values)
+
+def get_type(value: object) -> Types:
     """
-    Create a basic field definition.
-    :param name: The name.
-    :param type: The type.
-    :param length: Optional length.
-    :param decimals: Optional decimals.
-    :return: The field definition.
+    Check and return the type of the value.
+    :param value: The value to check the type.
+    :return: The type.
+    :raises: TypeError if the type of the value is not a supported type.
     """
-    field: Field = Field()
-    field.set_name(name)
-    field.set_type(type)
-    if length is not None:
-        field.set_length(length)
-    if decimals is not None:
-        field.set_decimals(decimals)
-    return field
+    if isinstance(value, bool): return Types.BOOLEAN
+    if isinstance(value, Decimal): return Types.DECIMAL
+    if isinstance(value, int): return Types.INTEGER
+    if isinstance(value, float): return Types.FLOAT
+    if isinstance(value, complex): return Types.COMPLEX
+    if isinstance(value, date): return Types.DATE
+    if isinstance(value, time): return Types.TIME
+    if isinstance(value, datetime): return Types.DATETIME
+    if isinstance(value, bytes): return Types.BINARY
+    if isinstance(value, str): return Types.STRING
+    if isinstance(value, JSON): return Types.JSON
+    raise TypeError(f"Invalid type of value {value}")
+
+def is_numeric_value(value: object) -> bool:
+    if (isinstance(value, Decimal) or
+        isinstance(value, int) or
+        isinstance(value, float) or
+        isinstance(value, complex)):
+        return True
+    return False
+
+def is_numeric_type(type: Types) -> bool:
+    if not isinstance(type, Types): raise TypeError(f"Invlid type for argumment {type}")
+    if (type == Types.DECIMAL or
+        type == Types.INTEGER or
+        type == Types.FLOAT or
+        type == Types.COMPLEX):
+        return True
+    return False
+
+def get_decimal(num: object, dec: int = 0) -> Decimal:
+    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
+    if isinstance(num, complex):
+        return Decimal(num.real).quantize(Decimal(10) ** -dec, rounding=ROUND_HALF_UP)
+    return Decimal(num).quantize(Decimal(10) ** -dec, rounding=ROUND_HALF_UP)
+
+def get_integer(num: object) -> int:
+    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
+    if isinstance(num, complex): return int(num.real)
+    return int(num)
+
+def get_float(num: object) -> int:
+    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
+    if isinstance(num, complex): return float(num.real)
+    return float(num)
+
+def get_complex(num: object) -> int:
+    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
+    return complex(num)

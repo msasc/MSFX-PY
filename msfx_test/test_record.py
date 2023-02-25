@@ -12,19 +12,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.db.meta import Types, Field, Fields
+from decimal import Decimal
+from msfx.db.meta import Types, Field, Fields, Value, Record, is_numeric_type
 
 f_CARTICLE = Field()
 f_CARTICLE = Field()
 f_CARTICLE.set_name("CARTICLE")
 f_CARTICLE.set_type(Types.STRING)
 f_CARTICLE.set_length(40)
+f_CARTICLE.set_primary_key(True)
 
 f_QSALES = Field()
 f_QSALES.set_name("QSALES")
 f_QSALES.set_type(Types.DECIMAL)
 f_QSALES.set_length(20)
-f_QSALES.set_decimals(4)
+f_QSALES.set_decimals(6)
 
 f_CCOMPONENT = Field(f_CARTICLE)
 f_CCOMPONENT.set_name("CCOMPONENT")
@@ -34,13 +36,24 @@ fields.append_field(f_CARTICLE)
 fields.append_field(f_CCOMPONENT)
 fields.append_field(f_QSALES)
 
-print(fields.fields()[0])
-print(fields.keys())
-print(fields.get_field(0))
-print(fields.get_field("CARTICLE"))
-print(fields.get_field(1))
-print(fields.get_field("CCOMPONENT"))
+values = [
+    Value("A325400200"),
+    Value("K325400200"),
+    Value(Decimal("3.00"))
+]
 
-f_CARTDEST= Field(f_CARTICLE)
-f_CARTDEST.set_name("CARTDEST")
-print(fields.contains(f_CARTDEST))
+rec = Record(fields, values)
+print(rec.get_field("CARTICLE"))
+print(rec.get_value("CARTICLE"))
+print(rec.get_value("QSALES"))
+print(rec.get_primay_key())
+
+rec.set_value("CARTICLE", Value("A000000000"))
+print(rec.get_value("CARTICLE"))
+print(is_numeric_type(Types.DECIMAL))
+
+rec.set_value("CARTICLE", "A999999999")
+print(rec.get_value("CARTICLE"))
+
+rec.set_value("QSALES", 1.25)
+print(rec.get_value("QSALES"))

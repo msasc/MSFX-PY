@@ -17,3 +17,23 @@ msfx.db package enables Python programs to access SQL databases using an
 interface detached from the underlying engine, be MariaDB, Postgresql,
 Oracle or whatever has implemented an adapter.
 """
+
+from msfx.db.meta import Types, Field
+
+def create_field(name: str, type: Types, length: int or None = None, decimals: int or None = None) -> Field:
+    """
+    Create a basic field definition.
+    :param name: The name.
+    :param type: The type.
+    :param length: Optional length.
+    :param decimals: Optional decimals.
+    :return: The field definition.
+    """
+    field: Field = Field()
+    field.set_name(name)
+    field.set_type(type)
+    if length is not None:
+        field.set_length(length)
+    if decimals is not None:
+        field.set_decimals(decimals)
+    return field
