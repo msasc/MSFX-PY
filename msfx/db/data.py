@@ -11,18 +11,22 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
 """
-The meta module packs the metadata definitions.
+msfx.db.meta defines the set of metadata classes.
 """
 
 import json
 from enum import Enum, EnumMeta
-from datetime import date, time, datetime
 from decimal import Decimal, ROUND_HALF_UP
+from datetime import date, time, datetime
 
-# Forward class declarations to avoid circularities
-class Table: pass
-class View: pass
+from msfx.db import (
+    get_decimal, get_integer, get_complex, get_float
+)
+
+from abc import ABC, abstractmethod
+
 
 class Types(Enum, metaclass=EnumMeta):
     """	Supported types mapped to the underlying SQL databases. """
@@ -60,21 +64,51 @@ class Types(Enum, metaclass=EnumMeta):
     A JSON object value, stored in the underlying database as a STRING.
     """
 
+    def is_numeric(self) -> bool:
+        return (
+            self == Types.DECIMAL or
+            self == Types.INTEGER or
+            self == Types.FLOAT or
+            self == Types.COMPLEX
+        )
+
+
+def get_type(value: object) -> Types:
+    """
+    Check and return the type of the value.
+    :param value: The value to check the type.
+    :return: The type.
+    :raises: TypeError if the type of the value is not a supported type.
+    """
+    if isinstance(value, bool): return Types.BOOLEAN
+    if isinstance(value, Decimal): return Types.DECIMAL
+    if isinstance(value, int): return Types.INTEGER
+    if isinstance(value, float): return Types.FLOAT
+    if isinstance(value, complex): return Types.COMPLEX
+    if isinstance(value, date): return Types.DATE
+    if isinstance(value, time): return Types.TIME
+    if isinstance(value, datetime): return Types.DATETIME
+    if isinstance(value, bytes): return Types.BINARY
+    if isinstance(value, str): return Types.STRING
+    if isinstance(value, JSON): return Types.JSON
+    raise TypeError(f"Invalid type of value {value}")
+
+
 class JSON:
     """ JSON value encapsulation. """
-    def __init__(self) -> None:
+    def __init__(self):
         """ Creates an empty JSON object."""
         self.__data: dict = {}
-    def __init(self, json_data) -> None:
+    def __init(self, json_data):
         """ Creates a JSON object dumping json string data. """
         self.__data: dict = json.loads(json_data)
-    def loads(self, json_data) -> None:
+    def loads(self, json_data):
         """ Loads the argument json_data string and merges it with this JSON internal dictionary data. """
         self.__data |= json.loads(json_data)
     def dumps(self) -> str:
         """ Dumps the internal dictionary data and returns a json string representation. """
         return json.dumps(self.__data)
-    def merge(self, data: dict) -> None:
+    def merge(self, data: dict):
         """ Merges the argument dictionary data with this JSON internal dictionary data. """
         if type(data) is not dict: raise "Data to merge must be of dict type"
         self.__data |= data
@@ -87,6 +121,7 @@ class JSON:
         if isinstance(other, JSON): return self.__data == other.__data
         if isinstance(other, dict): return self.__data == other
         return super().__eq__(other)
+
 
 class Value:
     """
@@ -142,7 +177,14 @@ class Value:
     def is_string(self) -> bool: return self.__type == Types.STRING
     def is_JSON(self) -> bool: return self.__type == Types.JSON
 
-    def is_numeric(self) -> bool: return is_numeric_type(self.__type)
+    def is_numeric(self) -> bool:
+        numeric: bool = (
+            self.__type == Types.DECIMAL or
+            self.__type == Types.INTEGER or
+            self.__type == Types.FLOAT or
+            self.__type == Types.COMPLEX
+        )
+        return numeric
 
     def get_boolean(self) -> bool:
         if not self.is_boolean(): raise Exception("Type is not BOOLEAN")
@@ -259,6 +301,9 @@ class Value:
         if self.is_none(): return ""
         return str(self.__value)
 
+class Table: pass
+class View: pass
+
 class Field:
     """
     Field metadata definition.
@@ -279,10 +324,11 @@ class Field:
 
         self.__function: str or None = None
 
+        self.__properties: dict = {}
+
+        # Table and View are not strongly typed to avoid circular imports.
         self.__table: Table or None = None
         self.__view: View or None = None
-
-        self.__properties: dict = {}
 
         if field is not None:
             if not isinstance(field, Field): raise Exception("Argument field must be a Field instance")
@@ -298,10 +344,10 @@ class Field:
 
             self.__function = field.__function
 
+            self.__properties |= field.__properties
+
             self.__table = field.__table
             self.__view = field.__view
-
-            self.__properties |= field.__properties
 
     def get_name(self) -> str or None: return self.__name
     def get_alias(self) -> str or None:
@@ -311,17 +357,10 @@ class Field:
     def get_length(self) -> int or None: return self.__length
     def get_decimals(self) -> int or None: return self.__decimals
 
-    def is_persistent(self) -> bool:
-        if self.__function is not None and len(self.__function) > 0: return False
-        return self.__persistent
-    def is_primary_key(self) -> bool: return self.__primary_key
-    def is_nullable(self) -> bool: return self.__nullable
+    def get_table(self) -> Table: return self.__table
+    def get_view(self) -> View: return self.__view
 
-    def is_virtual(self) -> bool: return self.__function is not None
     def get_function(self) -> str or None: return self.__function
-
-    def get_table(self) -> Table or None: return self.__table
-    def get_view(self) -> View or None: return self.__view
 
     def get_properties(self) -> dict: return self.__properties
 
@@ -341,6 +380,29 @@ class Field:
         if self.__type == Types.STRING: return Value("")
         if self.__type == Types.JSON: return Value(JSON())
         raise Exception("Never should have come here!!")
+
+    def is_persistent(self) -> bool:
+        if self.__function is not None and len(self.__function) > 0: return False
+        return self.__persistent
+    def is_primary_key(self) -> bool: return self.__primary_key
+    def is_nullable(self) -> bool: return self.__nullable
+
+    def is_virtual(self) -> bool: return self.__function is not None
+
+    def is_foreign(self) -> bool:
+        if self.__table is None: return False
+        if self.__view is None: return False
+        table = self.get_table()
+        view = self.get_view()
+        if table == view.get_master_table(): return False
+        relations = view.get_relations()
+        for i in range(len(relations)):
+            relation = relations[i]
+            foreign_table = relation.get_foreign_table()
+            if foreign_table == table: return True
+        return False
+
+    def is_local(self) -> bool: return not self.is_foreign()
 
     def set_name(self, name: str):
         if not isinstance(name, str): raise Exception("Invalid argument type")
@@ -386,12 +448,8 @@ class Field:
         if len(function) == 0: raise Exception("Invalid empty function")
         self.__function = function
 
-    def set_table(self, table: Table or None):
-        if table is not None and not isinstance(table, Table): raise Exception("Invalid argument type")
-        self.__table = table
-    def set_view(self, view: View or None):
-        if view is not None and not isinstance(view, View): raise Exception("Invalid argument type")
-        self.__view = view
+    def set_table(self, table): self.__table = table
+    def set_view(self, view): self.__view = view
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Field): return False
@@ -408,8 +466,9 @@ class Field:
         s: str = str(self.get_name()) + ", " + str(self.get_type())
         if self.__length is not None: s += ", " + str(self.get_length())
         if self.__decimals is not None: s += ", " + str(self.get_decimals())
-        if self.__table is not None: s += ", table: " + str(self.get_table().get_name())
+        if self.__table is not None: s += ", " + str(self.get_table())
         return s
+
 
 class Fields:
     """
@@ -495,6 +554,7 @@ class Fields:
         if not isinstance(index, int): raise Exception("Invalid type for 'index' argument")
         return self.__fields[index]
 
+
 class OrderSegment:
     """ An order segment definition. """
     def __init__(self, field: Field, asc: bool = True):
@@ -514,6 +574,7 @@ class OrderSegment:
     def is_asc(self) -> bool: return self.__asc
 
     def __str__(self) -> str: return f"{self.__field.get_name()}, {self.__asc}"
+
 
 class Order:
     """ An order definition. """
@@ -546,6 +607,7 @@ class Order:
                 _str_ += "]"
         return _str_
 
+
 class Index(Order):
     """ An index definition. """
     def __init__(self):
@@ -553,14 +615,14 @@ class Index(Order):
         self.__name: str or None = None
         self.__schema: str or None = None
         self.__unique: bool or None = None
-        self.__table: Table or None = None
+        self.__table = None
 
     def get_name(self) -> str or None: return self.__name
     def get_schema(self) -> str or None: return self.__schema
     def is_unique(self) -> bool:
         if self.__unique is None: return False
         return self.__unique
-    def get_table(self) -> Table or None: return self.__table
+    def get_table(self): return self.__table
 
     def set_name(self, name: str) -> None:
         if not isinstance(name, str): raise Exception("Invalid type for argument 'name'")
@@ -571,8 +633,8 @@ class Index(Order):
     def set_unique(self, unique: bool) -> None:
         if not isinstance(unique, bool): raise Exception("Invalid type for argument 'unique'")
         self.__unique = unique
-    def set_table(self, table: Table) -> None:
-        if not isinstance(table, Table): raise Exception("Invalid type for argument 'table'")
+    def set_table(self, table) -> None:
+        # if not isinstance(table, Table): raise Exception("Invalid type for argument 'table'")
         self.__table = table
 
     def __str__(self) -> str:
@@ -583,6 +645,7 @@ class Index(Order):
         else: _str_ += " NOT UNIQUE"
         _str_ += " (" + super().__str__() + ")"
         return _str_
+
 
 class Table:
     """
@@ -598,7 +661,8 @@ class Table:
         self.__indexes: list = []
 
     def append_field(self, field: Field) -> None:
-        if not isinstance(field, Field): raise Exception("Invalid type for argument 'field'")
+        if not isinstance(field, Field):
+            raise Exception("Invalid type for argument 'field'")
         self.__fields.append_field(field)
 
     def append_index(self, index: Index) -> None:
@@ -699,11 +763,13 @@ class Table:
 
     def __str__(self) -> str: return self.get_name_from()
 
+
 class RelationType(Enum, metaclass=EnumMeta):
     """ Relation type. """
     INNER = "INNER"
     LEFT = "LEFT"
     RIGHT = "RIGHT"
+
 
 class RelationSegment:
     """ A relation segment definition. """
@@ -715,6 +781,7 @@ class RelationSegment:
 
     def get_local_field(self) -> Field: return self.__local_field
     def get_foreign_field(self) -> Field: return self.__foreign_field
+
 
 class Relation:
     """ A relation between two tables. """
@@ -749,6 +816,7 @@ class Relation:
         if not isinstance(index, int): raise Exception("Invalid type for 'index' argument")
         return self.__segments[index]
 
+
 class View:
     """ An SQL view. """
     def __init__(self):
@@ -769,6 +837,10 @@ class View:
     def append_relation(self, relation: Relation) -> None:
         if not isinstance(relation, Relation): raise Exception("Invalid type for argument 'relation'")
         self.__relations.append(relation)
+
+    def get_field(self, key: int or str) -> Field: return self.__fields.get_field(key)
+    def get_master_table(self): return self.__master_table
+    def get_relations(self) -> list: return list(self.__relations)
 
     def set_master_table(self, table: Table) -> None:
         if not isinstance(table, Table): raise Exception("Invalid type for argument 'table'")
@@ -814,6 +886,12 @@ class View:
             if not self.__fields.contains(field):
                 raise Exception(f"Order by field {field} not contained in the field list")
 
+        # Set the view to the fields.
+        for i in range(len(self.__fields)):
+            field: Field = self.__fields[i]
+            field.set_view(self)
+
+
 class OrderKeySegment:
     """ A segment of an order key, a pair made of a value and an ascending flag. """
     def __init__(self, value: Value, asc: bool = True):
@@ -839,12 +917,13 @@ class OrderKeySegment:
 
     def __str__(self) -> str: return "(" + str(self.__value) + ", " + str(self.__asc) + ")"
 
+
 class OrderKey:
     """ An order key, a list of pairs [value, ascending flag]. """
     def __init__(self):
         self.__segments = []
 
-    def append_segment(self, value: Value, asc: bool = True):
+    def append_segment(self, value: object, asc: bool = True):
         if not isinstance(value, Value): value = Value(value)
         self.__segments.append(OrderKeySegment(value, asc))
 
@@ -877,6 +956,7 @@ class OrderKey:
         string += "]"
         return string
 
+
 class Record:
     """ A record packs a list of values and their corresponding field definitions. """
     def __init__(self, fields: Fields, values: list or None = None):
@@ -891,7 +971,7 @@ class Record:
 
         if isinstance(values, list): self.__values = values
         else: self.__values = fields.get_default_values()
-        self.__modified = tuple(False for _ in range(len(self.__values)))
+        self.__modified = list(False for _ in range(len(self.__values)))
 
     def get_field(self, key: int or str) -> Field: return self.__fields.get_field(key)
     def get_value(self, key: int or str) -> Value:
@@ -901,11 +981,22 @@ class Record:
         else: raise TypeError(f"Invalid argument {key}")
         return self.__values[index]
 
+    def get_index(self, key: int or str) -> int:
+        if isinstance(key, int):
+            if key < 0 or key >= len(self.__values):
+                raise IndexError(f"Invalid index {key}")
+            return key
+        return self.__fields.index_of(key)
+
     def get_primay_key(self) -> OrderKey:
         pk = OrderKey()
         indexes = self.__fields.get_primary_key_indexes()
-        for index in indexes:
-            pk.append_segment(self.__values[index], True)
+        if len(indexes) == 0:
+            for index in range(len(self.__values)):
+                pk.append_segment(self.__values[index], True)
+        else:
+            for index in indexes:
+                pk.append_segment(self.__values[index], True)
         return pk
 
     def set_value(self, key: int or str, value: object) -> None:
@@ -917,15 +1008,18 @@ class Record:
         if index < 0 or index >= len(self.__values):
             raise IndexError(f"Invalid index {index}")
 
+        # The modified flag can be consistently set, because if the value
+        # can not be assigned an error will be raised.
+        self.__modified[index] = True
+
         # Assign if the value is assignable.
         field: Field = self.__fields.get_field(index)
         type_field: Types = field.get_type()
-
         # value is an instance of Value.
         if isinstance(value, Value):
             type_value = value.type()
             # Not numeric, assign only if they are the same type.
-            if not (is_numeric_type(type_field) and is_numeric_type(type_value)):
+            if not (type_field.is_numeric() and type_value.is_numeric()):
                 if type_field == type_value:
                     self.__values[index] = value
                     return
@@ -946,9 +1040,9 @@ class Record:
 
         # value is not an instance of Value, ensure that the type is supported.
         # This will throw a type error if value is not supported.
-        type_value = get_type(value)
+        type_value: Types = get_type(value)
         # Not numeric, assign only if they are the same type.
-        if not (is_numeric_type(type_field) and is_numeric_type(type_value)):
+        if not (type_field.is_numeric() and type_value.is_numeric()):
             if type_field == type_value:
                 self.__values[index] = Value(value)
                 return
@@ -970,59 +1064,29 @@ class Record:
     def fields(self) -> list: return self.__fields.fields()
     def values(self) -> list: return list(self.__values)
 
-def get_type(value: object) -> Types:
-    """
-    Check and return the type of the value.
-    :param value: The value to check the type.
-    :return: The type.
-    :raises: TypeError if the type of the value is not a supported type.
-    """
-    if isinstance(value, bool): return Types.BOOLEAN
-    if isinstance(value, Decimal): return Types.DECIMAL
-    if isinstance(value, int): return Types.INTEGER
-    if isinstance(value, float): return Types.FLOAT
-    if isinstance(value, complex): return Types.COMPLEX
-    if isinstance(value, date): return Types.DATE
-    if isinstance(value, time): return Types.TIME
-    if isinstance(value, datetime): return Types.DATETIME
-    if isinstance(value, bytes): return Types.BINARY
-    if isinstance(value, str): return Types.STRING
-    if isinstance(value, JSON): return Types.JSON
-    raise TypeError(f"Invalid type of value {value}")
+    def compare_to(self, other) -> int:
+        if not isinstance(other, Record): raise TypeError(f"Invalid type for argument {other}")
+        pk_self = self.get_primay_key()
+        pk_other = other.get_primay_key()
+        return pk_self.compare_to(pk_other)
 
-def is_numeric_value(value: object) -> bool:
-    if (isinstance(value, Decimal) or
-        isinstance(value, int) or
-        isinstance(value, float) or
-        isinstance(value, complex)):
-        return True
-    return False
+    def __len__(self): return len(self.__values)
 
-def is_numeric_type(type: Types) -> bool:
-    if not isinstance(type, Types): raise TypeError(f"Invlid type for argumment {type}")
-    if (type == Types.DECIMAL or
-        type == Types.INTEGER or
-        type == Types.FLOAT or
-        type == Types.COMPLEX):
-        return True
-    return False
+    def __lt__(self, other) -> bool: return self.compare_to(other) < 0
+    def __le__(self, other) -> bool: return self.compare_to(other) <= 0
+    def __eq__(self, other) -> bool: return self.compare_to(other) == 0
+    def __ne__(self, other) -> bool: return self.compare_to(other) != 0
+    def __gt__(self, other) -> bool: return self.compare_to(other) > 0
+    def __ge__(self, other) -> bool: return self.compare_to(other) >= 0
 
-def get_decimal(num: object, dec: int = 0) -> Decimal:
-    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
-    if isinstance(num, complex):
-        return Decimal(num.real).quantize(Decimal(10) ** -dec, rounding=ROUND_HALF_UP)
-    return Decimal(num).quantize(Decimal(10) ** -dec, rounding=ROUND_HALF_UP)
+    def __str__(self) -> str:
+        s = "["
+        for i in range(len(self.__values)):
+            if i > 0: s += ", "
+            s += str(self.__values[i])
+        s += "]"
+        return s
 
-def get_integer(num: object) -> int:
-    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
-    if isinstance(num, complex): return int(num.real)
-    return int(num)
 
-def get_float(num: object) -> int:
-    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
-    if isinstance(num, complex): return float(num.real)
-    return float(num)
-
-def get_complex(num: object) -> int:
-    if not is_numeric_value(num): raise TypeError(f"Invalid type for num {num}")
-    return complex(num)
+class RecordSet(ABC):
+    pass

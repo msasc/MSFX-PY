@@ -12,36 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.db.data import Value, OrderKey
+def test_args(arg1, arg2, *args, **kwargs):
+    print(arg1)
+    print(arg2)
+    for arg in args:
+        print(arg)
+    for item in kwargs.items():
+        print(item)
 
-k1 = OrderKey()
-k1.append_segment(Value("A"))
-k1.append_segment(Value("B"))
-k1.append_segment(Value("C"))
-
-k2 = OrderKey()
-k2.append_segment(Value("C"))
-k2.append_segment(Value("D"))
-
-print(k1.compare_to(k2))
-print(k1 < k2)
-print(k1 == k2)
-
-k3 = OrderKey()
-k3.append_segment(Value("A"))
-k3.append_segment(Value("B"))
-
-k4 = OrderKey()
-k4.append_segment(Value("A"))
-k4.append_segment(Value("B"))
-
-print(k3 == k4)
-print(k3 > k4)
-
-print(k1)
-
-k5 = OrderKey()
-k5.append_segment("A")
-k5.append_segment("B")
-k5.append_segment("C")
-print(k5)
+test_args("Hola", 10, True, name="Nombre")
+print("----------------------")
+test_args("Caco", "Bufo", "Rico", rafo="Rafo", name="Nombre", namo="Nombro")

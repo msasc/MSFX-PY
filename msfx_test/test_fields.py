@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.db.meta import Types, Field, Fields
+from msfx.db.data import Types, Field, Fields
 
 f_CARTICLE = Field()
 f_CARTICLE = Field()

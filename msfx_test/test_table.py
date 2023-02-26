@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.db.meta import Field, Types, Table, Index
+from msfx.db.data import Types, Field, Index, Table
 
 f_CARTICLE = Field()
 f_CARTICLE.set_name("CARTICLE")
@@ -56,3 +56,6 @@ for index in table.get_indexes():
 
 pk: Index = table.get_primary_key()
 print(pk)
+
+print(table.get_field("CARTICLE"))
+print(table.get_field("CARTICLE").is_foreign())

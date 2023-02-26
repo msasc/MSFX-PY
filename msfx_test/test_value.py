@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from decimal import Decimal
-from msfx.db.meta import Value, OrderKeySegment
+from msfx.db.data import Value, OrderKeySegment
 
 v1 = Value(1.25)
 v2 = Value(2.50)
@@ -29,3 +28,9 @@ print(k2.compare_to(k1))
 print(k2 < k1)
 print(k2)
 
+vs = [1, 2, 3]
+print(str(vs))
+print(v1)
+
+values = [v1, v2]
+print(values)

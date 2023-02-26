@@ -12,10 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from msfx.db.data import Types, Field, Fields, Value, Record
 from decimal import Decimal
-from msfx.db.meta import Types, Field, Fields, Value, Record, is_numeric_type
 
-f_CARTICLE = Field()
 f_CARTICLE = Field()
 f_CARTICLE.set_name("CARTICLE")
 f_CARTICLE.set_type(Types.STRING)
@@ -50,10 +49,15 @@ print(rec.get_primay_key())
 
 rec.set_value("CARTICLE", Value("A000000000"))
 print(rec.get_value("CARTICLE"))
-print(is_numeric_type(Types.DECIMAL))
+print(Types.DECIMAL.is_numeric())
 
 rec.set_value("CARTICLE", "A999999999")
 print(rec.get_value("CARTICLE"))
 
 rec.set_value("QSALES", 1.25)
 print(rec.get_value("QSALES"))
+print(len(rec))
+
+indexes = [n for n in range(10)]
+print(indexes)
+print(rec)

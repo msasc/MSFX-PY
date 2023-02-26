@@ -14,4 +14,8 @@
 
 l = tuple(False for n in range(10))
 print(l)
-print(l[0])
+print(str(" | ".join(str(k) for k in l)))
+
+l = [n for n in range(10)]
+print(l)
+print(str(" | ".join(str(k) for k in l)))

@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.db.meta import Field, Types, Table, Relation, View
+from msfx.db.data import Types, Field, Table, Relation, View
 
 f_CODE = Field()
 f_CODE.set_name("MASTER")
@@ -118,3 +118,6 @@ v_MSALES.append_order_by_field(t_MSALES.get_field("CARTICLE"))
 v_MSALES.append_order_by_field(t_MSALES.get_field("NYEAR"))
 v_MSALES.append_order_by_field(t_MSALES.get_field("NMONTH"))
 v_MSALES.validate_and_setup()
+
+print(v_MSALES.get_field("CARTICLE").is_foreign())
+print(v_MSALES.get_field("DARTICLE").is_foreign())
