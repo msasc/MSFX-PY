@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 """
-msfx.db.meta defines the set of metadata classes.
+Defines the set of data definition classes.
 """
 
 import json
