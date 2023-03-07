@@ -302,7 +302,9 @@ class Value:
         return str(self.__value)
 
 class Table: pass
-class View: pass
+class View:
+    def get_master_table(self) -> Table: pass
+    def get_relations(self) -> list: pass
 
 class Field:
     """

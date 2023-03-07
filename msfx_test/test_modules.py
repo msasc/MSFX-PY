@@ -14,6 +14,6 @@
 
 import msfx.db.data
 
-print(getattr(msfx.db.meta, "Types"))
-print(getattr(msfx.db.meta, "Value"))
-print(getattr(msfx.db.meta, "Field"))
+print(getattr(msfx.db.data, "Types"))
+print(getattr(msfx.db.data, "Value"))
+print(getattr(msfx.db.data, "Field"))

@@ -69,16 +69,35 @@ try:
 	print("".join("-" for n in range(150)))
 	print("".join("-" for n in range(150)))
 
+	sql = "SELECT COUNT(*) FROM qtest.types"
+	cur.execute(sql)
+
+	field_info = mariadb.fieldinfo()
+
+	for column in cur.description:
+		column_name = column[0]
+		column_type = field_info.type(column)
+		column_flags = field_info.flag(column)
+		print(f"{column}")
+
+	print("".join("-" for n in range(150)))
+	print("".join("-" for n in range(150)))
+
 	sql = "SHOW FULL COLUMNS FROM qtest.types"
 	cur.execute(sql)
 
 	while True:
 		rec = cur.next()
-		if rec is None: break
+		if not rec: break
 		print(f"{rec}")
 
 	sql = "DROP TABLE IF EXISTS qtest.types"
 	cur.execute(sql)
+
+	sql = "DROP DATABASE IF EXISTS qtest"
+	cur.execute(sql)
+
+	print("".join("-" for n in range(150)))
 
 	cur.close()
 	conn.close()
