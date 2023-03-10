@@ -469,6 +469,7 @@ class Field:
         if self.__length is not None: s += ", " + str(self.get_length())
         if self.__decimals is not None: s += ", " + str(self.get_decimals())
         if self.__table is not None: s += ", " + str(self.get_table())
+        if len(self.__properties) > 0: s += f", props ({self.__properties})"
         return s
 
 
@@ -1090,5 +1091,40 @@ class Record:
         return s
 
 
-class RecordSet(ABC):
-    pass
+class RecordIterator(ABC):
+    """
+    An iterator over a list of records which length is not known.
+    """
+    def __init__(self, fields: Fields):
+        """
+        Construct a new iterator passing the list of fields that each record conforms to.
+        :param fields: The list of fields.
+        """
+        self.__fields = fields
+    @abstractmethod
+    def has_next(self) -> bool:
+        """
+        Check whether there are more records available.
+        :return: A boolean.
+        """
+        pass
+    @abstractmethod
+    def next(self) -> Record:
+        """
+        Returns the next available record.
+        :return: The next record.
+        """
+        pass
+    @abstractmethod
+    def close(self) -> None:
+        """
+        Close the iterator and any underlying resources.
+        """
+        pass
+    def is_closed(self) -> bool:
+        """
+        Check whether the iterator has been closed.
+        :return: A boolean.
+        """
+        pass
+

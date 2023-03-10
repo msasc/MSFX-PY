@@ -31,6 +31,7 @@ try:
 	sql += "type_pk_01 INTEGER UNIQUE KEY, "
 	sql += "type_pk_02 VARCHAR(20) UNIQUE KEY, "
 	sql += "type_boolean BOOLEAN, "
+	sql += "type_tinyint TINYINT(1), "
 	sql += "type_decimal DECIMAL(20,4), "
 	sql += "type_decimal2 DECIMAL(50,10), "
 	sql += "type_integer INTEGER, "
@@ -64,7 +65,7 @@ try:
 		column_name = column[0]
 		column_type = field_info.type(column)
 		column_flags = field_info.flag(column)
-		print(f"{column}")
+		print(f"{column} --- {column_type} --- {column_flags}")
 
 	print("".join("-" for n in range(150)))
 	print("".join("-" for n in range(150)))
@@ -72,13 +73,11 @@ try:
 	sql = "SELECT COUNT(*) FROM qtest.types"
 	cur.execute(sql)
 
-	field_info = mariadb.fieldinfo()
-
 	for column in cur.description:
 		column_name = column[0]
 		column_type = field_info.type(column)
 		column_flags = field_info.flag(column)
-		print(f"{column}")
+		print(f"{column} --- {column_type} --- {column_flags}")
 
 	print("".join("-" for n in range(150)))
 	print("".join("-" for n in range(150)))
@@ -98,6 +97,7 @@ try:
 	cur.execute(sql)
 
 	print("".join("-" for n in range(150)))
+	print(f"{cur}")
 
 	cur.close()
 	conn.close()

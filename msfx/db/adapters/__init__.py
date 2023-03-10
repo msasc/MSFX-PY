@@ -11,17 +11,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-l = tuple(False for n in range(10))
-print(l)
-print(str(" | ".join(str(k) for k in l)))
-
-l = [n for n in range(10)]
-print(l)
-print(str(" | ".join(str(k) for k in l)))
-
-l = [1, 2, 3, 4]
-t = tuple(l)
-print(type(t))
-l = list(t)
-print(type(l))
+"""
+Database adapters.
+"""

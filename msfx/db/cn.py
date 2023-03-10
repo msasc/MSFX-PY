@@ -15,6 +15,7 @@
 """ Connection utilities """
 
 from abc import ABC, abstractmethod
+from msfx.db.data import Record, RecordIterator
 
 class Cursor: pass
 
@@ -27,57 +28,97 @@ class Connection(ABC):
         """
         Close the underlying connection.
         """
+        pass
     @abstractmethod
     def is_closed(self) -> bool:
         """
         Check whether the underlying connection is closed.
         :return: A boolean.
         """
+        pass
     @abstractmethod
     def is_auto_commit(self) -> bool:
         """
         Check the auto-commit status flag.
         :return: A boolean.
         """
+        pass
     @abstractmethod
     def set_auto_commit(self, auto_commit: bool):
         """
         Set the auto-commit flag.
         :param auto_commit: A boolean.
         """
+        pass
     @abstractmethod
     def begin(self):
         """
         Start a new transaction which can be committed by .commit() method,
         or cancelled by .rollback() method.
         """
+        pass
     @abstractmethod
     def commit(self):
         """
         Commit the transaction started with .begin().
         """
+        pass
     @abstractmethod
     def rollback(self):
         """
         Rollback the transaction started with .begin().
         """
+        pass
     @abstractmethod
-    def cursor(self, **kwargs) -> Cursor:
+    def iterator(self, select: str) -> RecordIterator:
         """
-        Create and return a cursor.
-        :param kwargs: Arguments, normally database dependent.
-        :return: A cursor object.
-        """
+        Creates and returns a record iterator applying the select or similar query.
+        If the select query does not internally return a list of table or view rows,
+        it should raise an exception.
 
-class Cursor(ABC):
+        If the database connection does not support several iterators within a single
+        connection it should raise an exception.
+
+        The iterator returned must contain the list of fields. Those fields must have this
+        db module type, and a property, 'DB_TYPE', thar return s the underlying database
+        field type as a string, as well as 'DB_LENGTH' and 'DB_DECIMALS'
+
+        :param select: The select or similar query that internally returns a set of rows.
+        :return: The record iterator.
+        """
+        pass
     @abstractmethod
-    def close(self):
+    def execute(self, command: str) -> int:
         """
-        Close the underlying connection.
+        Execute a database command, INSERT, UPDATE, DELETE, or any other DDL command
+        like for instance ALTER TABLE.
+
+        If the command is a SELECT query that internally returns a set of rows it should
+        raise an exception.
+
+        The command, specially for INSERT, UPDATE and DELETE, can be affected by the 'begin',
+        'commit' and 'rollback' transaction methods.
+
+        :param command: The database command.
+        :return: The number of affected rows.
         """
+        pass
+
+class Adapter(ABC):
+    """
+    Database adapter to connect to a database instance.
+    """
+    def __init__(self, **params):
+        """
+        Instantiates the adapther passing at least the necessary connection parameter,
+        normally user, passwor, host...
+        :param params: Connection and optionally additional parameters.
+        """
+        self.__params = params
     @abstractmethod
-    def is_closed(self) -> bool:
+    def get_connection(self) -> Connection:
         """
-        Check whether the underlying connection is closed.
-        :return: A boolean.
+        Returns a new fresh connection.
+        :return: The connection.
         """
+        pass

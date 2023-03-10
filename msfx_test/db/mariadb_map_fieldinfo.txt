@@ -1,0 +1,48 @@
+('type_pk_01', 3, 2, 11, 0, 0, True, 49156, 'types', 'type_pk_01', 'types') --- LONG --- UNIQUE_KEY | NUMERIC
+	sql += "type_pk_01 INTEGER UNIQUE KEY, "
+('type_pk_02', 253, 20, 80, 0, 0, True, 16388, 'types', 'type_pk_02', 'types') --- VAR_STRING --- UNIQUE_KEY
+	sql += "type_pk_02 VARCHAR(20) UNIQUE KEY, "
+('type_boolean', 1, 0, 1, 0, 0, True, 32768, 'types', 'type_boolean', 'types') --- TINY --- NUMERIC
+	sql += "type_boolean BOOLEAN, "
+('type_decimal', 246, 23, 22, 22, 4, True, 32768, 'types', 'type_decimal', 'types') --- NEWDECIMAL --- NUMERIC
+	sql += "type_decimal DECIMAL(20,4), "
+('type_decimal2', 246, 53, 52, 52, 10, True, 32768, 'types', 'type_decimal2', 'types') --- NEWDECIMAL --- NUMERIC
+	sql += "type_decimal2 DECIMAL(50,10), "
+('type_integer', 3, 2, 11, 0, 0, True, 32768, 'types', 'type_integer', 'types') --- LONG --- NUMERIC
+	sql += "type_integer INTEGER, "
+('type_long', 8, 5, 20, 0, 0, True, 32768, 'types', 'type_long', 'types') --- LONGLONG --- NUMERIC
+	sql += "type_long BIGINT, "
+('type_float', 4, 3, 12, 0, 0, True, 32768, 'types', 'type_float', 'types') --- FLOAT --- NUMERIC
+	sql += "type_float FLOAT, "
+('type_double', 5, 5, 22, 0, 0, True, 32768, 'types', 'type_double', 'types') --- DOUBLE --- NUMERIC
+	sql += "type_double DOUBLE, "
+('type_bynary', 254, 25, 100, 0, 0, True, 128, 'types', 'type_bynary', 'types') --- STRING --- BINARY
+	sql += "type_bynary BINARY(100), "
+('type_tinyblob', 252, 63, 255, 0, 0, True, 144, 'types', 'type_tinyblob', 'types') --- BLOB --- BLOB | BINARY
+	sql += "type_tinyblob TINYBLOB, "
+('type_blob', 252, 16383, 65535, 0, 0, True, 144, 'types', 'type_blob', 'types') --- BLOB --- BLOB | BINARY
+	sql += "type_blob BLOB, "
+('type_mediumblob', 252, 4194303, 16777215, 0, 0, True, 144, 'types', 'type_mediumblob', 'types') --- BLOB --- BLOB | BINARY
+	sql += "type_mediumblob MEDIUMBLOB, "
+('type_longblob', 252, 1073741823, -1, 0, 0, True, 144, 'types', 'type_longblob', 'types') --- BLOB --- BLOB | BINARY
+	sql += "type_longblob LONGBLOB, "
+('type_tinytext', 252, 255, 1020, 0, 0, True, 16, 'types', 'type_tinytext', 'types') --- BLOB --- BLOB
+	sql += "type_tinytext TINYTEXT, "
+('type_text', 252, 65535, 262140, 0, 0, True, 16, 'types', 'type_text', 'types') --- BLOB --- BLOB
+	sql += "type_text TEXT, "
+('type_mediumtext', 252, 16777215, 67108860, 0, 0, True, 16, 'types', 'type_mediumtext', 'types') --- BLOB --- BLOB
+	sql += "type_mediumtext MEDIUMTEXT, "
+('type_longtext', 252, 1073741823, -1, 0, 0, True, 16, 'types', 'type_longtext', 'types') --- BLOB --- BLOB
+	sql += "type_longtext LONGTEXT, "
+('type_json', 245, 1073741823, -1, 0, 0, True, 144, 'types', 'type_json', 'types') --- JSON --- BLOB | BINARY
+	sql += "type_json JSON, "
+('type_varbinary', 253, 25, 100, 0, 0, True, 128, 'types', 'type_varbinary', 'types') --- VAR_STRING --- BINARY
+	sql += "type_varbinary VARBINARY(100), "
+('type_varchar', 253, 100, 400, 0, 0, True, 0, 'types', 'type_varchar', 'types') --- VAR_STRING ---
+	sql += "type_varchar VARCHAR(100), "
+('type_date', 10, 2, 10, 0, 0, True, 128, 'types', 'type_date', 'types') --- DATE --- BINARY
+	sql += "type_date DATE, "
+('type_time', 11, 2, 10, 0, 0, True, 128, 'types', 'type_time', 'types') --- TIME --- BINARY
+	sql += "type_time TIME, "
+('type_datetime', 12, 4, 19, 0, 0, True, 128, 'types', 'type_datetime', 'types') --- DATETIME --- BINARY
+	sql += "type_datetime DATETIME "
