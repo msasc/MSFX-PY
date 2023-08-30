@@ -12,7 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from field import Field
+
+class Field: pass
+class Table: pass
 
 class OrderSegment:
     """ An order segment definition. """
@@ -109,4 +111,79 @@ class Order:
                 _str_ += "["
                 _str_ += str(self.__segments[i])
                 _str_ += "]"
+        return _str_
+
+class Index(Order):
+    """ An index definition. """
+    def __init__(self):
+        super().__init__()
+        self.__name: str or None = None
+        self.__schema: str or None = None
+        self.__unique: bool or None = None
+        self.__table: Table = None
+
+    def get_name(self) -> str or None:
+        """
+        Return the name.
+        :return: The name.
+        """
+        return self.__name
+    def get_schema(self) -> str or None:
+        """
+        Return the schema.
+        :return: The index schema.
+        """
+        return self.__schema
+    def is_unique(self) -> bool:
+        """
+        Check whether the index is unique.
+        :return: A boolean.
+        """
+        if self.__unique is None: return False
+        return self.__unique
+    def get_table(self) -> Table:
+        """
+        Return the parent table.
+        :return: The parent table.
+        """
+        return self.__table
+
+    def set_name(self, name: str):
+        """
+        Set the name.
+        :param name: The name.
+        """
+        if not isinstance(name, str):
+            raise Exception("Invalid type for argument 'name'")
+        self.__name = name
+    def set_schema(self, schema: str):
+        """
+        Set the schema.
+        :param schema: he schema.
+        """
+        if not isinstance(schema, str):
+            raise Exception("Invalid type for argument 'schema'")
+        self.__schema = schema
+    def set_unique(self, unique: bool):
+        """
+        Set the unique flag.
+        :param unique: A boolean.
+        """
+        if not isinstance(unique, bool):
+            raise Exception("Invalid type for argument 'unique'")
+        self.__unique = unique
+    def set_table(self, table: Table):
+        """
+        Set the table.
+        :param table: The table.
+        """
+        self.__table = table
+
+    def __str__(self) -> str:
+        _str_: str = self.get_name()
+        if self.get_table() is not None:
+            _str_ += " ON " + self.get_table().get_name()
+        if self.is_unique(): _str_ += " UNIQUE"
+        else: _str_ += " NOT UNIQUE"
+        _str_ += " (" + super().__str__() + ")"
         return _str_

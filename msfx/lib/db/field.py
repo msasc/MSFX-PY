@@ -557,8 +557,16 @@ class FieldList:
         return index
 
     def fields(self) -> tuple:
+        """
+        Returns the list of fields as an unmodifiable tuple.
+        :return: The list of fields.
+        """
         return tuple(self.__fields)
     def aliases(self) -> tuple:
+        """
+        Returns the list of aliases as an unmodifiable tuple.
+        :return: The list of aliases.
+        """
         return tuple(self.__aliases)
 
     def __setup__(self) -> None:
@@ -584,3 +592,25 @@ class FieldList:
                 self.__primary_key_fields.append(field)
                 self.__primary_key_indexes.append(i)
             self.__default_values.append(field.get_default_value())
+
+    def __iter__(self):
+        """
+        Iterator implementation on fields.
+        :return: The iterator on fields.
+        """
+        return self.__fields.__iter__()
+    def __len__(self) -> int:
+        """
+        Length implementation.
+        :return: The length or number of fields.
+        """
+        return len(self.__fields)
+    def __getitem__(self, index: int) -> Field:
+        """
+        Field accesses as a list.
+        :param index: The index.
+        :return: The field.
+        """
+        if not isinstance(index, int):
+            raise Exception("Invalid type for 'index' argument")
+        return self.__fields[index]
