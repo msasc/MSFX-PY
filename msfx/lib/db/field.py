@@ -22,9 +22,7 @@ from msfx.lib.db.json import JSON
 class Table: pass
 
 class Field:
-    """
-    Field metadata definition.
-    """
+    """ Field metadata definition. """
     def __init__(self, field=None):
         """
         Default constructor.
@@ -505,6 +503,7 @@ class FieldList:
             raise Exception("Invalid type for argument 'field'")
         self.__fields.append(Field(field))
         self.__setup__()
+
     def get_field(self, key: int or str) -> Field:
         """
         Returns the field or None.
@@ -542,6 +541,13 @@ class FieldList:
         for field in self.__primary_key_fields:
             order.append_segment(field)
         return order
+
+    def get_default_values(self) -> tuple:
+        return tuple(self.__default_values)
+    def get_default_create_values(self) -> tuple:
+        return tuple(self.__default_create_values)
+
+
 
     def index_of(self, alias: str) -> int:
         """

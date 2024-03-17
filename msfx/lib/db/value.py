@@ -19,9 +19,7 @@ from msfx.lib.db.json import JSON
 from msfx.lib.db.types import Types, TYPES_NULL
 
 class Value:
-    """
-    Encapsulates an immutable value of one of the supported types.
-    """
+    """ Encapsulates an immutable value of one of the supported types. """
     def __init__(self, value):
         """
         Constructs a Value with one of the supported types.
@@ -266,29 +264,62 @@ class Value:
         js: JSON = self.__value
         return JSON(js.dumps())
 
+    def compare_to(self, other) -> int:
+        """
+        Compare for order.
+        :param other: Another value.
+        :return: The comparison integer.
+        """
+        if self.__eq__(other): return 0
+        if self.__lt__(other): return -1
+        return 1
+
+    def is_comparable(self, other) -> bool:
+        """
+        Check whether this value is comparable to another object.
+        :param other: Another object.
+        :return: A boolean.
+        """
+        comparable: bool = False
+        if self.is_boolean(): comparable = isinstance(other, bool)
+        if self.is_numeric():
+            comparable = (
+                isinstance(other, Decimal) or
+                isinstance(other, int) or
+                isinstance(other, float) or
+                isinstance(other, complex)
+            )
+        if self.is_date(): comparable = isinstance(other, date)
+        if self.is_time(): comparable = isinstance(other, time)
+        if self.is_datetime(): comparable = isinstance(other, datetime)
+        if self.is_binary(): comparable = isinstance(other, bytes)
+        if self.is_string(): comparable = isinstance(other, str)
+        if self.is_JSON(): comparable = isinstance(other, JSON)
+        return comparable
+
     def __lt__(self, other) -> bool:
         if isinstance(other, Value): return self.__value < other.__value
-        if self.__is_comparable__(other): return self.__value < other
+        if self.is_comparable(other): return self.__value < other
         raise TypeError(f"Not comparable value {other}")
     def __le__(self, other) -> bool:
         if isinstance(other, Value): return self.__value <= other.__value
-        if self.__is_comparable__(other): return self.__value <= other
+        if self.is_comparable(other): return self.__value <= other
         raise TypeError(f"Not comparable value {other}")
     def __eq__(self, other) -> bool:
         if isinstance(other, Value): return self.__value == other.__value
-        if self.__is_comparable__(other): return self.__value == other
+        if self.is_comparable(other): return self.__value == other
         raise TypeError(f"Not comparable value {other}")
     def __ne__(self, other) -> bool:
         if isinstance(other, Value): return self.__value != other.__value
-        if self.__is_comparable__(other): return self.__value != other
+        if self.is_comparable(other): return self.__value != other
         raise TypeError(f"Not comparable value {other}")
     def __gt__(self, other) -> bool:
         if isinstance(other, Value): return self.__value > other.__value
-        if self.__is_comparable__(other): return self.__value > other
+        if self.is_comparable(other): return self.__value > other
         raise TypeError(f"Not comparable value {other}")
     def __ge__(self, other) -> bool:
         if isinstance(other, Value): return self.__value >= other.__value
-        if self.__is_comparable__(other): return self.__value >= other
+        if self.is_comparable(other): return self.__value >= other
         raise TypeError(f"Not comparable value {other}")
     def __str__(self) -> str:
         if self.is_none(): return ""

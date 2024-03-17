@@ -10,6 +10,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from datetime import date, datetime
 from msfx.lib.db.json import JSON
 from msfx.lib.db.value import Value
 from msfx.lib.db.types import Types
@@ -22,8 +23,29 @@ print(js_src)
 js_dst: JSON = JSON(js_src.dumps())
 print(js_dst)
 
-val: Value = Value(js_dst)
-print(val)
+v1: Value = Value(js_dst)
+print(v1)
 
 v2: Value = Value(Types.DATE)
 print(v2.is_none())
+
+v3: Value = Value("A")
+v4: Value = Value("A")
+v5: Value = Value(date(2022, 5, 12))
+
+print(v3 == v4)
+print(Value(10) == Value(10.00))
+
+print(v3.is_comparable("A"))
+print(v3.is_comparable(js_dst))
+print(v3.is_comparable(Value(2)))
+print(v3.is_comparable(Value(True)))
+print(v5)
+print(v5.get_date().year)
+print(v5.get_date().month)
+print(v5.get_date().day)
+print(v5.get_date())
+
+d: date = v5.get_date()
+print(datetime.strptime("2023-10-12", "%Y-%m-%d").date().month)
+

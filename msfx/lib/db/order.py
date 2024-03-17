@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from msfx.lib.db.value import Value
 
 class Field: pass
 class Table: pass
@@ -187,3 +188,105 @@ class Index(Order):
         else: _str_ += " NOT UNIQUE"
         _str_ += " (" + super().__str__() + ")"
         return _str_
+
+class OrderKeySegment:
+    """ A segment of an order key, a pair made of a value and an ascending flag. """
+    def __init__(self, value: Value, asc: bool = True):
+        if not isinstance(value, Value):
+            raise Exception("Invalid type for argument 'value'")
+        self.__value = value
+        self.__asc = asc
+
+    def get_value(self) -> Value:
+        """
+        Returns the segment value.
+        :return: The value.
+        """
+        return self.__value
+    def is_asc(self) -> bool:
+        """
+        Returns the segment ascending flag.
+        :return: A boolean.
+        """
+        return self.__asc
+
+    def compare_to(self, other) -> int:
+        if not isinstance(other, OrderKeySegment):
+            raise TypeError(f"Not comparable argument {other}")
+        compare: int = self.__value.compare_to(other.__value)
+        mult: int = 1 if self.__asc else -1
+        return compare * mult
+
+    def __lt__(self, other) -> bool:
+        return self.compare_to(other) < 0
+    def __le__(self, other) -> bool:
+        return self.compare_to(other) <= 0
+    def __eq__(self, other) -> bool:
+        return self.compare_to(other) == 0
+    def __ne__(self, other) -> bool:
+        return self.compare_to(other) != 0
+    def __gt__(self, other) -> bool:
+        return self.compare_to(other) > 0
+    def __ge__(self, other) -> bool:
+        return self.compare_to(other) >= 0
+
+    def __str__(self) -> str:
+        return "(" + str(self.__value) + ", " + str(self.__asc) + ")"
+
+
+class OrderKey:
+    """ An order key, a list of pairs [value, ascending flag]. """
+    def __init__(self):
+        self.__segments = []
+
+    def append_segment(self, value: object, asc: bool = True):
+        """
+        Append a new segment.
+        :param value: The value.
+        :param asc: The ascending flag, defaults to true.
+        """
+        if not isinstance(value, Value):
+            value = Value(value)
+        self.__segments.append(OrderKeySegment(value, asc))
+
+    def compare_to(self, other) -> int:
+        """
+        Compare this order key with another object.
+        :param other: The other object.
+        :return: A comparison integer.
+        """
+        if not isinstance(other, OrderKey):
+            raise TypeError(f"Invalid type for argument {other}")
+        len_min: int = min(len(self.__segments), len(other.__segments))
+        for i in range(len_min):
+            seg_self: OrderKeySegment = self.__segments[i]
+            seg_comp: OrderKeySegment = other.__segments[i]
+            compare = seg_self.compare_to(seg_comp)
+            if compare != 0: return compare
+        if len(self.__segments) < len(other.__segments): return -1
+        if len(self.__segments) > len(other.__segments): return 1
+        return 0
+
+    def __len__(self) -> int:
+        return len(self.__segments)
+
+    def __lt__(self, other) -> bool:
+        return self.compare_to(other) < 0
+    def __le__(self, other) -> bool:
+        return self.compare_to(other) <= 0
+    def __eq__(self, other) -> bool:
+        return self.compare_to(other) == 0
+    def __ne__(self, other) -> bool:
+        return self.compare_to(other) != 0
+    def __gt__(self, other) -> bool:
+        return self.compare_to(other) > 0
+    def __ge__(self, other) -> bool:
+        return self.compare_to(other) >= 0
+
+    def __str__(self) -> str:
+        string = "["
+        for i in range(len(self.__segments)):
+            if i > 0: string += ", "
+            string += str(self.__segments[i])
+        string += "]"
+        return string
