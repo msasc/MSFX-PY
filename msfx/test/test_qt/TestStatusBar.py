@@ -19,11 +19,12 @@ from PyQt6.QtGui import (
     QGuiApplication
 )
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QFrame
+    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QFrame, QWidget
 )
 from msfx.lib import qt
 
 class Worker(QObject):
+
     # Signals to update and set visible or not, the status progress bar
     bar_progress = pyqtSignal(int)
     bar_visible = pyqtSignal(bool)
@@ -32,39 +33,71 @@ class Worker(QObject):
     label_text = pyqtSignal(str)
     label_visible = pyqtSignal(bool)
 
-    def __init__(self, arg=None):
+    # Signal to remove widgets
+    remove_widget = pyqtSignal(QWidget)
+
+    def __init__(self, status_bar: QStatusBar):
         super().__init__()
+        self.status_bar = status_bar
+
+        # Create a progress bar and add it to the status bar
+        self.statusLabel = QLabel("")
+        self.progressBar = QProgressBar()
+        self.progressBar.setFixedHeight(10)
+        self.progressBar.setMaximumWidth(200)
+        self.progressBar.setMaximum(100)  # Set the maximum value
+        # self.progressBar.setValue(50)  # Set the current value
+
+        self.status_bar.addPermanentWidget(self.statusLabel)  # This makes the label always visible
+        self.status_bar.addPermanentWidget(self.progressBar)  # Add progress bar to the status bar
+
+        # Connect signals and slots
+        self.label_text.connect(self.statusLabel.setText)
+        self.label_visible.connect(self.statusLabel.setVisible)
+        self.bar_progress.connect(self.progressBar.setValue)
+        self.bar_visible.connect(self.progressBar.setVisible)
+        self.remove_widget.connect(self.status_bar.removeWidget)
+
+        self.statusLabel.setVisible(False)
+        self.progressBar.setVisible(False)
+
 
     def run(self):
 
         loops = 100
-        sleep = 20
+        sleep = 10
+        pause = 1000
 
-        QThread.msleep(1000)
+        QThread.msleep(pause)
         self.bar_visible.emit(True)
         for i in range(loops):
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(sleep)  # Simulate a task that takes time
-        QThread.msleep(1000)
+        QThread.msleep(pause)
         self.bar_visible.emit(False)
 
-        QThread.msleep(1000)
+        QThread.msleep(pause)
         self.label_visible.emit(True)
         for i in range(loops):
             self.label_text.emit(f"Performing iteration {i+1} of current loop")  # Update progress bar
             QThread.msleep(sleep)  # Simulate a task that takes time
-        QThread.msleep(1000)
+        QThread.msleep(pause)
         self.label_visible.emit(False)
 
-        QThread.msleep(1000)
+        QThread.msleep(pause)
         self.label_visible.emit(True)
         self.bar_visible.emit(True)
         for i in range(loops):
             self.label_text.emit(f"Performing iteration {i+1} of current loop")  # Update progress bar
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(sleep)  # Simulate a task that takes time
-        self.bar_visible.emit(False)
-        self.label_visible.emit(False)
+
+        QThread.msleep(pause)
+
+        self.remove_widget.emit(self.progressBar)
+        self.label_text.emit("This is the final text after ending iterations")
+        QThread.msleep(pause * 2)
+        self.remove_widget.emit(self.statusLabel)
 
 class Window(QMainWindow):
     def __init__(self):
@@ -75,40 +108,11 @@ class Window(QMainWindow):
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
 
-        # Add a standard message
-        # self.statusBar.showMessage("Standard message")
-
-        # Create a label and add it to the status bar
-        self.statusLabel = QLabel("")
-        # self.statusLabel.setFrameShape(QFrame.Shape.StyledPanel)
-
-        # label_style = "QLabel { border: 0.5px solid gray; }"
-        # self.statusLabel.setStyleSheet(label_style)
-
-
-        # Create a progress bar and add it to the status bar
-        self.progressBar = QProgressBar()
-        self.progressBar.setFixedHeight(10)
-        self.progressBar.setMaximumWidth(200)
-        self.progressBar.setMaximum(100)  # Set the maximum value
-        # self.progressBar.setValue(50)  # Set the current value
-
-        self.statusBar.addPermanentWidget(self.statusLabel)  # This makes the label always visible
-        self.statusBar.addPermanentWidget(self.progressBar)  # Add progress bar to the status bar
-
-        self.statusLabel.setVisible(False)
-        self.progressBar.setVisible(False)
 
         # Set up the thread and worker
         self.thread = QThread()
-        self.worker = Worker(None)
+        self.worker = Worker(self.statusBar)
         self.worker.moveToThread(self.thread)
-
-        # Connect signals and slots
-        self.worker.label_text.connect(self.statusLabel.setText)
-        self.worker.label_visible.connect(self.statusLabel.setVisible)
-        self.worker.bar_progress.connect(self.progressBar.setValue)
-        self.worker.bar_visible.connect(self.progressBar.setVisible)
 
         # Start the thread
         self.thread.started.connect(self.worker.run)

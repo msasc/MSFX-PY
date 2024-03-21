@@ -12,53 +12,56 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import sys
+from PyQt6 import QtCore, QtWidgets, QtGui
+from PyQt6.QtWidgets import QVBoxLayout
+from msfx.lib.qt import QConsole
+
+from msfx.lib import qt
+
+import time
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
 class Worker(QObject):
-    progress = pyqtSignal(int)  # Signal to update progress bar
+    progress = pyqtSignal(str)  # Signal to write to the console
 
     def run(self):
-        for i in range(1000):
+        QThread.msleep(1000)
+        n = 500
+        for i in range(n+1):
             # Your time-consuming task here
-            self.progress.emit(i+1)  # Update progress bar
+            self.progress.emit(f"The number of the loop is {i}")  # Update progress bar
             QThread.msleep(1)  # Simulate a task that takes time
 
-import sys
 
-class MainWindow(QMainWindow):
+class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.progressBar = QProgressBar(self)
-        self.initUI()
+        self.setWindowTitle("My first window")
 
-    def initUI(self):
-        # Initialize the progress bar and other UI components
-        self.progressBar.setGeometry(30, 40, 200, 16)
-        self.progressBar.setMaximum(1000)
-        self.progressBar.setTextVisible(True)
+        self.cs = QConsole()
+        layout = QVBoxLayout()
+        layout.addWidget(self.cs)
+        self.cs.setLayout(layout)
 
-        # Setup the thread and worker
+        self.setCentralWidget(self.cs)
+
         self.thread = QThread()
         self.worker = Worker()
         self.worker.moveToThread(self.thread)
 
         # Connect signals and slots
-        self.worker.progress.connect(self.progressBar.setValue)
-
-        # self.worker.progress.connect(self.updateProgressBar)
-
-        # Start the thread
+        self.worker.progress.connect(self.cs.log)
         self.thread.started.connect(self.worker.run)
         self.thread.start()
 
-    def updateProgressBar(self, value):
-        self.progressBar.setValue(value)
+if __name__ == "__main__":
+    app = QtWidgets.QApplication([])
+    screen = QtGui.QGuiApplication.primaryScreen()
 
-from msfx.lib import qt
+    window = Window()
+    qt.set_size(window, 0.6, 0.6)
+    window.cs.log("Hola mamon")
+    window.show()
 
-app = QApplication(sys.argv)
-window = MainWindow()
-qt.set_size(window, 0.4, 0.3)
-window.show()
-sys.exit(app.exec())
+    sys.exit(app.exec())
