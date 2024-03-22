@@ -28,11 +28,21 @@ from PyQt6.QtWidgets import (
     QStatusBar,
     QTabWidget,
     QWidget,
-    QTabBar
+    QTabBar,
+    QPushButton
+)
+from PyQt6.QtGui import (
+    QIcon,
+    QColor
+)
+from PyQt6.QtCore import (
+    QSize
 )
 
 # msfx imports.
-from msfx.lib import qt
+from msfx.lib.qt import setSize
+from msfx.lib.qt.console import QConsole
+from msfx.lib.qt.icons import QIconClose, QIconButton
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -48,26 +58,40 @@ class MainWindow(QMainWindow):
         # Central widget is a tab pane.
         self.tabPane = QTabWidget()
         self.tabPane.setTabsClosable(True)
+        self.tabPane.tabCloseRequested.connect(self.closeTab)
         self.setCentralWidget(self.tabPane)
 
         # First tab contains a console that will be unique within the
         # application and that can be accessed by any process to connect
         # signals and log messages.
-        self.console = qt.QConsole()
+        self.console = QConsole()
         self.console.setProperty("key", "console")
-        self.addTab(self.console, "Console", False)
+        self.addTab(self.console, "Console", True)
 
     def addTab(self, widget, title, closeable=True):
         self.tabPane.addTab(widget, title)
         index = self.tabPane.count() - 1
-        if not closeable:
+        if closeable:
+            tab_bar = self.tabPane.tabBar()
+            close_button = QIconButton()
+            close_button.setFixedSize(QSize(16, 16))
+            close_button.setIconSize(QSize(8, 8))
+            close_button.setIconBase(QIconClose())
+            close_button.clicked.connect(self.closeTab)
+            tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, close_button)
+        else:
             tab_bar = self.tabPane.tabBar()
             tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, None)
+
+    def closeTab(self, index):
+        widget = self.tabPane.widget(index)
+        widget.deleteLater()
+        self.tabPane.removeTab(index)
 
 # Do run the app.
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     wnd = MainWindow()
-    qt.set_size(wnd, 0.8, 0.8)
+    setSize(wnd, 0.8, 0.8)
     wnd.show()
     sys.exit(app.exec())

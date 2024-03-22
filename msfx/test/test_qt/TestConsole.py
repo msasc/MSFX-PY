@@ -60,7 +60,7 @@ if __name__ == "__main__":
     screen = QtGui.QGuiApplication.primaryScreen()
 
     window = Window()
-    qt.set_size(window, 0.6, 0.6)
+    qt.setSize(window, 0.6, 0.6)
     window.cs.log("Hola mamon")
     window.show()
 

@@ -59,6 +59,6 @@ from msfx.lib import qt
 
 app = QApplication(sys.argv)
 window = MainWindow()
-qt.set_size(window, 0.4, 0.3)
+qt.setSize(window, 0.4, 0.3)
 window.show()
 sys.exit(app.exec())
