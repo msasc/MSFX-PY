@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
         # signals and log messages.
         self.console = QConsole()
         self.console.setProperty("key", "console")
-        self.addTab(self.console, "Console", True)
+        self.addTab(self.console, "Console", False)
 
     def addTab(self, widget, title, closeable=True):
         self.tabPane.addTab(widget, title)
