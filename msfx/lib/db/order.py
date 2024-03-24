@@ -160,7 +160,7 @@ class Index(Order):
     def set_schema(self, schema: str):
         """
         Set the schema.
-        :param schema: he schema.
+        :param schema: The schema.
         """
         if not isinstance(schema, str):
             raise Exception("Invalid type for argument 'schema'")

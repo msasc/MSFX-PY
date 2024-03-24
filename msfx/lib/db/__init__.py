@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from datetime import date, time, datetime
 
 from msfx.lib.db.types import Types

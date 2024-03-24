@@ -30,15 +30,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.progressBar = QProgressBar(self)
-        self.initUI()
 
-    def initUI(self):
         # Initialize the progress bar and other UI components
         self.progressBar.setGeometry(30, 40, 200, 16)
         self.progressBar.setMaximum(1000)
         self.progressBar.setTextVisible(True)
 
-        # Setup the thread and worker
+        # Set up the thread and worker
         self.thread = QThread()
         self.worker = Worker()
         self.worker.moveToThread(self.thread)

@@ -15,7 +15,7 @@
 import sys
 from PyQt6 import QtCore, QtWidgets, QtGui
 from PyQt6.QtWidgets import QVBoxLayout
-from msfx.lib.qt import QConsole
+from msfx.lib.qt.console import QConsole
 
 from msfx.lib import qt
 
