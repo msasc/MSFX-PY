@@ -11,22 +11,15 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from multiprocessing import Pool
+import time
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+def my_task(x):
+    print(f"Processing {x}")
+    time.sleep(1)  # Simulate work by sleeping for 1 second
+    return x * x
 
-app = QApplication([])
-textBrowser = QTextBrowser()
-
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
-
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+if __name__ == '__main__':
+    with Pool(2) as p:  # Create a pool with 2 worker processes
+        result = p.map(my_task, range(10))
+    print(result)

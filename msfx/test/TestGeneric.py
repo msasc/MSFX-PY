@@ -12,21 +12,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+from typing import Generic, TypeVar
 
-app = QApplication([])
-textBrowser = QTextBrowser()
+# Define a type variable
+T = TypeVar('T')
 
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
+# Define a generic class
+class Box(Generic[T]):
+    def __init__(self, item: T):
+        self.item = item
 
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+    def get_item(self) -> T:
+        return self.item
+
+# Using the generic class
+box_of_strings = Box[str]("hello")
+print(box_of_strings.get_item())
+
+box_of_integers = Box[int](10)
+print(box_of_integers.get_item())

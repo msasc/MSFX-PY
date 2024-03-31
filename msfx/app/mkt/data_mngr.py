@@ -40,7 +40,7 @@ from PyQt6.QtCore import (
 )
 
 # msfx imports.
-from msfx.lib.qt import setSize
+from msfx.lib.qt import setWidgetSize
 from msfx.lib.qt.console import QConsole
 from msfx.lib.qt.icons import QIconClose, QIconButton
 
@@ -92,6 +92,6 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     wnd = MainWindow()
-    setSize(wnd, 0.8, 0.8)
+    setWidgetSize(wnd, 0.8, 0.8)
     wnd.show()
     sys.exit(app.exec())

@@ -11,22 +11,11 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from multiprocessing import Pool
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+def my_function(x):
+    return (x * x) * 2
 
-app = QApplication([])
-textBrowser = QTextBrowser()
-
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
-
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+if __name__ == '__main__':
+    with Pool(5) as p:
+        print(p.map(my_function, [1, 2, 3]))

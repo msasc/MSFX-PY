@@ -16,14 +16,9 @@ from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLayout, QVBoxLa
 from PyQt6.QtCore import QRect, QSize, QPoint, Qt
 
 class QFlowLayout(QLayout):
-    def __init__(self, parent=None, margin=0, spacing=-1):
-        super(QFlowLayout, self).__init__(parent)
-
-        if parent is not None:
-            self.setContentsMargins(margin, margin, margin, margin)
-
+    def __init__(self, spacing=0):
+        super(QFlowLayout, self).__init__()
         self.setSpacing(spacing)
-
         self.itemList = []
 
     def addItem(self, item):
@@ -84,7 +79,7 @@ class MainWindow(QWidget):
         super().__init__()
         layout = QVBoxLayout(self)
 
-        flowLayout = QFlowLayout()
+        flowLayout = QFlowLayout(spacing=2)
         buttons = [QPushButton(f"Button {i}") for i in range(10)]
         for button in buttons:
             flowLayout.addWidget(button)

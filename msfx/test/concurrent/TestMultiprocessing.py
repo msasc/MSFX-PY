@@ -12,21 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+from multiprocessing import Value, Process
 
-app = QApplication([])
-textBrowser = QTextBrowser()
+def increment(counter):
+    for _ in range(10000):
+        with counter.get_lock():
+            counter.value += 1
 
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
+if __name__ == '__main__':
+    counter = Value('i', 0)  # 'i' indicates a signed int
+    processes = [Process(target=increment, args=(counter,)) for _ in range(10)]
 
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+    print(f"Counter value: {counter.value}")

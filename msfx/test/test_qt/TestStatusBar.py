@@ -11,7 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import datetime
 import sys
+
 from PyQt6.QtCore import (
     QObject, QThread, pyqtSignal
 )
@@ -19,8 +21,9 @@ from PyQt6.QtGui import (
     QGuiApplication
 )
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QFrame, QWidget
+    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QWidget
 )
+
 from msfx.lib import qt
 
 class Worker(QObject):
@@ -70,33 +73,52 @@ class Worker(QObject):
 
         QThread.msleep(self.pause)
         self.bar_visible.emit(True)
+
+        # Pass 0, only progress bar.
+        time_0_start = datetime.datetime.now()
         for i in range(self.loops):
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(self.sleep)  # Simulate a task that takes time
-        QThread.msleep(self.pause)
-        self.bar_visible.emit(False)
+        time_0_end = datetime.datetime.now()
 
         QThread.msleep(self.pause)
+        self.bar_visible.emit(False)
         self.label_visible.emit(True)
+
+        # Pass 1, only label.
+        time_1_start = datetime.datetime.now()
         for i in range(self.loops):
-            self.label_text.emit(f"Performing iteration {i+1} of current loop")  # Update progress bar
-            QThread.msleep(self.sleep)  # Simulate a task that takes time
+            if i % 10 == 0:
+                self.label_text.emit(f"Performing iteration {i} of current loop")  # Update progress bar
+                QThread.msleep(self.sleep)  # Simulate a task that takes time
+        self.label_text.emit(f"Performing iteration {self.loops} of current loop")  # Update progress bar
+        time_1_end = datetime.datetime.now()
+
         QThread.msleep(self.pause)
         self.label_visible.emit(False)
 
         QThread.msleep(self.pause)
         self.label_visible.emit(True)
         self.bar_visible.emit(True)
+
+        # Pass 2, label and progress bar.
+        time_2_start = datetime.datetime.now()
         for i in range(self.loops):
             self.label_text.emit(f"Performing iteration {i+1} of current loop")  # Update progress bar
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(self.sleep)  # Simulate a task that takes time
+        time_2_end = datetime.datetime.now()
 
         QThread.msleep(self.pause)
 
+        self.label_visible.emit(True)
+        self.bar_visible.emit(False)
+
+        text = f"{time_0_end-time_0_start}, {time_1_end-time_1_start}, {time_2_end-time_2_start}"
+        self.label_text.emit(text)
+        QThread.msleep(self.pause * 40)
+
         self.remove_widget.emit(self.progressBar)
-        self.label_text.emit("This is the final text after ending iterations")
-        QThread.msleep(self.pause * 2)
         self.remove_widget.emit(self.statusLabel)
 
 class Window(QMainWindow):
@@ -107,7 +129,6 @@ class Window(QMainWindow):
         # Set up the status bar
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
-
 
         # Set up the thread and worker
         self.thread = QThread()
@@ -121,8 +142,7 @@ class Window(QMainWindow):
 if __name__ == "__main__":
     app = QApplication([])
     screen = QGuiApplication.primaryScreen()
-
     window = Window()
-    qt.setSize(window, 0.6, 0.6)
+    qt.setWidgetSize(window, 0.6, 0.6)
     window.show()
     sys.exit(app.exec())

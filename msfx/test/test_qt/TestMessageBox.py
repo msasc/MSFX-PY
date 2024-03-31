@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QApplication, QDialog, QPushButton, QHBoxLayout
 
 class CustomDialog(QDialog):
     def __init__(self, parent=None):
@@ -20,8 +20,10 @@ class CustomDialog(QDialog):
         self.setWindowTitle("Custom Dialog with Multiple Buttons")
         self.userChoice = None  # Variable to store the user's choice
 
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         self.setLayout(layout)
+
+        layout.addStretch(1)
 
         # Button 1
         btn1 = QPushButton("Option 1")

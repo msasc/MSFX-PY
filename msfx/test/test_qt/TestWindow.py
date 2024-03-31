@@ -119,6 +119,6 @@ if __name__ == "__main__":
     screen = QGuiApplication.primaryScreen()
 
     window = Window()
-    qt.setSize(window, 0.6, 0.6)
+    qt.setWidgetSize(window, 0.6, 0.6)
     window.show()
     sys.exit(app.exec())

@@ -12,21 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+from PyQt6.QtGui import QFontDatabase, QFont
 
-app = QApplication([])
-textBrowser = QTextBrowser()
+# List all available font families
+font_families = QFontDatabase.families()
 
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
-
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+for family in font_families:
+    print(family)

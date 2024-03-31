@@ -12,21 +12,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QTextBrowser
+from multiprocessing import Pool
 
-app = QApplication([])
-textBrowser = QTextBrowser()
+def square(x):
+    print("s: " + str(x) + ", " + str(x * x))
 
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
+def cube(x):
+    print("c: " + str(x) + ", "  + str(x * x * x))
 
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
-textBrowser.show()
-app.exec()
+def double(x):
+    print("d: " + str(x) + ", "  + str(x + x))
+
+if __name__ == '__main__':
+    with Pool(1) as p:
+        for x in [0, 1, 2, 3, 4, 5]:
+            p.map(square, (x,))
+            p.map(cube, (x,))
+            p.map(double, (x,))
+
+        # Wait for all tasks to complete and retrieve results
+        # output = [result.get() for result in results]
+        # print(output)

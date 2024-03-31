@@ -23,7 +23,7 @@ will follow the C++ convention that is used by all names in PyQt.
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QGuiApplication
 
-def setSize(widget: QWidget, widthFactor: float, heightFactor: float):
+def setWidgetSize(widget: QWidget, widthFactor: float, heightFactor: float):
     """
     Set the size of a widget relative to the primary screen size.
     :param widget: The widget to resize.

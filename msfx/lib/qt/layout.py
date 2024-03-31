@@ -12,16 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import (
-    QWidget, QBoxLayout, QHBoxLayout, QVBoxLayout, QSizePolicy
-)
-from PyQt6.QtCore import (
-    QMargins
-)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
 
-class QBorderLayout(QWidget):
-    def __init__(self):
-        super().__init__()
+class QBorderLayout(QVBoxLayout):
+    """
+    A border layout with top, left, center, right and botton panes that expand
+    according to the natura behavior of a border layout.
+    """
+    def __init__(self, parent=None, spacing=0):
+        super(QBorderLayout, self).__init__(parent)
 
         # Top, left, center, right and bottom widgets.
         self.top = QWidget()
@@ -31,97 +30,69 @@ class QBorderLayout(QWidget):
         self.bottom = QWidget()
 
         # Main layout is a QVBoxLayout.
-        self.mainLayout = QVBoxLayout(self)
-        self.mainLayout.setSpacing(0)
+        self.setSpacing(spacing)
 
         # Add top widget.
-        self.mainLayout.addWidget(self.top)
+        self.addWidget(self.top)
 
         # Center and Left/Right is a QHBoxLayout.
         self.centerLayout = QHBoxLayout()
-        self.centerLayout.setSpacing(0)
+        self.centerLayout.setSpacing(spacing)
         self.centerLayout.addWidget(self.left)
         self.center.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.centerLayout.addWidget(self.center)
         self.centerLayout.addWidget(self.right)
-        self.mainLayout.addLayout(self.centerLayout)
+        self.addLayout(self.centerLayout)
 
         # Bottom
-        self.mainLayout.addWidget(self.bottom)
+        self.addWidget(self.bottom)
 
-    def __replaceWidget(
-        self,
-        layout: QBoxLayout,
-        position: int,
-        oldWidget: QWidget,
-        newWidget: QWidget,
-        horzPolicy: QSizePolicy.Policy,
-        vertPolicy: QSizePolicy.Policy,
-        margins: QMargins = QMargins(0, 0, 0, 0)):
-        if newWidget is None:
-            newWidget = QWidget()
+    def setTop(self, top: QWidget or None):
+        if top is None:
+            top = QWidget()
+        if self.top:
+            self.removeWidget(self.top)
+            self.top.deleteLater()
+        top.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
+        self.insertWidget(0, top)
+        self.top = top
 
-        if oldWidget:
-            layout.removeWidget(oldWidget)
-            oldWidget.deleteLater()
+    def setLeft(self, left: QWidget or None):
+        if left is None:
+            left = QWidget()
+        if self.left:
+            self.centerLayout.removeWidget(self.left)
+            self.left.deleteLater()
+        left.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding))
+        self.centerLayout.insertWidget(0, left)
+        self.left = left
 
-        newWidget.setSizePolicy(horzPolicy, vertPolicy)
+    def setCenter(self, center: QWidget or None):
+        if center is None:
+            center = QWidget()
+        if self.center:
+            self.centerLayout.removeWidget(self.center)
+            self.center.deleteLater()
+        center.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
+        self.centerLayout.insertWidget(1, center)
+        self.center = center
 
-        container = QWidget()
-        containerLayout = QVBoxLayout(container)
-        containerLayout.setContentsMargins(margins)
-        containerLayout.setSpacing(0)
-        containerLayout.addWidget(newWidget)
-        container.setSizePolicy(horzPolicy, vertPolicy)
+    def setRight(self, right: QWidget or None):
+        if right is None:
+            right = QWidget()
+        if self.right:
+            self.centerLayout.removeWidget(self.right)
+            self.right.deleteLater()
+        right.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding))
+        self.centerLayout.insertWidget(2, right)
+        self.right = right
 
-        layout.insertWidget(position, container)
-
-    def setTop(self, top: QWidget or None, margins: QMargins = QMargins(0, 0, 0, 0)):
-        self.__replaceWidget(
-            self.mainLayout,
-            0,
-            self.top,
-            top,
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Preferred,
-            margins)
-
-    def setLeft(self, left: QWidget or None, margins: QMargins = QMargins(0, 0, 0, 0)):
-        self.__replaceWidget(
-            self.centerLayout,
-            0,
-            self.left,
-            left,
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-            margins)
-
-    def setCenter(self, center: QWidget or None, margins: QMargins = QMargins(0, 0, 0, 0)):
-        self.__replaceWidget(
-            self.centerLayout,
-            1,
-            self.center,
-            center,
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Expanding,
-            margins)
-
-    def setRight(self, right: QWidget or None, margins: QMargins = QMargins(0, 0, 0, 0)):
-        self.__replaceWidget(
-            self.centerLayout,
-            2,
-            self.right,
-            right,
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-            margins)
-
-    def setBottom(self, bottom: QWidget or None, margins: QMargins = QMargins(0, 0, 0, 0)):
-        self.__replaceWidget(
-            self.mainLayout,
-            2,
-            self.bottom,
-            bottom,
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Preferred,
-            margins)
+    def setBottom(self, bottom: QWidget or None):
+        if bottom is None:
+            bottom = QWidget()
+        if self.bottom:
+            self.removeWidget(self.bottom)
+            self.bottom.deleteLater()
+        bottom.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
+        self.insertWidget(2, bottom)
+        self.bottom = bottom

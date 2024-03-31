@@ -12,33 +12,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtCore import Qt, QMargins
-from PyQt6.QtWidgets import (
-    QApplication, QPushButton, QLabel, QWidget, QVBoxLayout, QSizePolicy
-)
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow
+from msfx.lib.qt import setWidgetSize
 from msfx.lib.qt.layout import QBorderLayout
-
-def get_widget(widget: QWidget, margins=(0, 0, 0, 0)) -> QWidget:
-    container = QWidget()
-    containerLayout = QVBoxLayout(container)
-    containerLayout.setContentsMargins(*margins)
-    containerLayout.setSpacing(0)
-    containerLayout.addWidget(widget)
-    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-    return container
 
 if __name__ == '__main__':
     app = QApplication([])
-    wnd = QBorderLayout()
-    wnd.setTop(QPushButton("Top"))
-    wnd.setLeft(QPushButton("Left"))
-    wnd.setCenter(QPushButton("Center"))
-    wnd.setRight(QPushButton("Right"))
-    wnd.setBottom(QPushButton("Bottom"))
-    # wnd.setTop(QPushButton("Top"), QMargins(2, 2, 2, 2))
-    # wnd.setLeft(QPushButton("Left"), QMargins(2, 2, 2, 2))
-    # wnd.setCenter(QPushButton("Center"), QMargins(2, 2, 2, 2))
-    # wnd.setRight(QPushButton("Right"), QMargins(2, 2, 2, 2))
-    # wnd.setBottom(QPushButton("Bottom"), QMargins(2, 2, 2, 2))
+    wnd = QMainWindow()
+    widget = QWidget()
+    layout = QBorderLayout(parent=widget)
+    layout.setTop(QPushButton("Top"))
+    layout.setTop(QPushButton("Top after"))
+    layout.setLeft(QPushButton("Left"))
+    layout.setCenter(QPushButton("Center"))
+    layout.setCenter(QPushButton("Center after"))
+    layout.setRight(QPushButton("Right"))
+    layout.setBottom(QPushButton("Bottom"))
+    # widget.setLayout(layout)
+    wnd.setCentralWidget(widget)
+
+    setWidgetSize(wnd, 0.6, 0.6)
     wnd.show()
     app.exec()

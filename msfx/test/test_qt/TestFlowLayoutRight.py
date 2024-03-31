@@ -25,6 +25,7 @@ class QFlowLayout(QLayout):
         self.itemList = []
 
     def addItem(self, item):
+        # self.itemList.insert(0, item)
         self.itemList.append(item)
 
     def sizeHint(self):
@@ -81,7 +82,7 @@ class MainWindow(QWidget):
 
         flowLayout = QFlowLayout()
         for i in range(10):
-            flowLayout.addWidget(QPushButton(f"Button {i + 1}"))
+            flowLayout.addWidget(QPushButton(f"Button {i}"))
         container = QWidget()
         container.setLayout(flowLayout)
         self.layout().addWidget(container)
