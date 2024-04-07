@@ -23,26 +23,17 @@ import sys
 # PyQt6 imports.
 from PyQt6.QtWidgets import (
     QApplication,
-    QFileDialog,
     QMainWindow,
     QStatusBar,
     QTabWidget,
-    QWidget,
-    QTabBar,
-    QPushButton
-)
-from PyQt6.QtGui import (
-    QIcon,
-    QColor
+    QTabBar
 )
 from PyQt6.QtCore import (
     QSize
 )
-
-# msfx imports.
-from msfx.lib.qt import setWidgetSize
-from msfx.lib.qt.console import QConsole
-from msfx.lib.qt.icons import QIconClose, QIconButton
+from msfx.lib.qt import (
+    setWidgetSize, QConsole, QIconClose, QIconButton
+)
 
 class MainWindow(QMainWindow):
     def __init__(self):

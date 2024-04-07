@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QPushButton, QSizePolicy
 from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):

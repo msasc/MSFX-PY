@@ -11,8 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLayout, QVBoxLayout, QSizePolicy
-from PyQt6.QtCore import QRect, QSize, QPoint, Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLayout, QVBoxLayout
+from PyQt6.QtCore import QRect, QSize, QPoint
 
 class QFlowLayout(QLayout):
     # Alignment options

@@ -12,22 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-def params_positional(a, b):
-    print(a)
-    print(b)
-
-def params_var_lenght(*args):
-    for arg in args:
-        print(arg)
-
-def params_kwargs(**kwargs):
-    for key, value in kwargs.items():
-        print(f"key: {key}, value: {value}")
-    print(kwargs["name"])
-    print(kwargs.__contains__("sex"))
-    print(kwargs.__contains__("name"))
-
-if __name__ == "__main__":
-    params_positional(b="World", a="Hello")
-    params_var_lenght("Mucho", "mas")
-    params_kwargs(name="John", age=10, sex="Male")
+class HTML:
+    def __init__(self):
+        pass

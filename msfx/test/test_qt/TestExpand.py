@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QPushButton, QSizePolicy
-from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     def __init__(self):

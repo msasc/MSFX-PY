@@ -28,10 +28,7 @@ import time
 from threading import Thread
 
 from PyQt6.QtCore import (
-    Qt, QTimer
-)
-from PyQt6.QtGui import (
-    QGuiApplication
+    Qt, QTimer, QEvent
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -57,15 +54,20 @@ class TaskTestMonitor(Task):
         sleep = 0.001
         total_work = 10000
         for work_done in range(total_work):
+
             if self.is_cancel_requested():
                 self.set_cancelled()
                 break
+
+            self.check_paused()
+
             if work_done % 10 == 0:
                 message = f"Processing {work_done} of {total_work}"
                 self.track_progress(message, work_done, total_work)
+
             time.sleep(sleep)
 
-        if not self.was_canceled():
+        if not self.has_cancelled():
             message = f"Processing {total_work} of {total_work}"
             self.track_progress(message, total_work, total_work)
 
@@ -74,13 +76,26 @@ class Window(QMainWindow):
         super().__init__()
         self.setWindowTitle("My first window")
 
-        self.__button_start = QPushButton("Start task")
-        self.__button_start.setFixedSize(200, 100)
+        button_width = 150
+        button_height = 80
+
+        self.__button_start = QPushButton("Start")
+        self.__button_start.setFixedSize(button_width, button_height)
         self.__button_start.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
         self.__button_start.clicked.connect(self.button_start_clicked)
 
-        self.__button_cancel = QPushButton("Cancel task")
-        self.__button_cancel.setFixedSize(200, 100)
+        self.__button_pause = QPushButton("Pause")
+        self.__button_pause.setFixedSize(button_width, button_height)
+        self.__button_pause.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        self.__button_pause.clicked.connect(self.button_pause_clicked)
+
+        self.__button_resume = QPushButton("Resume")
+        self.__button_resume.setFixedSize(button_width, button_height)
+        self.__button_resume.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        self.__button_resume.clicked.connect(self.button_resume_clicked)
+
+        self.__button_cancel = QPushButton("Cancel")
+        self.__button_cancel.setFixedSize(button_width, button_height)
         self.__button_cancel.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
         self.__button_cancel.clicked.connect(self.button_cancel_clicked)
 
@@ -88,6 +103,8 @@ class Window(QMainWindow):
         hlayout = QHBoxLayout()
         hlayout.addStretch(1)
         hlayout.addWidget(self.__button_start, alignment=Qt.AlignmentFlag.AlignCenter)
+        hlayout.addWidget(self.__button_pause, alignment=Qt.AlignmentFlag.AlignCenter)
+        hlayout.addWidget(self.__button_resume, alignment=Qt.AlignmentFlag.AlignCenter)
         hlayout.addWidget(self.__button_cancel, alignment=Qt.AlignmentFlag.AlignCenter)
         hlayout.addStretch(1)
         vlayout = QVBoxLayout()
@@ -116,11 +133,17 @@ class Window(QMainWindow):
         self.__monitor: TaskMonitor or None = None
         self.__task: Task or None = None
         self.__timer = QTimer(self)
-        self.__running = False
+
+    def closeEvent(self, event: QEvent):
+        if self.__task and not self.__task.has_finished():
+            event.ignore()
+            return
+        event.accept()
 
     def button_start_clicked(self):
-        if self.__running:
+        if self.__task and not self.__task.has_finished():
             return
+        print("button_start_clicked")
 
         self.__monitor = TaskMonitor()
         self.__timer.timeout.connect(self.timer_exec)
@@ -130,7 +153,14 @@ class Window(QMainWindow):
 
         thread.start()
         self.__timer.start(50)
-        self.__running = True
+
+    def button_pause_clicked(self):
+        if not self.__task.has_finished():
+            self.__task.request_pause()
+
+    def button_resume_clicked(self):
+        if not self.__task.has_finished():
+            self.__task.request_resume()
 
     def button_cancel_clicked(self):
         if self.__task:
@@ -147,13 +177,11 @@ class Window(QMainWindow):
         if progress.has_finished():
             self.__timer.disconnect()
             self.__timer.stop()
-            self.__running = False
 
 
 
 if __name__ == "__main__":
     app = QApplication([])
-    screen = QGuiApplication.primaryScreen()
     window = Window()
     qt.setWidgetSize(window, 0.6, 0.6)
     window.show()

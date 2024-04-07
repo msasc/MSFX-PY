@@ -26,9 +26,9 @@
 
 import sys
 
-from PyQt6.QtGui import QIconEngine, QPainter, QColor, QIcon, QPen, QPainterPath
+from PyQt6.QtGui import QIconEngine, QColor, QIcon, QPen, QPainterPath
 from PyQt6.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
-from PyQt6.QtCore import QRect, QSize, Qt
+from PyQt6.QtCore import QSize
 
 class QIconBase(QIconEngine):
 

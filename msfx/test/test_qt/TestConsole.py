@@ -13,13 +13,12 @@
 #  limitations under the License.
 
 import sys
-from PyQt6 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtWidgets import QVBoxLayout
-from msfx.lib.qt.console import QConsole
+from msfx.lib.qt import QConsole
 
 from msfx.lib import qt
 
-import time
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 class Worker(QObject):

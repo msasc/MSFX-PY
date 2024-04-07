@@ -11,7 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import time
 from abc import ABC, abstractmethod
 from enum import Enum
 from datetime import datetime
@@ -51,6 +51,8 @@ class TaskState(Enum):
     """ Task is ready to start execution. """
     RUNNING = "RUNNING"
     """ Task is running. """
+    PAUSED = "PAUSED"
+    """ Task is paused. """
     SUCCEEDED = "SUCCEEDED"
     """ Task has finishes successfully. """
     CANCELLED = "CANCELLED"
@@ -61,7 +63,7 @@ class TaskState(Enum):
 
 class TaskProgress:
     """
-    Container for the information about the progress oif a task.
+    Container for the information about the progress of a task.
     """
     def __init__(self):
         self.state = None
@@ -129,6 +131,20 @@ class TaskMonitor:
             self.progress.end_time = datetime.now()
             self.progress.exception = Exception("Cancelled")
 
+    def track_paused(self):
+        """
+        Track the pause of the task execution.
+        """
+        with self.lock:
+            self.progress.state = TaskState.PAUSED
+
+    def track_resumed(self):
+        """
+        Track resume task execution.
+        """
+        with self.lock:
+            self.progress.state = TaskState.RUNNING
+
     def track_failed(self, exception: Exception):
         """
         Track the failure of the task execution.
@@ -178,9 +194,16 @@ class TaskMonitor:
         return progress
 
 class Task(ABC):
+    """
+    Root of tasks aimed to be executed in a separate thread.
+    """
     def __init__(self, monitor: TaskMonitor = None):
+        """
+        :param monitor: Optioal TaskMonitor to track progress.
+        """
         self.__monitor = monitor
         self.__cancel_requested = Atomic[bool](False)
+        self.__pause_requested = Atomic[bool](False)
         self.__state = Atomic[TaskState](TaskState.READY)
         self.__exception = Atomic[Exception](None)
 
@@ -193,17 +216,44 @@ class Task(ABC):
     def request_cancel(self):
         self.__cancel_requested.set(True)
 
-    def is_cancel_requested(self):
+    def request_pause(self):
+        self.__pause_requested.set(True)
+
+    def request_resume(self):
+        self.__pause_requested.set(False)
+
+    def is_cancel_requested(self) -> bool:
         return self.__cancel_requested.get()
+
+    def is_pause_requested(self) -> bool:
+        return self.__pause_requested.get()
 
     def set_cancelled(self):
         self.set_state(TaskState.CANCELLED)
 
-    def was_canceled(self) -> bool:
+    def is_running(self) -> bool:
+        return self.__state.get() == TaskState.RUNNING
+
+    def is_paused(self) -> bool:
+        return self.__state.get() == TaskState.PAUSED
+
+    def has_cancelled(self) -> bool:
         return self.__state.get() == TaskState.CANCELLED
 
     def has_succeeded(self) -> bool:
         return self.__state.get() == TaskState.SUCCEEDED
+
+    def has_failed(self) -> bool:
+        return self.__state.get() == TaskState.FAILED
+
+    def has_finished(self) -> bool:
+        if self.__state.get() == TaskState.SUCCEEDED:
+            return True
+        if self.__state.get() == TaskState.CANCELLED:
+            return True
+        if self.__state.get() == TaskState.FAILED:
+            return True
+        return False
 
     def get_state(self) -> TaskState:
         return self.__state.get()
@@ -214,24 +264,43 @@ class Task(ABC):
     def get_exception(self) -> Exception or None:
         return self.__exception.get()
 
+    def check_paused(self):
+        while True:
+            if self.is_pause_requested():
+                self.set_state(TaskState.PAUSED)
+                self.track_paused()
+                time.sleep(0.1)
+            else:
+                self.set_state(TaskState.RUNNING)
+                self.track_resumed()
+                break
+
     def track_started(self):
-        if self.__monitor is not None:
+        if self.__monitor:
             self.__monitor.track_started()
 
     def track_progress(self, message: str = "", work_done: int = 0, total_work: int = -1):
-        if self.__monitor is not None:
+        if self.__monitor:
             self.__monitor.track_progress(message, work_done, total_work)
 
     def track_cancelled(self):
-        if self.__monitor is not None:
+        if self.__monitor:
             self.__monitor.track_cancelled()
 
-    def track_failed(self, exception: Exception):
-        if self.__monitor is not None:
+    def track_paused(self):
+        if self.__monitor:
+            self.__monitor.track_paused()
+
+    def track_resumed(self):
+        if self.__monitor:
+            self.__monitor.track_resumed()
+
+    def track_failed(self):
+        if self.__monitor:
             self.__monitor.track_failed(self.__exception.get())
 
     def track_end(self):
-        if self.__monitor is not None:
+        if self.__monitor:
             self.__monitor.track_end(self.__state.get())
 
     @abstractmethod

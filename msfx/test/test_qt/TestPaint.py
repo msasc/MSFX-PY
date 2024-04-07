@@ -1,8 +1,6 @@
 import sys
-import typing
 
-from PyQt6 import QtCore
-from PyQt6.QtWidgets import *
+from PyQt6.QtWidgets import QMainWindow, QSizePolicy, QVBoxLayout, QLabel, QApplication, QWidget
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 

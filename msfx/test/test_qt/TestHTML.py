@@ -17,16 +17,73 @@ from PyQt6.QtWidgets import QApplication, QTextBrowser
 app = QApplication([])
 textBrowser = QTextBrowser()
 
-html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
-html += '<p>'
-html += '<table style="border: none; border-collapse: collapse;">'
-html += '<tr>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
-html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
-html += '</tr>'
-html += '</table>'
+# html = '<h1>Hello, World!</h1><p>This is <b>rich text</b> format content.'
+# html += '<p>'
+# html += '<table style="border: none; border-collapse: collapse;">'
+# html += '<tr>'
+# html += '<td style="border: 1px solid rgb(180,180,180);">Column 1</td>'
+# html += '<td style="border: 1px solid rgb(180,180,180);">Column 2</td>'
+# html += '</tr>'
+# html += '</table>'
 
-# textBrowser.setHtml(html)
-textBrowser.setPlainText(html)
+html = ''
+# html += '<!DOCTYPE html>'
+# html += '<html>'
+# html += '<head>'
+# html += '<style>'
+# html += 'body {background-color: powderblue;}'
+# html += 'h1 {color: blue;}'
+# html += 'p {color: red;}'
+# html += '</style>'
+# html += '</head>'
+# html += '<body>'
+#
+# html += '<h1>This is a heading</h1>'
+# html += '<p>This is a paragraph.</p>'
+#
+# html += '</body>'
+# html += '</html>'
+
+html += '<!DOCTYPE html>'
+html += '<html>'
+html += '<head>'
+html += '    <title>Class Style Example</title>'
+html += '    <style>'
+html += '        .box {'
+html += '            width: 100px;'
+html += '            height: 100px;'
+html += '            background-color: lightgray;'
+html += '            margin: 10px;'
+html += '            display: inline-block;'
+html += '            line-height: 100px;'
+html += '            text-align: center;'
+html += '        }'
+
+html += '        .highlighted {'
+html += '            background-color: yellow;'
+html += '        }'
+
+html += '        .text {'
+html += '            font-family: Arial, sans-serif;'
+html += '            color: #333;'
+html += '        }'
+
+html += '        .text.highlighted {'
+html += '            color: red;'
+html += '            font-weight: bold;'
+html += '        }'
+html += '    </style>'
+html += '</head>'
+html += '<body>'
+html += '    <div class="box">Box 1</div>'
+html += '    <div class="box highlighted">Box 2 (Highlighted)</div>'
+html += '    <p class="text">This is some text.</p>'
+html += '    <p class="text highlighted">This is some highlighted text.</p>'
+html += '</body>'
+html += '</html>'
+
+
+textBrowser.setHtml(html)
+# textBrowser.setPlainText(html)
 textBrowser.show()
 app.exec()
