@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import sys
 
 from PyQt6.QtWidgets import QApplication, QDialog, QPushButton, QHBoxLayout
 
@@ -39,6 +40,10 @@ class CustomDialog(QDialog):
         btn3 = QPushButton("Option 3")
         btn3.clicked.connect(lambda: self.buttonClicked("Option 3", False))
         layout.addWidget(btn3)
+
+        # Name of the button clicked, returned by the show method when closed,
+        # or accessed by the buttonClikedName method.
+        self.__button_name = ""
 
     def buttonClicked(self, choice: str, accept: bool):
         """Slot to handle button clicks."""

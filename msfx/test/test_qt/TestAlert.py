@@ -31,7 +31,15 @@ class QAlert:
         self.__dialog.setLayout(layout)
         layout.addWidget(widget)
 
+        # List of buttons.
         self.__buttons = []
+
+        # Name of the button clicked, returned by the show method when closed,
+        # or accessed by the buttonClikedName method.
+        self.__button_clicked_name = ""
+
+        # Code, accept or cancel (rejected).
+        self.__dialog_code = None
 
     def addButton(self, **kwargs):
         """
@@ -42,6 +50,7 @@ class QAlert:
             - text (str): Text of the button.
             - icon (QIcon): Optional icon for the button.
             - accept (bool): Whether the button will be an accept button and thus close the dialog settig the result to accept.
+            - cancel (bool): Whether the button will be a cancel button and thus close the dialog settig the result to cancel or reject.
             - button (QPushButton): A button properly configured.
             - action (a function or method): Optional action to be executed.
             - action_kwargs (dict): Optional arguments.
@@ -72,9 +81,16 @@ class QAlert:
             button.setObjectName(name)
 
         # If an accept attribute is set, set it as aproperty.
+        if kwargs.__contains__("accept") and kwargs.__contains__("cancel"):
+            error = "A button can only be accept, cancel or none"
+            raise Exception(error)
+
         if kwargs.__contains__("accept"):
             if isinstance(kwargs["accept"], bool):
                 button.setProperty("accept", kwargs["accept"])
+        if kwargs.__contains__("cancel"):
+            if isinstance(kwargs["cancel"], bool):
+                button.setProperty("cancel", kwargs["cancel"])
 
         # If an action has been passed, with optional arguments, connect it.
         if 'action' in kwargs and callable(kwargs['action']):
@@ -82,10 +98,11 @@ class QAlert:
             action_kwargs = kwargs.get("action_kwargs")
             button.clicked.connect(lambda: action(**action_kwargs))
 
+        # Connect to __buttonClicked to manage actions.
+        button.clicked.connect(lambda: self.__buttonClicked(button))
         self.__buttons.append(button)
 
     def show(self):
-
         # Bottom widget and layout to contain the buttons.
         bottom_widget = QWidget()
         bottom_layout = QHBoxLayout(bottom_widget)
@@ -96,10 +113,28 @@ class QAlert:
             bottom_layout.addWidget(button)
         self.__layout.setBottom(bottom_widget)
 
-        self.__dialog.exec()
+        self.__dialog_code = self.__dialog.exec()
+        return self.__button_clicked_name
+
+    def getButtonClickedName(self):
+        return self.__button_clicked_name
+
+    def wasAccepted(self):
+        return self.__dialog_code == QDialog.DialogCode.Accepted
+
+    def wasCancelled(self):
+        return self.__dialog_code == QDialog.DialogCode.Rejected
 
     def setSize(self, width_factor: float, height_factor: float):
         setWidgetSize(self.__dialog, width_factor, height_factor)
+
+    def __buttonClicked(self, button: QPushButton):
+        self.__button_clicked_name = button.objectName()
+        # Check accept.
+        if button.property("accept"):
+            self.__dialog.accept()
+        if button.property("cancel"):
+            self.__dialog.reject()
 
 def action_button(**kwargs):
     name = kwargs.get("name")
@@ -119,8 +154,10 @@ if __name__ == "__main__":
 
     butt = QPushButton("Button 2")
     butt.setObjectName("B2")
-    alert.addButton(button=butt, action=action_button, action_kwargs={'name': 'Michael', 'age': 50, 'gender': 'male'})
+    alert.addButton(button=butt, accept=True, action=action_button, action_kwargs={'name': 'Michael', 'age': 50, 'gender': 'male'})
 
-    alert.addButton(name="B3", text="Button 3")
+    alert.addButton(name="B3", text="Button 3", cancel=True)
 
-    alert.show()
+    result = alert.show()
+    print(result)
+    print(alert.wasAccepted())
