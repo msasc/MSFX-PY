@@ -21,6 +21,9 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QFrame
 )
+
+import msfx.lib.qt
+import msfx.lib.qt.util
 from msfx.lib import qt
 
 class Worker(QObject):
@@ -119,6 +122,6 @@ if __name__ == "__main__":
     screen = QGuiApplication.primaryScreen()
 
     window = Window()
-    qt.setWidgetSize(window, 0.6, 0.6)
+    msfx.lib.qt.setWidgetSize(window, 0.6, 0.6)
     window.show()
     sys.exit(app.exec())

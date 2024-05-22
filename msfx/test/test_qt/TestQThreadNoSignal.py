@@ -15,6 +15,9 @@
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
+import msfx.lib.qt
+import msfx.lib.qt.util
+
 class Worker(QObject):
     def __init__(self, progressBar: QProgressBar):
         super().__init__(None)
@@ -53,6 +56,6 @@ from msfx.lib import qt
 
 app = QApplication(sys.argv)
 window = MainWindow()
-qt.setWidgetSize(window, 0.4, 0.3)
+msfx.lib.qt.setWidgetSize(window, 0.4, 0.3)
 window.show()
 sys.exit(app.exec())

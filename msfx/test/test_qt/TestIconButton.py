@@ -26,7 +26,7 @@
 
 import sys
 
-from PyQt6.QtGui import QIconEngine, QColor, QIcon, QPen, QPainterPath
+from PyQt6.QtGui import QIconEngine, QColor, QIcon, QPen, QPainterPath, QCursor, QPalette
 from PyQt6.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
 from PyQt6.QtCore import QSize
 
@@ -48,7 +48,6 @@ class QIconBase(QIconEngine):
     def clone(self):
         return QIconBase(self.backgroundColor)
 
-
 class QIconClose(QIconBase):
     def __init__(self, backgroundColor: QColor = None):
         super().__init__(backgroundColor)
@@ -65,49 +64,73 @@ class QIconClose(QIconBase):
         path.lineTo(rect.bottomLeft().x(), rect.bottomLeft().y())
         painter.drawPath(path)
 
-
 class QIconButton(QPushButton):
     def __init__(self, backgroundColor: QColor = None, hoverColor: QColor = None, pressedColor: QColor = None):
         super().__init__()
 
-        self.backgroundColor = backgroundColor
-        self.hoverColor = hoverColor
-        self.pressedColor = pressedColor
+        self.__backgroundColor = backgroundColor
+        self.__hoverColor = hoverColor
+        self.__pressedColor = pressedColor
 
-        if self.backgroundColor is None:
-            self.backgroundColor = QColor(240, 240, 240)
-        if self.hoverColor is None:
-            self.hoverColor = QColor(230, 230, 230)
-        if self.pressedColor is None:
-            self.pressedColor = QColor(220, 215, 215)
+        if self.__backgroundColor is None:
+            self.__backgroundColor = QColor(240, 240, 240)
+        if self.__hoverColor is None:
+            self.__hoverColor = QColor(230, 230, 230)
+        if self.__pressedColor is None:
+            self.__pressedColor = QColor(220, 215, 215)
 
-        style = "QPushButton { background-color: " + self.backgroundColor.name() + "; } "
-        style += "QPushButton:hover { background-color: " + self.hoverColor.name() + "; } "
-        style += "QPushButton:pressed { background-color: " + self.pressedColor.name() + "; }"
+        style = "QPushButton { background-color: " + self.__backgroundColor.name() + "; } "
+        style += "QPushButton:hover { background-color: " + self.__hoverColor.name() + "; } "
+        style += "QPushButton:pressed { background-color: " + self.__pressedColor.name() + "; }"
         self.setStyleSheet(style)
 
-        self.iconBase: QIconBase or None = None
+        self.__iconBase: QIconBase or None = None
+        self.__entered = False
+        self.__pressed = False
+
+    def __updateIconBaseColor(self):
+        color: QColor = self.__backgroundColor
+        if self.__entered:
+            if self.__pressed:
+                color = self.__pressedColor
+            else:
+                color = self.__hoverColor
+        else:
+            color = self.__backgroundColor
+        self.__iconBase.setBackgroundColor(color)
+        self.update()
+
 
     def setIconBase(self, iconBase: QIconBase):
-        self.iconBase = iconBase
-        self.iconBase.setBackgroundColor(self.backgroundColor)
-        self.setIcon(QIcon(self.iconBase))
+        self.__iconBase = iconBase
+        self.__iconBase.setBackgroundColor(self.__backgroundColor)
+        self.setIcon(QIcon(self.__iconBase))
 
     def enterEvent(self, event):
-        self.iconBase.setBackgroundColor(self.hoverColor)
+        self.__entered = True
+        self.__updateIconBaseColor()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.iconBase.setBackgroundColor(self.backgroundColor)
+        self.__entered = False
+        self.__updateIconBaseColor()
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):
-        self.iconBase.setBackgroundColor(self.pressedColor)
+        self.__pressed = True
+        self.__updateIconBaseColor()
         super().mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        self.__entered = self.rect().contains(self.mapFromGlobal(QCursor.pos()))
+        self.__updateIconBaseColor()
+        super().mouseMoveEvent(event)
+
     def mouseReleaseEvent(self, event):
-        self.iconBase.setBackgroundColor(self.hoverColor)
+        self.__pressed = False
+        self.__updateIconBaseColor()
         super().mouseReleaseEvent(event)
+
 
 # Do run the app.
 if __name__ == "__main__":

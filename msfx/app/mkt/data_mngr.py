@@ -32,8 +32,9 @@ from PyQt6.QtCore import (
     QSize
 )
 from msfx.lib.qt import (
-    setWidgetSize, QConsole, QIconClose, QIconButton
+    QIconClose, QIconButton, setWidgetSize
 )
+from msfx.lib.qt.console import QConsole
 
 class MainWindow(QMainWindow):
     def __init__(self):

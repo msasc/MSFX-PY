@@ -15,11 +15,14 @@
 import sys
 from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtWidgets import QVBoxLayout
-from msfx.lib.qt import QConsole
 
+import msfx.lib.qt
+import msfx.lib.qt.util
 from msfx.lib import qt
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
+
+from msfx.lib.qt.console import QConsole
 
 class Worker(QObject):
     progress = pyqtSignal(str)  # Signal to write to the console
@@ -59,7 +62,7 @@ if __name__ == "__main__":
     screen = QtGui.QGuiApplication.primaryScreen()
 
     window = Window()
-    qt.setWidgetSize(window, 0.6, 0.6)
+    msfx.lib.qt.setWidgetSize(window, 0.6, 0.6)
     window.cs.log("Hola mamon")
     window.show()
 

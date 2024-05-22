@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QMainWindow, QSizePolicy, QGridLayout, QApplication
 from PyQt6.QtGui import *
 from PyQt6.QtCore import Qt
 
-from msfx.lib.qt import QCanvas
+from msfx.lib.qt.canvas import QCanvas
 
 class Window(QMainWindow):
     def __init__(self):

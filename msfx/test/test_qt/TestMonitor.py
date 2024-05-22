@@ -42,6 +42,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout
 )
 
+import msfx.lib.qt
+import msfx.lib.qt.util
 from msfx.lib import qt
 from msfx.lib.task import Task, TaskProgress, TaskMonitor
 
@@ -183,6 +185,6 @@ class Window(QMainWindow):
 if __name__ == "__main__":
     app = QApplication([])
     window = Window()
-    qt.setWidgetSize(window, 0.6, 0.6)
+    msfx.lib.qt.setWidgetSize(window, 0.6, 0.6)
     window.show()
     sys.exit(app.exec())
