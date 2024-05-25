@@ -11,11 +11,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import sys
 
 from PyQt6.QtWidgets import (
-    QApplication, QPushButton
+    QApplication, QPushButton, QLabel
 )
 
+from msfx.lib.qt import getBackgroundColor, toRGB
 from msfx.lib.qt.alert import QAlert
 
 def action_button(**kwargs):
@@ -36,13 +38,82 @@ if __name__ == "__main__":
 
     butt = QPushButton("Button 2")
     butt.setObjectName("B2")
-    alert.addButton(button=butt, accept=True, action=action_button,
+    alert.addButton(button=butt, action=action_button,
                     action_kwargs={'name': 'Michael', 'age': 50, 'gender': 'male'})
 
     alert.addButton(name="B3", text="Button 3", cancel=True)
+
+    html = ''
+    html += '<!DOCTYPE html>'
+    html += '<html>'
+    html += '<head>'
+    html += '    <title>Class Style Example</title>'
+    html += '    <style>'
+    html += '        .box {'
+    html += '            width: 100px;'
+    html += '            height: 100px;'
+    html += '            background-color: lightgray;'
+    html += '            margin: 10px;'
+    html += '            display: inline-block;'
+    html += '            line-height: 100px;'
+    html += '            text-align: center;'
+    html += '        }'
+
+    html += '        .highlighted {'
+    html += '            background-color: yellow;'
+    html += '        }'
+
+    # color = getBackgroundColor(QLabel())
+    #
+    # html += '        body {'
+    # html += '            background-color: ' + toRGB(color) + ';'
+    # html += '        }'
+
+    html += '        .text {'
+    html += '            font-family: Arial, sans-serif;'
+    html += '            color: #333;'
+    html += '        }'
+
+    html += '        .text.highlighted {'
+    html += '            color: red;'
+    html += '            font-weight: bold;'
+    html += '        }'
+    html += '    </style>'
+    html += '</head>'
+    html += '<body>'
+    html += '    <div class="box">Box 1</div>'
+    html += '    <div class="box highlighted">Box 2 (Highlighted)</div>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text highlighted">This is some highlighted text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '    <p class="text">This is some text.</p>'
+    html += '</body>'
+    html += '</html>'
+
+    alert.setText(html)
+
+    alert.setTitle("This is a title",
+                   " font-weight: bold; "
+                   " font-size: 24px;"
+                   "font-family: 'Times New Roman', 'Serif';"
+                   "padding-bottom: 10px;"
+                   "qproperty-alignment: 'AlignCenter';")
 
     alert.setTypeWarning()
     result = alert.show()
 
     print(result)
     print(alert.wasAccepted())
+
+    # sys.exit(app.exec())

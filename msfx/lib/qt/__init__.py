@@ -19,7 +19,7 @@ It is a formatting convention in Python that function or member names are in
 lower case with words separated by an underscore. But in this qt module we
 will follow the C++ convention that is used by all names in PyQt.
 """
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QColor
 from PyQt6.QtWidgets import QWidget
 
 def setWidgetSize(widget: QWidget, widthFactor: float, heightFactor: float):
@@ -34,3 +34,20 @@ def setWidgetSize(widget: QWidget, widthFactor: float, heightFactor: float):
     width = screenSize.width() * widthFactor
     height = screenSize.height() * heightFactor
     widget.resize(int(width), int(height))
+
+def getBackgroundColor(widget):
+    palette = widget.palette()
+    color = palette.color(widget.backgroundRole())
+    return color
+
+def setBackgroundColor(widget: QWidget, color: QColor):
+    # Convert QColor to hex string
+    color_name = color.name()
+    # Set the stylesheet to change the background color
+    widget.setStyleSheet(f"background-color: {color_name};")
+
+def toRGB(color):
+    red = color.red()
+    green = color.green()
+    blue = color.blue()
+    return f"rgb({red}, {green}, {blue})"

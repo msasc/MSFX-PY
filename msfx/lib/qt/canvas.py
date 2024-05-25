@@ -21,7 +21,7 @@ class QCanvas(QWidget):
     A canvas class.
     """
     # Define the paint signal.
-    paint_canvas = pyqtSignal(QPaintEvent)
+    paintCanvas = pyqtSignal(QPaintEvent)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -48,4 +48,4 @@ class QCanvas(QWidget):
     def paintEvent(self, event):
         """ Emits the paint signal. """
         super().paintEvent(event)
-        self.paint_canvas.emit(event)
+        self.paintCanvas.emit(event)

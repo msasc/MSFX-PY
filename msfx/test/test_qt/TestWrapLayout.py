@@ -53,7 +53,7 @@ class QFlowLayout(QLayout):
                 spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Horizontal)
                 spaceY = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Vertical)
                 nextX = x + item.sizeHint().width() + spaceX
-                if nextX - spaceX > rect.right() and lineHeight > 0:
+                if nextX - spaceX > rect.__right() and lineHeight > 0:
                     x = rect.x()
                     y = y + lineHeight + spaceY
                     nextX = x + item.sizeHint().width() + spaceX

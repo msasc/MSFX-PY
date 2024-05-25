@@ -50,7 +50,7 @@ class QFlowLayout(QLayout):
         if not self.itemList:
             return
 
-        rightOffset = rect.right()
+        rightOffset = rect.__right()
         currentRowWidth = 0
         currentRowItems = []
         lineHeight = 0
@@ -77,7 +77,7 @@ class QFlowLayout(QLayout):
                         rowItem.setGeometry(QRect(QPoint(rightOffset + xShift, newY), rowItem.sizeHint()))
                     currentRowWidth = 0
                     currentRowItems.clear()
-                    rightOffset = rect.right()
+                    rightOffset = rect.__right()
                 currentRowItems.append((item, currentRowWidth))
                 currentRowWidth += itemWidth
 

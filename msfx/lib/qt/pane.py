@@ -11,4 +11,22 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
+from msfx.lib.qt.layout import QBorderLayout
+
+class QBorderPane(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.__layout = QBorderLayout()
+        self.setLayout(self.__layout)
+    def layout(self) -> QBorderLayout:
+        return self.__layout
+
+class QHBoxPane(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.__layout = QHBoxLayout()
+        self.setLayout(self.__layout)
+    def layout(self) -> QHBoxLayout:
+        return self.__layout

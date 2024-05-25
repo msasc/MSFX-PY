@@ -11,7 +11,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+
+from msfx.lib.qt import getBackgroundColor, setBackgroundColor
 
 
 class QBorderLayout(QVBoxLayout):
@@ -23,77 +26,86 @@ class QBorderLayout(QVBoxLayout):
         super(QBorderLayout, self).__init__(parent)
 
         # Top, left, center, right and bottom widgets.
-        self.top = QWidget()
-        self.left = QWidget()
-        self.center = QWidget()
-        self.right = QWidget()
-        self.bottom = QWidget()
+        self.__top = QWidget()
+        self.__left = QWidget()
+        self.__center = QWidget()
+        self.__right = QWidget()
+        self.__bottom = QWidget()
 
         # Main layout is a QVBoxLayout.
         self.setSpacing(spacing)
 
         # Add top widget.
-        self.addWidget(self.top)
+        self.addWidget(self.__top)
 
         # Center and Left/Right is a QHBoxLayout.
         self.centerLayout = QHBoxLayout()
         self.centerLayout.setSpacing(spacing)
-        self.centerLayout.addWidget(self.left)
-        self.center.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.centerLayout.addWidget(self.center)
-        self.centerLayout.addWidget(self.right)
+        self.centerLayout.addWidget(self.__left)
+        self.__center.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.centerLayout.addWidget(self.__center)
+        self.centerLayout.addWidget(self.__right)
         self.addLayout(self.centerLayout)
 
         # Bottom
-        self.addWidget(self.bottom)
+        self.addWidget(self.__bottom)
 
     def setTop(self, top: QWidget or None):
         if top is None:
             top = QWidget()
-        if self.top:
-            self.removeWidget(self.top)
-            self.top.deleteLater()
+        if self.__top:
+            self.removeWidget(self.__top)
+            self.__top.deleteLater()
         top.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
         self.insertWidget(0, top)
-        self.top = top
+        self.__top = top
 
     def setLeft(self, left: QWidget or None):
         if left is None:
             left = QWidget()
-        if self.left:
-            self.centerLayout.removeWidget(self.left)
-            self.left.deleteLater()
+        if self.__left:
+            self.centerLayout.removeWidget(self.__left)
+            self.__left.deleteLater()
         left.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding))
         self.centerLayout.insertWidget(0, left)
-        self.left = left
+        self.__left = left
 
     def setCenter(self, center: QWidget or None):
         if center is None:
             center = QWidget()
-        if self.center:
-            self.centerLayout.removeWidget(self.center)
-            self.center.deleteLater()
+        if self.__center:
+            self.centerLayout.removeWidget(self.__center)
+            self.__center.deleteLater()
         center.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
         self.centerLayout.insertWidget(1, center)
-        self.center = center
+        self.__center = center
 
     def setRight(self, right: QWidget or None):
         if right is None:
             right = QWidget()
-        if self.right:
-            self.centerLayout.removeWidget(self.right)
-            self.right.deleteLater()
+        if self.__right:
+            self.centerLayout.removeWidget(self.__right)
+            self.__right.deleteLater()
         right.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding))
         self.centerLayout.insertWidget(2, right)
-        self.right = right
+        self.__right = right
 
     def setBottom(self, bottom: QWidget or None):
         if bottom is None:
             bottom = QWidget()
-        if self.bottom:
-            self.removeWidget(self.bottom)
-            self.bottom.deleteLater()
+        if self.__bottom:
+            self.removeWidget(self.__bottom)
+            self.__bottom.deleteLater()
         bottom.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
         self.insertWidget(2, bottom)
-        self.bottom = bottom
+        self.__bottom = bottom
 
+    def setBackgroundColor(self, color: QColor):
+        if color is None:
+            raise Exception("Background color can not be None")
+        color: QColor = getBackgroundColor(QLabel())
+        setBackgroundColor(self.__top, color)
+        setBackgroundColor(self.__left, color)
+        setBackgroundColor(self.__right, color)
+        setBackgroundColor(self.__bottom, color)
+        setBackgroundColor(self.__center, color)

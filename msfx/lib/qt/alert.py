@@ -13,29 +13,27 @@
 #  limitations under the License.
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStyle, QLabel
+from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStyle, QLabel, QTextBrowser
 
 from msfx.lib.qt import setWidgetSize
-from msfx.lib.qt.layout import QBorderLayout
+from msfx.lib.qt.pane import QBorderPane, QHBoxPane
+from msfx.lib.qt.button_list import QPushButtonList
 
 class QAlert:
     def __init__(self):
         self.__dialog = QDialog()
-
-        self.__layout = QBorderLayout()
-        widget = QWidget()
-        widget.setLayout(self.__layout)
+        self.__borderPane = QBorderPane()
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.__borderPane)
         self.__dialog.setLayout(layout)
-        layout.addWidget(widget)
 
         # Type: plain, warning, question, error
         self.__type = "plain"
 
         # List of buttons.
-        self.__buttons = []
+        self.__buttons = QPushButtonList()
 
         # Name of the button clicked, returned by the show method when closed,
         # or accessed by the buttonClikedName method.
@@ -44,66 +42,40 @@ class QAlert:
         # Code, accept or cancel (rejected).
         self.__dialog_code = None
 
+        # Central widget, normally none and will show a text, but can be any widget.
+        self.__central_widget: QWidget or None = None
+
+        # Normal/HTML text to be shown in the center.
+        self.__text = None
+
+        # Normal/HTML text to be shown as the title.
+        self.__title = None
+        self.__title_style = None
+
     def addButton(self, **kwargs):
-        """
-        Adds a button using the following keyword arguments.
+        self.__buttons.addButton(**kwargs)
 
-        parameter kwargs options:
-            - name (str): Name of the button, necessary to retrieve it.
-            - text (str): Text of the button.
-            - icon (QIcon): Optional icon for the button.
-            - accept (bool): Whether the button will be an accept button and thus close the dialog settig the result to accept.
-            - cancel (bool): Whether the button will be a cancel button and thus close the dialog settig the result to cancel or reject.
-            - button (QPushButton): A button properly configured.
-            - action (a function or method): Optional action to be executed.
-            - action_kwargs (dict): Optional arguments.
-        """
-
-        button: QPushButton or None
-
-        if kwargs.__contains__("button"):
-            # The button has been passed as a parameter, must be a QPushButton
-            if not isinstance(kwargs["button"], QPushButton):
-                error = "Button must be a QPushButton"
-                raise Exception(error)
-            button: QPushButton = kwargs["button"]
-            # The button must have a name to be able to retrieve it.
-            if len(button.objectName()) == 0:
-                error = f"Button '{button.text()}' must have a name"
-                raise Exception(error)
-
-        else:
-            # To set a button, at least a name and a text is required.
-            if not kwargs.__contains__("name"):
-                raise Exception("A button must contain a name")
-            name = kwargs["name"]
-            text = ""
-            if kwargs.__contains__("text"):
-                text = kwargs["text"]
-            button: QPushButton = QPushButton(text)
-            button.setObjectName(name)
-
-        # If an accept attribute is set, set it as aproperty.
-        if kwargs.__contains__("accept") and kwargs.__contains__("cancel"):
-            error = "A button can only be accept, cancel or none"
-            raise Exception(error)
-
-        if kwargs.__contains__("accept"):
-            if isinstance(kwargs["accept"], bool):
-                button.setProperty("accept", kwargs["accept"])
-        if kwargs.__contains__("cancel"):
-            if isinstance(kwargs["cancel"], bool):
-                button.setProperty("cancel", kwargs["cancel"])
-
-        # If an action has been passed, with optional arguments, connect it.
-        if 'action' in kwargs and callable(kwargs['action']):
-            action = kwargs.get("action")
-            action_kwargs = kwargs.get("action_kwargs")
-            button.clicked.connect(lambda: action(**action_kwargs))
-
-        # Connect to __buttonClicked to manage actions.
+        # Connect the added button to __buttonClicked to manage actions.
+        button = self.__buttons.getButtons()[len(self.__buttons.getButtons()) - 1]
         button.clicked.connect(lambda: self.__buttonClicked(button))
-        self.__buttons.append(button)
+
+    def setCentralWidget(self, widget: QWidget):
+        self.__central_widget = widget
+        self.__text = None
+
+    def setText(self, text):
+        if text is not None and not isinstance(text, str):
+            raise Exception("Text must be a string")
+        self.__text = text
+        self.__central_widget = None
+
+    def setTitle(self, title, style=None):
+        if title is not None and not isinstance(title, str):
+            raise Exception("Title must be a string")
+        if style is not None and not isinstance(style, str):
+            raise Exception("Style must be a string")
+        self.__title = title
+        self.__title_style = style
 
     def setTypeError(self):
         self.__type = "error"
@@ -121,14 +93,32 @@ class QAlert:
         self.__type = "warning"
 
     def show(self):
-
         size = QPushButton().sizeHint().height()
+        for button in self.__buttons.getButtons():
+            size = max(size, button.sizeHint().height())
+
+        # Top title.
+        if self.__title is not None:
+            titleLabel = QLabel()
+            titleLabel.setText(self.__title)
+            if self.__title_style is not None:
+                titleLabel.setStyleSheet("QLabel { " + self.__title_style + "}")
+            self.__borderPane.layout().setTop(titleLabel)
+
+        # Central widget is a text.
+        if self.__text is not None:
+            textBrowser = QTextBrowser()
+            textBrowser.setHtml(self.__text)
+            self.__borderPane.layout().setCenter(textBrowser)
+
+        # Central widget is any widget.
+        if self.__central_widget is not None:
+            self.__borderPane.layout().setCenter(self.__central_widget)
 
         # Bottom widget and layout to contain the buttons.
-        bottom_widget = QWidget()
-        bottom_layout = QHBoxLayout(bottom_widget)
-        bottom_layout.setSpacing(2)
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_pane = QHBoxPane()
+        bottom_pane.layout().setSpacing(2)
+        bottom_pane.layout().setContentsMargins(0, 5, 0, 0)
 
         icon: QIcon or None = None
         if self.__type == "error":
@@ -141,12 +131,12 @@ class QAlert:
             icon = self.__dialog.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning)
         labelIcon = QLabel()
         labelIcon.setPixmap(icon.pixmap(size, size))
-        bottom_layout.addWidget(labelIcon, 1, Qt.AlignmentFlag.AlignLeft)
+        bottom_pane.layout().addWidget(labelIcon, 1, Qt.AlignmentFlag.AlignLeft)
 
-        bottom_layout.addStretch(1)
-        for button in self.__buttons:
-            bottom_layout.addWidget(button)
-        self.__layout.setBottom(bottom_widget)
+        bottom_pane.layout().addStretch(1)
+        for button in self.__buttons.getButtons():
+            bottom_pane.layout().addWidget(button)
+        self.__borderPane.layout().setBottom(bottom_pane)
 
         self.__dialog_code = self.__dialog.exec()
         return self.__button_clicked_name

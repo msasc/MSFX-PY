@@ -22,7 +22,7 @@ class Window(QMainWindow):
         self.setLayout(layout)
         self.setCentralWidget(self.canvas)
 
-        self.canvas.paint_canvas.connect(self.paintCanvas)
+        self.canvas.paintCanvas.connect(self.paintCanvas)
 
     def paintCanvas(self, event):
         width = self.canvas.width()
