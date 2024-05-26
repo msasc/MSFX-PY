@@ -88,12 +88,12 @@ if __name__ == "__main__":
     html_str = html.to_string()
     print(html_str)
 
-    # alert.setText(html_str)
+    alert.setText(html_str)
 
     canvas = QCanvas()
     canvas.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
     canvas.paintCanvas.connect(paintCanvas)
-    alert.setCentralWidget(canvas)
+    # alert.setCentralWidget(canvas)
 
     alert.setTitle("This is a title",
                    "font-weight: plain;"
