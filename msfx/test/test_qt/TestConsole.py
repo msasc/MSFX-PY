@@ -17,8 +17,6 @@ from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtWidgets import QVBoxLayout
 
 import msfx.lib.qt
-import msfx.lib.qt.util
-from msfx.lib import qt
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
@@ -32,6 +30,7 @@ class Worker(QObject):
         n = 500
         for i in range(n+1):
             # Your time-consuming task here
+            # noinspection PyUnresolvedReferences
             self.progress.emit(f"The number of the loop is {i}")  # Update progress bar
             QThread.msleep(1)  # Simulate a task that takes time
 
@@ -53,7 +52,9 @@ class Window(QtWidgets.QMainWindow):
         self.worker.moveToThread(self.thread)
 
         # Connect signals and slots
+        # noinspection PyUnresolvedReferences
         self.worker.progress.connect(self.cs.log)
+        # noinspection PyUnresolvedReferences
         self.thread.started.connect(self.worker.run)
         self.thread.start()
 

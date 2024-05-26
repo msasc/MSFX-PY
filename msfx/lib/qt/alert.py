@@ -13,11 +13,11 @@
 #  limitations under the License.
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStyle, QLabel, QTextBrowser
+from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QPushButton, QStyle, QLabel, QTextBrowser
 
 from msfx.lib.qt import setWidgetSize
-from msfx.lib.qt.pane import QBorderPane, QHBoxPane
 from msfx.lib.qt.button_list import QPushButtonList
+from msfx.lib.qt.pane import QBorderPane, QHBoxPane
 
 class QAlert:
     def __init__(self):

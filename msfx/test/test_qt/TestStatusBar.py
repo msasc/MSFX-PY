@@ -25,8 +25,6 @@ from PyQt6.QtWidgets import (
 )
 
 import msfx.lib.qt
-import msfx.lib.qt.util
-from msfx.lib import qt
 
 class Worker(QObject):
 
@@ -61,10 +59,15 @@ class Worker(QObject):
         self.status_bar.addPermanentWidget(self.progressBar)  # Add progress bar to the status bar
 
         # Connect signals and slots
+        # noinspection PyUnresolvedReferences
         self.label_text.connect(self.statusLabel.setText)
+        # noinspection PyUnresolvedReferences
         self.label_visible.connect(self.statusLabel.setVisible)
+        # noinspection PyUnresolvedReferences
         self.bar_progress.connect(self.progressBar.setValue)
+        # noinspection PyUnresolvedReferences
         self.bar_visible.connect(self.progressBar.setVisible)
+        # noinspection PyUnresolvedReferences
         self.remove_widget.connect(self.status_bar.removeWidget)
 
         self.statusLabel.setVisible(False)
@@ -74,53 +77,69 @@ class Worker(QObject):
     def run(self):
 
         QThread.msleep(self.pause)
+        # noinspection PyUnresolvedReferences
         self.bar_visible.emit(True)
 
         # Pass 0, only progress bar.
         time_0_start = datetime.datetime.now()
         for i in range(self.loops):
+            # noinspection PyUnresolvedReferences
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(self.sleep)  # Simulate a task that takes time
         time_0_end = datetime.datetime.now()
 
         QThread.msleep(self.pause)
+        # noinspection PyUnresolvedReferences
         self.bar_visible.emit(False)
+        # noinspection PyUnresolvedReferences
         self.label_visible.emit(True)
 
         # Pass 1, only label.
         time_1_start = datetime.datetime.now()
         for i in range(self.loops):
             if i % 10 == 0:
+                # noinspection PyUnresolvedReferences
                 self.label_text.emit(f"Performing iteration {i} of current loop")  # Update progress bar
                 QThread.msleep(self.sleep)  # Simulate a task that takes time
+        # noinspection PyUnresolvedReferences
         self.label_text.emit(f"Performing iteration {self.loops} of current loop")  # Update progress bar
         time_1_end = datetime.datetime.now()
 
         QThread.msleep(self.pause)
+        # noinspection PyUnresolvedReferences
         self.label_visible.emit(False)
 
         QThread.msleep(self.pause)
+        # noinspection PyUnresolvedReferences
         self.label_visible.emit(True)
+        # noinspection PyUnresolvedReferences
         self.bar_visible.emit(True)
 
         # Pass 2, label and progress bar.
         time_2_start = datetime.datetime.now()
         for i in range(self.loops):
+            # noinspection PyUnresolvedReferences
             self.label_text.emit(f"Performing iteration {i+1} of current loop")  # Update progress bar
+            # noinspection PyUnresolvedReferences
             self.bar_progress.emit(i + 1)  # Update progress bar
             QThread.msleep(self.sleep)  # Simulate a task that takes time
         time_2_end = datetime.datetime.now()
 
         QThread.msleep(self.pause)
 
+        # noinspection PyUnresolvedReferences
         self.label_visible.emit(True)
+        # noinspection PyUnresolvedReferences
         self.bar_visible.emit(False)
 
         text = f"{time_0_end-time_0_start}, {time_1_end-time_1_start}, {time_2_end-time_2_start}"
+        # noinspection PyUnresolvedReferences
         self.label_text.emit(text)
         QThread.msleep(self.pause * 40)
 
+        # noinspection PyUnresolvedReferences
         self.remove_widget.emit(self.progressBar)
+        # noinspection PyUnresolvedReferences
         self.remove_widget.emit(self.statusLabel)
 
 class Window(QMainWindow):
@@ -138,6 +157,7 @@ class Window(QMainWindow):
         self.worker.moveToThread(self.thread)
 
         # Start the thread
+        # noinspection PyUnresolvedReferences
         self.thread.started.connect(self.worker.run)
         self.thread.start()
 

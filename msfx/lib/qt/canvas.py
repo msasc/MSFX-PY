@@ -48,4 +48,5 @@ class QCanvas(QWidget):
     def paintEvent(self, event):
         """ Emits the paint signal. """
         super().paintEvent(event)
+        # noinspection PyUnresolvedReferences
         self.paintCanvas.emit(event)

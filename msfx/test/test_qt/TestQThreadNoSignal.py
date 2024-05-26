@@ -12,11 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtCore import QObject, QThread, pyqtSignal
+from PyQt6.QtCore import QObject, QThread
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
 import msfx.lib.qt
-import msfx.lib.qt.util
 
 class Worker(QObject):
     def __init__(self, progressBar: QProgressBar):
@@ -49,10 +48,9 @@ class MainWindow(QMainWindow):
         self.worker.moveToThread(self.thread)
 
         # Start the thread
+        # noinspection PyUnresolvedReferences
         self.thread.started.connect(self.worker.run)
         self.thread.start()
-
-from msfx.lib import qt
 
 app = QApplication(sys.argv)
 window = MainWindow()

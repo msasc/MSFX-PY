@@ -24,6 +24,7 @@ class TimerWindow(QMainWindow):
 
         # QTimer setup
         self.timer = QTimer(self)  # Create a QTimer instance
+        # noinspection PyUnresolvedReferences
         self.timer.timeout.connect(self.update_label)  # Connect the timeout signal to the update_label method
         self.timer.start(100)  # Start the timer with a timeout interval of 1000 milliseconds (1 second)
         self.counter = 0

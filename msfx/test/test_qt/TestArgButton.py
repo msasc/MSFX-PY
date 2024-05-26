@@ -41,8 +41,10 @@ class MyWindow(QMainWindow):
         if 'action' in kwargs and callable(kwargs['action']):
             # If action arguments are provided, use a lambda to pass them
             if 'action_args' in kwargs:
+                # noinspection PyUnresolvedReferences
                 button.clicked.connect(lambda: kwargs['action'](*kwargs['action_args']))
             else:
+                # noinspection PyUnresolvedReferences
                 button.clicked.connect(kwargs['action'])
 
         # Add the button to the layout

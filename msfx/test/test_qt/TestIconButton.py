@@ -26,9 +26,8 @@
 
 import sys
 
-from PyQt6.QtGui import QIconEngine, QColor, QIcon, QPen, QPainterPath, QCursor, QPalette
-from PyQt6.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
 from PyQt6.QtCore import QSize
+from PyQt6.QtWidgets import QApplication, QWidget, QGridLayout
 
 from msfx.lib.qt.icon import QIconClose, QIconButton
 

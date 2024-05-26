@@ -69,6 +69,7 @@ class QPushButtonList:
         if 'action' in kwargs and callable(kwargs['action']):
             action = kwargs.get("action")
             action_kwargs = kwargs.get("action_kwargs")
+            # noinspection PyUnresolvedReferences
             button.clicked.connect(lambda: action(**action_kwargs))
 
         # Set any argument not contained in the list of standard arguments

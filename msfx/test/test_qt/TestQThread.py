@@ -16,7 +16,6 @@ from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
 import msfx.lib.qt
-import msfx.lib.qt.util
 
 class Worker(QObject):
     progress = pyqtSignal(int)  # Signal to update progress bar
@@ -24,6 +23,7 @@ class Worker(QObject):
     def run(self):
         for i in range(1000):
             # Your time-consuming task here
+            # noinspection PyUnresolvedReferences
             self.progress.emit(i+1)  # Update progress bar
             QThread.msleep(1)  # Simulate a task that takes time
 
@@ -45,18 +45,18 @@ class MainWindow(QMainWindow):
         self.worker.moveToThread(self.thread)
 
         # Connect signals and slots
+        # noinspection PyUnresolvedReferences
         self.worker.progress.connect(self.progressBar.setValue)
 
         # self.worker.progress.connect(self.updateProgressBar)
 
         # Start the thread
+        # noinspection PyUnresolvedReferences
         self.thread.started.connect(self.worker.run)
         self.thread.start()
 
     def updateProgressBar(self, value):
         self.progressBar.setValue(value)
-
-from msfx.lib import qt
 
 app = QApplication(sys.argv)
 window = MainWindow()

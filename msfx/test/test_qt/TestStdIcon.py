@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QMessageBox, QStyle
-from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QStyle
 
 # QMessageBox.information(None, "Information", "This is an informational message.")
 # QMessageBox.warning(None, "Warning", "This is a warning message.")

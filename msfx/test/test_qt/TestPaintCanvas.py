@@ -1,10 +1,8 @@
 import sys
-import typing
 
-from PyQt6 import QtCore
-from PyQt6.QtWidgets import QMainWindow, QSizePolicy, QGridLayout, QApplication
-from PyQt6.QtGui import *
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QColor, QPen, QGuiApplication
+from PyQt6.QtWidgets import QMainWindow, QSizePolicy, QGridLayout, QApplication
 
 from msfx.lib.qt.canvas import QCanvas
 
@@ -46,6 +44,7 @@ class Window(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
+    # noinspection PyArgumentList
     screen = QGuiApplication.primaryScreen()
 
     wnd = Window()

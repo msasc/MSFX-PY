@@ -1,10 +1,8 @@
 import sys
-import typing
 
-from PyQt6 import QtCore
-from PyQt6.QtWidgets import QMainWindow, QWidget, QSizePolicy, QGridLayout, QApplication
-from PyQt6.QtGui import QPen, QPainter, QColor, QGuiApplication
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPen, QPainter, QColor, QGuiApplication
+from PyQt6.QtWidgets import QMainWindow, QWidget, QSizePolicy, QGridLayout, QApplication
 
 class QCanvas(QWidget):
     def __init__(self, parent=None):

@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import sys
+
+import msfx.lib.qt.util
 from PyQt6.QtCore import (
     QObject, QThread, pyqtSignal
 )
@@ -19,12 +21,10 @@ from PyQt6.QtGui import (
     QGuiApplication
 )
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QFrame
+    QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar
 )
 
 import msfx.lib.qt
-import msfx.lib.qt.util
-from msfx.lib import qt
 
 class Worker(QObject):
     # Signals to update and set visible or not, the status progress bar

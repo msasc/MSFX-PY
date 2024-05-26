@@ -43,9 +43,8 @@ from PyQt6.QtWidgets import (
 )
 
 import msfx.lib.qt
-import msfx.lib.qt.util
-from msfx.lib import qt
-from msfx.lib.task import Task, TaskProgress, TaskMonitor
+from msfx.lib.task.monitor import TaskProgress, TaskMonitor
+from msfx.lib.task.task import Task
 
 # Define a generic class
 class TaskTestMonitor(Task):
@@ -84,21 +83,25 @@ class Window(QMainWindow):
         self.__button_start = QPushButton("Start")
         self.__button_start.setFixedSize(button_width, button_height)
         self.__button_start.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        # noinspection PyUnresolvedReferences
         self.__button_start.clicked.connect(self.button_start_clicked)
 
         self.__button_pause = QPushButton("Pause")
         self.__button_pause.setFixedSize(button_width, button_height)
         self.__button_pause.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        # noinspection PyUnresolvedReferences
         self.__button_pause.clicked.connect(self.button_pause_clicked)
 
         self.__button_resume = QPushButton("Resume")
         self.__button_resume.setFixedSize(button_width, button_height)
         self.__button_resume.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        # noinspection PyUnresolvedReferences
         self.__button_resume.clicked.connect(self.button_resume_clicked)
 
         self.__button_cancel = QPushButton("Cancel")
         self.__button_cancel.setFixedSize(button_width, button_height)
         self.__button_cancel.setStyleSheet("QPushButton { font-family: Century; font-size: 20pt; }")
+        # noinspection PyUnresolvedReferences
         self.__button_cancel.clicked.connect(self.button_cancel_clicked)
 
         widget = QWidget()
@@ -148,6 +151,7 @@ class Window(QMainWindow):
         print("button_start_clicked")
 
         self.__monitor = TaskMonitor()
+        # noinspection PyUnresolvedReferences
         self.__timer.timeout.connect(self.timer_exec)
 
         self.__task = TaskTestMonitor(self.__monitor)

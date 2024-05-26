@@ -31,10 +31,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import (
     QSize
 )
-from msfx.lib.qt import (
-    QIconClose, QIconButton, setWidgetSize
-)
+
+from msfx.lib.qt import setWidgetSize
 from msfx.lib.qt.console import QConsole
+from msfx.lib.qt.icon import QIconButton, QIconClose
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         # Central widget is a tab pane.
         self.tabPane = QTabWidget()
         self.tabPane.setTabsClosable(True)
+        # noinspection PyUnresolvedReferences
         self.tabPane.tabCloseRequested.connect(self.closeTab)
         self.setCentralWidget(self.tabPane)
 
@@ -69,6 +70,7 @@ class MainWindow(QMainWindow):
             close_button.setFixedSize(QSize(16, 16))
             close_button.setIconSize(QSize(8, 8))
             close_button.setIconBase(QIconClose())
+            # noinspection PyUnresolvedReferences
             close_button.clicked.connect(self.closeTab)
             tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, close_button)
         else:

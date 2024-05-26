@@ -11,7 +11,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import sys
 
 from PyQt6.QtWidgets import QApplication, QDialog, QPushButton, QHBoxLayout
 
@@ -28,16 +27,19 @@ class CustomDialog(QDialog):
 
         # Button 1
         btn1 = QPushButton("Option 1")
+        # noinspection PyUnresolvedReferences
         btn1.clicked.connect(lambda: self.buttonClicked("Option 1", True))
         layout.addWidget(btn1)
 
         # Button 2
         btn2 = QPushButton("Option 2")
+        # noinspection PyUnresolvedReferences
         btn2.clicked.connect(lambda: self.buttonClicked("Option 2", True))
         layout.addWidget(btn2)
 
         # Button 3
         btn3 = QPushButton("Option 3")
+        # noinspection PyUnresolvedReferences
         btn3.clicked.connect(lambda: self.buttonClicked("Option 3", False))
         layout.addWidget(btn3)
 
