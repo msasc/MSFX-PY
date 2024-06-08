@@ -15,7 +15,7 @@
 from decimal import Decimal
 from datetime import date, time, datetime
 
-from msfx.lib.db.json import JSON
+from msfx.lib.util.json import JSON
 from msfx.lib.db.types import Types, TYPES_NULL
 
 class Value:

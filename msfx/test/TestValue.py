@@ -11,7 +11,7 @@
 #  limitations under the License.
 
 from datetime import date, datetime
-from msfx.lib.db.json import JSON
+from msfx.lib.util.json import JSON
 from msfx.lib.db.value import Value
 from msfx.lib.db.types import Types
 

@@ -17,7 +17,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from msfx.lib.db.types import Types, TYPES_LENGTH
 from msfx.lib.db.value import Value
 from msfx.lib.db.order import Order
-from msfx.lib.db.json import JSON
+from msfx.lib.util.json import JSON
 
 class Table: pass
 
