@@ -15,7 +15,10 @@
 """
 Database metadata.
 """
+from typing import List
+
 from msfx.lib.db.types import Types
+from msfx.lib.db.value import Value
 
 class Table: pass
 class View: pass
@@ -93,7 +96,10 @@ class Column:
         self.__data["view"] = view
 
 class Columns:
+    """ An ordered list of columns that be efficiently accessed either by index or alias. """
     def __init__(self):
-        self.__columns = []
-        self.__aliases = []
-        self.__indexes = {}
+        self.__columns = list[Column]
+        self.__aliases = list[str]
+        self.__indexes = dict[str, int]
+        self.__pk_cols = list[Column]
+        self.__default_values = list[Value]
