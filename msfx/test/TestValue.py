@@ -11,9 +11,9 @@
 #  limitations under the License.
 
 from datetime import date, datetime
-from msfx.lib.util.json import JSON
-from msfx.lib.db.value import Value
-from msfx.lib.db.types import Types
+from msfx.lib.db_back.json_back import JSON
+from msfx.lib.db_back.value import Value
+from msfx.lib.db_back.types import Types
 
 js_src: JSON = JSON()
 js_src.data()["name"] = "Miquel Sas"

@@ -11,27 +11,31 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from datetime import date
 from decimal import Decimal
 
-b = bytes([0, 128, 255])
-print(b)
+from msfx.lib.db_back.json_back import JSON
 
-hex_data = b.hex()
-print(hex_data)
-print(bytes.fromhex(hex_data))
+js1 = JSON()
+js1.put_string(key="name", value="Miquel Sas")
+js1.put_integer(key="age", value=66)
+js1.put_date(key="born", value=date.fromisoformat("1958-05-08"))
+js1.put_binary("bin", bytes([0, 4, 8, 16, 32, 64, 128, 255]))
+js1.put_decimal("amount", Decimal("10.750"))
 
-try:
-    print(bytes.fromhex('ffkkk'))
-except Exception:
-    print("Not an hex string")
+print(js1.dumps())
 
-d = Decimal("3.14159265359")
-c = complex(d)
-print(d)
-print(c)
+js2 = JSON()
+js2.put_string(key="name", value="Joan Fabregat")
+js2.put_integer(key="age", value=65)
 
-r = c.real
-x = Decimal(r)
+js1.put_json("json", js2)
+
+print(js1.dumps())
+
+val_js = js1.get_json("json")
+if isinstance(val_js, JSON):
+    print(val_js.dumps())
+
+x = js1.data().get("XX")
 print(x)
-print(int(r))
-

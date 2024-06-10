@@ -13,7 +13,6 @@
 #  limitations under the License.
 import sys
 
-import msfx.lib.qt.util
 from PyQt6.QtCore import (
     QObject, QThread, pyqtSignal
 )

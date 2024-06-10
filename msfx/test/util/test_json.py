@@ -11,30 +11,25 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from datetime import datetime, date
+from datetime import date
 from decimal import Decimal
 
-from msfx.lib.util.json import JSON
+from msfx.lib.util.json import put_string, put_integer, put_date, put_binary, put_decimal, dumps, put_dict
 
-json = JSON()
-json.put_string(key="name", value="Miquel Sas")
-json.put_int(key="age", value=66)
-json.put_date(key="date born", value=date.fromisoformat("1958-05-08"))
-json.put_binary("bin", bytes([0, 4, 8, 16, 32, 64, 128, 255]))
-json.put_decimal("amount", Decimal("10.750"))
+js1 = {}
+put_string(dct=js1, key="name", value="Miquel Sas")
+put_integer(dct=js1, key="age", value=66)
+put_date(dct=js1, key="born", value=date.fromisoformat("1958-05-08"))
+put_binary(dct=js1, key="bin", value=bytes([0, 4, 8, 16, 32, 64, 128, 255]))
+put_decimal(dct=js1, key="amount", value=Decimal("10.750"))
 
-print(json.dumps())
-print(str(json.get_date("date born")))
-print(json.get_int("amount"))
-print(json.get_float("amount"))
-print(json.get_decimal("amount"))
-print(json.get_binary("bin"))
+print(dumps(js1))
 
-print()
+js2 = {}
+put_string(dct=js2, key="name", value="Joan Fabregat")
+put_integer(dct=js2, key="age", value=65)
 
-x = datetime.fromisoformat("1958-05-08T12:30:00")
-print(str(x))
-print(str(x.date()))
-print(str(x.time()))
+print(dumps(js2))
 
-
+put_dict(dct=js1, key="dict", value=js2)
+print(dumps(js1))
