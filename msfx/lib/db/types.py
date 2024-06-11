@@ -15,23 +15,23 @@
 from datetime import date, time, datetime
 from decimal import Decimal
 
-from enum import Enum, EnumMeta
+from enum import Enum, EnumMeta, auto
 
 class Types(Enum, metaclass=EnumMeta):
     """	Supported types. """
 
-    BOOLEAN = 0
-    DECIMAL = 10
-    INTEGER = 11
-    FLOAT = 13
-    COMPLEX = 14
-    DATE = 20
-    TIME = 21
-    DATETIME = 22
-    BINARY = 30
-    STRING = 40
-    LIST = 50
-    DICTIONARY = 60
+    BOOLEAN = auto()
+    DECIMAL = auto()
+    INTEGER = auto()
+    FLOAT = auto()
+    COMPLEX = auto()
+    DATE = auto()
+    TIME = auto()
+    DATETIME = auto()
+    BINARY = auto()
+    STRING = auto()
+    LIST = auto()
+    DICTIONARY = auto()
 
     @staticmethod
     def get_type(value: object):
@@ -61,3 +61,5 @@ class Types(Enum, metaclass=EnumMeta):
     def get_types_length() -> tuple:
         return Types.DECIMAL, Types.STRING, Types.BINARY
 
+    def __str__(self): return self.name
+    def __repr__(self): return self.name

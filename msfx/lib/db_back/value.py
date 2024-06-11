@@ -324,3 +324,4 @@ class Value:
     def __str__(self) -> str:
         if self.is_none(): return ""
         return str(self.__value)
+    def __repr__(self): return self.__str__()

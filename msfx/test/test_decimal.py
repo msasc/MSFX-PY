@@ -11,17 +11,18 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db.meta import Column
-from msfx.lib.db.types import Types
+import decimal
+from decimal import Decimal
 
-f1 = Column()
-f1.set_name("CARTICLE")
-f1.set_type(Types.STRING)
-f1.set_length(20)
+dec = Decimal("3.14159265").quantize(Decimal("0.000"), rounding=decimal.ROUND_HALF_UP)
+print(dec)
+dec = Decimal(0).quantize(Decimal("0.000"), rounding=decimal.ROUND_HALF_UP)
+print(dec)
 
-print(f1.get_name())
-print(f1.get_type())
+dec = Decimal("3.1459265")
 
-f2 = Column(f1)
-print(f2.get_name())
-print(f2.get_type())
+k = 3.458768
+print(round(k, 2))
+
+dec = round(dec, 2)
+print(round(dec, 2))

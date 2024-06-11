@@ -12,43 +12,43 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from enum import Enum, EnumMeta
+from enum import Enum, EnumMeta, auto
 
 class Types(Enum, metaclass=EnumMeta):
     """	Supported types mapped to the underlying SQL databases. """
 
-    BOOLEAN = 0
+    BOOLEAN = auto()
     """ Boolen value. """
 
-    DECIMAL = 10
+    DECIMAL = auto()
     """ A numeric value with fixed number of decimal places. """
-    INTEGER = 11
+    INTEGER = auto()
     """ A numeric integer or long value. """
-    FLOAT = 13
+    FLOAT = auto()
     """ A numeric double (float) value. """
-    COMPLEX = 14
+    COMPLEX = auto()
     """ A numeric complex value. """
 
-    DATE = 20
+    DATE = auto()
     """ A date value with ISO format '2022-12-21' """
-    TIME = 21
+    TIME = auto()
     """ A time value with ISO format '10:25:05.135000000' """
-    DATETIME = 22
+    DATETIME = auto()
     """ A date-time value with ISO format '2022-12-21T10:25:05.135000000' """
 
-    BINARY = 30
+    BINARY = auto()
     """
     A binary value, stored in the underlying database in fields of types
     for instance TINYBLOB, BLOB, MEDIUMBLOB or LONGBLOB depending on the length.
     """
 
-    STRING = 40
+    STRING = auto()
     """
     A string value, stored in the underlying database in fields of types
     for instance VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT or LONGTEXT depending on the length. 
     """
 
-    JSON = 50
+    JSON = auto()
     """
     A JSON object value, stored in the underlying database as a STRING.
     """
