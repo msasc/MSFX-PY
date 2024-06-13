@@ -80,102 +80,155 @@ class Value:
         return self.__type in Types.get_types_numeric()
 
     def get_boolean(self) -> bool:
-        if not self.is_boolean(): raise TypeError("Type is not BOOLEAN")
-        if self.is_none(): return False
+        if not self.is_boolean():
+            raise TypeError("Type is not BOOLEAN")
+        if self.is_none():
+            return False
         return bool(self.__value)
     def get_decimal(self) -> Decimal:
-        if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
-        if self.is_none(): return Decimal(0)
-        if self.is_complex(): return Decimal(self.__value.real)
+        if not self.is_numeric():
+            raise TypeError("Type is not NUMERIC")
+        if self.is_none():
+            return Decimal(0)
+        if self.is_complex():
+            return Decimal(self.__value.real)
         return Decimal(self.__value)
     def get_integer(self) -> int:
-        if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
-        if self.is_none(): return 0
-        if self.is_complex(): return int(self.__value.real)
+        if not self.is_numeric():
+            raise TypeError("Type is not NUMERIC")
+        if self.is_none():
+            return 0
+        if self.is_complex():
+            return int(self.__value.real)
         return int(self.__value)
     def get_float(self) -> float:
-        if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
-        if self.is_none(): return 0.0
-        if self.is_complex(): return float(self.__value.real)
+        if not self.is_numeric():
+            raise TypeError("Type is not NUMERIC")
+        if self.is_none():
+            return 0.0
+        if self.is_complex():
+            return float(self.__value.real)
         return float(self.__value)
     def get_complex(self) -> complex:
-        if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
-        if self.is_none(): return complex(0)
+        if not self.is_numeric():
+            raise TypeError("Type is not NUMERIC")
+        if self.is_none():
+            return complex(0)
         return complex(self.__value)
     def get_date(self) -> date or None:
-        if not self.is_date(): raise TypeError("Type is not DATE.")
-        if self.is_none(): return None
+        if not self.is_date():
+            raise TypeError("Type is not DATE.")
+        if self.is_none():
+            return None
         return self.__value
     def get_time(self) -> time or None:
-        if not self.is_time(): raise TypeError("Type is not TIME.")
-        if self.is_none(): return None
+        if not self.is_time():
+            raise TypeError("Type is not TIME.")
+        if self.is_none():
+            return None
         return self.__value
     def get_datetime(self) -> datetime or None:
-        if not self.is_datetime(): raise TypeError("Type is not DATETIME.")
-        if self.is_none(): return None
+        if not self.is_datetime():
+            raise TypeError("Type is not DATETIME.")
+        if self.is_none():
+            return None
         return self.__value
     def get_binary(self) -> bytes:
-        if not self.is_binary(): raise TypeError("Type is not BINARY.")
-        if self.is_none(): return bytes([])
+        if not self.is_binary():
+            raise TypeError("Type is not BINARY.")
+        if self.is_none():
+            return bytes([])
         return self.__value
     def get_string(self) -> str:
-        if not self.is_string(): raise TypeError("Type is not STRING.")
-        if self.is_none(): return ""
+        if not self.is_string():
+            raise TypeError("Type is not STRING.")
+        if self.is_none():
+            return ""
         return self.__value
     def get_list(self) -> list:
-        if not self.is_list(): raise TypeError("Type is not LIST.")
-        if self.is_none(): return []
+        if not self.is_list():
+            raise TypeError("Type is not LIST.")
+        if self.is_none():
+            return []
         return self.__value
     def get_dictionary(self) -> dict:
-        if not self.is_dictionary(): raise TypeError("Type is not DICTIONARY.")
-        if self.is_none(): return {}
+        if not self.is_dictionary():
+            raise TypeError("Type is not DICTIONARY.")
+        if self.is_none():
+            return {}
         return self.__value
 
     def compare_to(self, other) -> int:
-        if self.__eq__(other): return 0
-        if self.__lt__(other): return -1
+        if self.__eq__(other):
+            return 0
+        if self.__lt__(other):
+            return -1
         return 1
 
     def is_comparable(self, other) -> bool:
         if isinstance(other, Value):
-            if self.is_numeric() and other.is_numeric(): return True
-            if self.__type == other.__type: return True
+            if self.is_numeric() and other.is_numeric():
+                return True
+            if self.__type == other.__type:
+                return True
             return False
-        if self.is_boolean(): return isinstance(other, bool)
-        if self.is_numeric(): return isinstance(other, (int, float, complex, Decimal))
-        if self.is_date(): return isinstance(other, date)
-        if self.is_time(): return isinstance(other, time)
-        if self.is_datetime(): return isinstance(other, datetime)
-        if self.is_binary(): return isinstance(other, bytes)
-        if self.is_string(): return isinstance(other, str)
-        if self.is_list(): return isinstance(other, dict)
-        if self.is_dictionary(): return isinstance(other, dict)
+        if self.is_boolean():
+            return isinstance(other, bool)
+        if self.is_numeric():
+            return isinstance(other, (int, float, complex, Decimal))
+        if self.is_date():
+            return isinstance(other, date)
+        if self.is_time():
+            return isinstance(other, time)
+        if self.is_datetime():
+            return isinstance(other, datetime)
+        if self.is_binary():
+            return isinstance(other, bytes)
+        if self.is_string():
+            return isinstance(other, str)
+        if self.is_list():
+            return isinstance(other, dict)
+        if self.is_dictionary():
+            return isinstance(other, dict)
         return False
 
     def __lt__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value < other.__value
-        if self.is_comparable(other): return self.__value < other
+        if isinstance(other, Value):
+            return self.__value < other.__value
+        if self.is_comparable(other):
+            return self.__value < other
         raise TypeError(f"Not comparable value {other}")
     def __le__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value <= other.__value
-        if self.is_comparable(other): return self.__value <= other
+        if isinstance(other, Value):
+            return self.__value <= other.__value
+        if self.is_comparable(other):
+            return self.__value <= other
         raise TypeError(f"Not comparable value {other}")
     def __eq__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value == other.__value
-        if self.is_comparable(other): return self.__value == other
+        if isinstance(other, Value):
+            return self.__value == other.__value
+        if self.is_comparable(other):
+            return self.__value == other
         raise TypeError(f"Not comparable value {other}")
     def __ne__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value != other.__value
-        if self.is_comparable(other): return self.__value != other
+        if isinstance(other, Value):
+            return self.__value != other.__value
+        if self.is_comparable(other):
+            return self.__value != other
         raise TypeError(f"Not comparable value {other}")
     def __gt__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value > other.__value
-        if self.is_comparable(other): return self.__value > other
+        if isinstance(other, Value):
+            return self.__value > other.__value
+        if self.is_comparable(other):
+            return self.__value > other
         raise TypeError(f"Not comparable value {other}")
     def __ge__(self, other) -> bool:
-        if isinstance(other, Value): return self.__value >= other.__value
-        if self.is_comparable(other): return self.__value >= other
+        if isinstance(other, Value):
+            return self.__value >= other.__value
+        if self.is_comparable(other):
+            return self.__value >= other
         raise TypeError(f"Not comparable value {other}")
     def __str__(self) -> str:
-        if self.is_none(): return ""
+        if self.is_none():
+            return ""
         return str(self.__value)

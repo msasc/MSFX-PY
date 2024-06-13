@@ -28,9 +28,26 @@ class View: pass
 
 class Column:
     """ A column of a table or view. """
-    def __init__(self, column=None):
+    KEYS = {
+        "name": str,
+        "alias": str,
+        "type": Types,
+        "length": int,
+        "decimals": int,
+        "primary_key": bool,
+        "header": str,
+        "label": str,
+        "decription": str
+    }
+    def __init__(self, column=None, **kwargs):
         self.__data = {}
-        if isinstance(column, Column): self.__data |= column.__data
+        if isinstance(column, Column):
+            self.__data |= column.__data
+        else:
+            for key, type in Column.KEYS.items():
+                value = kwargs.get(key)
+                if isinstance(value, type):
+                    self.__data[key] = value
 
     def get_name(self) -> str:
         name = self.__data.get("name")
@@ -116,14 +133,17 @@ class Column:
     def set_view(self, view: View):
         self.__data["view"] = view
 
+    def data(self) -> dict: return dict(self.__data)
+
     def __str__(self) -> str:
-        name = self.get_name()
-        type = self.get_type()
-        length = self.get_length()
-        decimals = self.get_decimals()
-        result = f"[name={name}, type={type}"
-        if length > 0: result += f", length={length}"
-        if decimals >= 0: result += f", decs={decimals}"
+        result = "["
+        comma = False
+        for key in Column.KEYS:
+            value = self.__data.get(key)
+            if value is not None:
+                if comma: result += ", "
+                result += f"{key}={value}"
+                comma = True
         result += "]"
         return result
 
@@ -159,12 +179,17 @@ class Columns:
 
     def get_column_by_alias(self, alias: str) -> Column or None:
         index = self.index_of_column(alias)
-        return None if index < 0 else self.__columns[index]
+        if index < 0:
+            raise ValueError(f"Invalid alias {alias}")
+        return self.__columns[index]
 
     def get_column_by_index(self, index: int) -> Column or None:
-        if not isinstance(index, int): raise ValueError(f"Index must be of type int, not {type(index)}")
-        if index < 0: raise ValueError(f"Index must be >= 0, not {index}")
-        if index >= len(self.__columns): raise ValueError(f"Index must be <= len(self.__columns)")
+        if not isinstance(index, int):
+            raise ValueError(f"Index must be of type int, not {type(index)}")
+        if index < 0:
+            raise ValueError(f"Index must be >= 0, not {index}")
+        if index >= len(self.__columns):
+            raise ValueError(f"Index must be <= len(self.__columns)")
         return self.__columns[index]
 
     def get_columns(self) -> tuple[Column, ...]:
@@ -194,9 +219,12 @@ class Columns:
                 self.__pk_columns.append(column)
             self.__default_values.append(column.get_default_value())
 
-    def __iter__(self): return self.__columns.__iter__()
-    def __len__(self) -> int: return len(self.__columns)
-    def __getitem__(self, index: int) -> Column: return self.get_column_by_index(index)
+    def __iter__(self):
+        return self.__columns.__iter__()
+    def __len__(self) -> int:
+        return len(self.__columns)
+    def __getitem__(self, index: int) -> Column:
+        return self.get_column_by_index(index)
 
 class Relation:
     """ A relation beween two tables. """
@@ -206,18 +234,110 @@ class Relation:
 
     def get_local_table(self) -> Table or None:
         table = self.__data.get("local_table")
-        if isinstance(table, Table): return table
+        if isinstance(table, Table):
+            return table
         return None
+
     def get_foreign_table(self) -> Table or None:
         table = self.__data.get("foreign_table")
-        if isinstance(table, Table): return table
+        if isinstance(table, Table):
+            return table
         return None
+
+class Order:
+    """ Order definition. """
+    def __init__(self, order=None):
+        self.__segments: list[tuple[Column, bool]] = []
+        if isinstance(order, Order):
+            self.__segments += order.__segments
+
+    def append(self, column: Column, asc: bool = True):
+        if not isinstance(column, Column):
+            raise ValueError("Column must be of type Column")
+        self.__segments.append((Column(column), asc))
+
+    def __iter__(self):
+        return self.__segments.__iter__()
+    def __len__(self) -> int:
+        return len(self.__segments)
+
+    def __getitem__(self, index: int) -> tuple[Column, bool] or None:
+        if not isinstance(index, int):
+            raise ValueError("Index must be of type int")
+        if 0 <= index < len(self):
+            return self.__segments[index]
+        return None
+
+    def __str__(self) -> str: return str(self.__segments)
+
+class Index:
+    """ Index definition. """
+    def __init__(self, index=None):
+        self.__table: Table or None = None
+        if isinstance(index, Index):
+            self.__table = index.__table
+
+    def get_table(self) -> Table or None:
+        return self.__table
+    def set_table(self, table: Table):
+        if not isinstance(table, Table):
+            raise ValueError(f"Table must be of type {Table}")
+        self.__table = table
 
 # noinspection PyRedeclaration
 class Table:
+    """ A meta definition of a table. """
     def __init__(self, table=None):
-        self.__data = {"columns": Columns()}
-        if isinstance(table, Table): self.__data |= table.__data
+        self.__data = {"columns": Columns(), "indexes": []}
+        if isinstance(table, Table):
+            self.__data |= table.__data
 
     def add_column(self, column: Column, alias: (str, None) = None):
         self.__data["columns"].add_column(column, alias)
+
+    def get_column(self, key: (str, int)) -> Column or None:
+        if not isinstance(key, (str, int)):
+            raise ValueError("Key must be of type str or int")
+        if isinstance(key, str):
+            return self.__data["columns"].get_column_by_alias(key)
+        if isinstance(key, int):
+            return self.__data["columns"].get_column_by_index(key)
+        return None
+
+    def get_column_count(self) -> int:
+        return len(self.__data["columns"])
+
+    def add_index(self, index: Index):
+        if not isinstance(index, Index):
+            raise ValueError(f"Index must be of type {Index}")
+        index.set_table(self)
+        self.__data["indexes"].append(index)
+
+    def get_index(self, index: int) -> Index:
+        if not isinstance(index, int):
+            raise ValueError(f"Index must be of type {int}")
+        if index < 0 or index >= len(self.__data["indexes"]):
+            raise ValueError(f"Index out of range")
+        return self.__data["indexes"][index]
+
+    def get_index_count(self):
+        return len(self.__data["indexes"])
+
+    def get_name(self) -> str:
+        name = self.__data.get("name")
+        return name if isinstance(name, str) else ""
+    def set_name(self, name: str):
+        self.__data["name"] = name
+
+    def get_alias(self) -> str:
+        alias = self.__data.get("alias")
+        return alias if isinstance(alias, str) else self.get_name()
+    def set_alias(self, alias: str):
+        self.__data["alias"] = alias
+
+    def get_schema(self) -> str:
+        schema = self.__data.get("schema")
+        return schema if isinstance(schema, str) else ""
+    def set_schema(self, schema: str):
+        self.__data["schema"] = schema
+
