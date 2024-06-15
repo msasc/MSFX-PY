@@ -18,6 +18,7 @@ from typing import List, Optional
 from msfx.lib.db.types import Types
 from msfx.lib.util.generics import SCHEMA_TYPE, SCHEMA_DEFAULT
 
+class Column: pass
 class Value: pass
 class Table: pass
 class View: pass
@@ -64,4 +65,15 @@ COLUMNLIST_SCHEMA = {
     COLUMNLIST_INDEXES: {SCHEMA_TYPE: dict, SCHEMA_DEFAULT: {}},
     COLUMNLIST_PK_COLUMNS: {SCHEMA_TYPE: list, SCHEMA_DEFAULT: []},
     COLUMNLIST_DEFAULT_VALUES: {SCHEMA_TYPE: list, SCHEMA_DEFAULT: []}
+}
+
+""" Order schema keys and default values. """
+ORDER_SEGMENTS = "segments"
+ORDER_COLUMN = "column"
+ORDER_ASC = "asc"
+
+ORDER_SCHEMA = {
+    ORDER_SEGMENTS: {SCHEMA_TYPE: list, SCHEMA_DEFAULT: []},
+    ORDER_COLUMN: {SCHEMA_TYPE: Column, SCHEMA_DEFAULT: None},
+    ORDER_ASC: {SCHEMA_TYPE: bool, SCHEMA_DEFAULT: True},
 }

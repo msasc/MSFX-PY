@@ -26,10 +26,8 @@ column_2 = Column()
 column_2.set_name("QSALES")
 column_2.set_type(Types.DECIMAL)
 column_2.set_decimals(2)
+column_2.set_primary_key(True)
 print(column_2)
 
 column_3 = Column(name="CCOMPANY", type=Types.STRING, length=20, header="Company")
 print(column_3)
-
-column_data = loads(dumps(column_3.data()))
-print(column_data)
