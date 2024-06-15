@@ -20,6 +20,7 @@ from enum import Enum, EnumMeta, auto
 class Types(Enum, metaclass=EnumMeta):
     """	Supported types. """
 
+    NONE = auto()
     BOOLEAN = auto()
     DECIMAL = auto()
     INTEGER = auto()

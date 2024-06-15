@@ -17,7 +17,6 @@ Packs global utility functions on numbers, dates, times, strings.
 If the number of functions increases too much, this file will be
 splited into category files per subject.
 """
-import decimal
 from _decimal import Decimal
 from datetime import datetime
 
@@ -94,3 +93,4 @@ def is_numeric(value) -> bool:
 def list_get(lst, index, default=None):
     try: return lst[index]
     except IndexError: return default
+

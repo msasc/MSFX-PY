@@ -17,91 +17,72 @@ Database metadata.
 """
 import decimal
 from decimal import Decimal
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Union, Type, Any
 
+from msfx.lib.db.meta_shema import (
+    COLUMN_SCHEMA,
+    COLUMN_NAME, COLUMN_ALIAS,
+    COLUMN_TYPE, COLUMN_LENGTH, COLUMN_DECIMALS,
+    COLUMN_PRIMARY_KEY,
+    COLUMN_HEADER, COLUMN_LABEL, COLUMN_DESCRIPTION,
+    COLUMN_TABLE, COLUMN_VIEW,
+    Table, View
+)
 from msfx.lib.db.types import Types
 from msfx.lib.db.value import Value
-from msfx.lib.util.globals import list_get
-
-class Table: pass
-class View: pass
+from msfx.lib.util.generics import dict_create, dict_set_value, dict_get_value
 
 class Column:
     """ A column of a table or view. """
-    KEYS = {
-        "name": str,
-        "alias": str,
-        "type": Types,
-        "length": int,
-        "decimals": int,
-        "primary_key": bool,
-        "header": str,
-        "label": str,
-        "decription": str
-    }
     def __init__(self, column=None, **kwargs):
         self.__data = {}
         if isinstance(column, Column):
             self.__data |= column.__data
-        else:
-            for key, type in Column.KEYS.items():
-                value = kwargs.get(key)
-                if isinstance(value, type):
-                    self.__data[key] = value
 
     def get_name(self) -> str:
-        name = self.__data.get("name")
-        return name if isinstance(name, str) else ""
+        return dict_get_value(self.__data, COLUMN_NAME, COLUMN_SCHEMA)
     def set_name(self, name: str):
-        self.__data["name"] = name
+        dict_set_value(self.__data, COLUMN_NAME, name, str)
 
     def get_alias(self) -> str:
-        alias = self.__data.get("alias")
-        return alias if isinstance(alias, str) else self.get_name()
+        return dict_get_value(self.__data, COLUMN_ALIAS, COLUMN_SCHEMA)
     def set_alias(self, alias: str):
-        self.__data["alias"] = alias
+        dict_set_value(self.__data, COLUMN_ALIAS, alias, str)
 
     def get_type(self) -> Types:
-        type = self.__data.get("type")
-        return type if isinstance(type, Types) else None
+        return dict_get_value(self.__data, COLUMN_TYPE, COLUMN_SCHEMA)
     def set_type(self, type: Types):
-        self.__data["type"] = type
+        dict_set_value(self.__data, COLUMN_TYPE, type, Types)
 
     def get_length(self) -> int:
-        length = self.__data.get("length")
-        return length if isinstance(length, int) else -1
+        return dict_get_value(self.__data, COLUMN_LENGTH, COLUMN_SCHEMA)
     def set_length(self, length: int):
-        self.__data["length"] = length
+        dict_set_value(self.__data, COLUMN_LENGTH, length, int)
 
     def get_decimals(self) -> int:
-        decimals = self.__data.get("decimals")
-        return decimals if isinstance(decimals, int) else -1
+        return dict_get_value(self.__data, COLUMN_DECIMALS, COLUMN_SCHEMA)
     def set_decimals(self, decimals: int):
-        self.__data["decimals"] = decimals
+        dict_set_value(self.__data, COLUMN_DECIMALS, decimals, int)
 
     def is_primary_key(self) -> bool:
-        primary_key = self.__data.get("primary_key")
-        return primary_key if isinstance(primary_key, bool) else False
+        return dict_get_value(self.__data, COLUMN_PRIMARY_KEY, COLUMN_SCHEMA)
     def set_primary_key(self, primary_key: bool):
-        self.__data["primary_key"] = primary_key
+        dict_set_value(self.__data, COLUMN_PRIMARY_KEY, primary_key, int)
 
     def get_header(self) -> str:
-        header = self.__data.get("header")
-        return header if isinstance(header, str) else ""
+        return dict_get_value(self.__data, COLUMN_HEADER, COLUMN_SCHEMA)
     def set_header(self, header: str):
-        self.__data["header"] = header
+        dict_set_value(self.__data, COLUMN_HEADER, header, int)
 
     def get_label(self) -> str:
-        label = self.__data.get("label")
-        return label if isinstance(label, str) else ""
+        return dict_get_value(self.__data, COLUMN_LABEL, COLUMN_SCHEMA)
     def set_label(self, label: str):
-        self.__data["label"] = label
+        dict_set_value(self.__data, COLUMN_LABEL, label, int)
 
     def get_description(self) -> str:
-        description = self.__data.get("description")
-        return description if isinstance(description, str) else ""
+        return dict_get_value(self.__data, COLUMN_DESCRIPTION, COLUMN_SCHEMA)
     def set_description(self, description: str):
-        self.__data["description"] = description
+        dict_set_value(self.__data, COLUMN_DESCRIPTION, description, int)
 
     def get_default_value(self) -> Value or None:
         type: Types = self.get_type()
@@ -122,23 +103,21 @@ class Column:
         if type == Types.DICTIONARY: return Value(dict({}))
 
     def get_table(self) -> Table:
-        table = self.__data.get("table")
-        return table if isinstance(table, Table) else None
+        return self.__data.get(COLUMN_TABLE)
     def set_table(self, table: Table):
-        self.__data["table"] = table
+        dict_set_value(self.__data, COLUMN_TABLE, table, Table)
 
     def get_view(self) -> View:
-        view = self.__data.get("view")
-        return view if isinstance(view, View) else None
+        return self.__data.get(COLUMN_VIEW)
     def set_view(self, view: View):
-        self.__data["view"] = view
+        dict_set_value(self.__data, COLUMN_VIEW, view, View)
 
     def data(self) -> dict: return dict(self.__data)
 
     def __str__(self) -> str:
         result = "["
         comma = False
-        for key in Column.KEYS:
+        for key in COLUMN_SCHEMA:
             value = self.__data.get(key)
             if value is not None:
                 if comma: result += ", "
@@ -270,12 +249,25 @@ class Order:
 
     def __str__(self) -> str: return str(self.__segments)
 
-class Index:
+class Index(Order):
     """ Index definition. """
     def __init__(self, index=None):
+        super().__init__(self, index)
         self.__table: Table or None = None
+        self.__primary_key: bool = False
         if isinstance(index, Index):
             self.__table = index.__table
+            self.__primary_key = index.__primary_key
+
+    def append(self, column: str or Column, asc: bool = True):
+        if isinstance(column, Column):
+            super().append(column, asc)
+            return
+        if isinstance(column, str):
+            if self.__table is None:
+                raise ValueError("Table must be set before appending using a column alias")
+            column = self.__table.get_column(column)
+            super().append(column, asc)
 
     def get_table(self) -> Table or None:
         return self.__table
@@ -293,6 +285,7 @@ class Table:
             self.__data |= table.__data
 
     def add_column(self, column: Column, alias: (str, None) = None):
+        column.set_table(self)
         self.__data["columns"].add_column(column, alias)
 
     def get_column(self, key: (str, int)) -> Column or None:
@@ -340,4 +333,3 @@ class Table:
         return schema if isinstance(schema, str) else ""
     def set_schema(self, schema: str):
         self.__data["schema"] = schema
-
