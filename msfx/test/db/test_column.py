@@ -11,29 +11,25 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db.meta import Column
+
+from msfx.lib.db.column import Column
 from msfx.lib.db.types import Types
+from msfx.lib.util.json import loads, dumps
 
-c1 = Column()
-c1.set_name("CARTICLE")
-c1.set_type(Types.STRING)
-c1.set_length(20)
+column_1 = Column()
+column_1.set_name("CARTICLE")
+column_1.set_type(Types.STRING)
+column_1.set_length(20)
+print(column_1)
 
-print(c1.get_name())
-print(c1.get_type())
+column_2 = Column()
+column_2.set_name("QSALES")
+column_2.set_type(Types.DECIMAL)
+column_2.set_decimals(2)
+print(column_2)
 
-f2 = Column()
-f2.set_name("QSALES")
-f2.set_type(Types.DECIMAL)
-f2.set_decimals(2)
+column_3 = Column(name="CCOMPANY", type=Types.STRING, length=20, header="Company")
+print(column_3)
 
-v2 = f2.get_default_value()
-print(f2.get_name())
-print(f2.get_type())
-print(v2)
-
-f3 = Column()
-f3.set_name("LIST")
-f3.set_type(Types.LIST)
-v3 = f3.get_default_value()
-print(v3)
+column_data = loads(dumps(column_3.data()))
+print(column_data)

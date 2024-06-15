@@ -1,6 +1,6 @@
 from typing import Dict, Any, Union
 
-from msfx.lib.db.types import Types
+from msfx.lib.db_back.types import Types
 
 # Example schema with default values
 COLUMN_KEYS: Dict[str, Union[str, Types, int, bool]] = {

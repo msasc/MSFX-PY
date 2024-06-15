@@ -13,27 +13,23 @@
 #  limitations under the License.
 from typing import Dict, Union
 
-from msfx.lib.db.meta_shema import COLUMN_SCHEMA
+from msfx.lib.db.schema import COLUMN_SCHEMA, COLUMN_NAME
 from msfx.lib.db.types import Types
-from msfx.lib.util.generics import dict_create, dict_validate, dict_get_value
+from msfx.lib.util.generics import dict_create_default, dict_create_args, dict_validate, dict_get_value
 
-column = dict_create(COLUMN_SCHEMA)
-print(column)
+column_data = dict_create_default(COLUMN_SCHEMA)
+print(column_data)
 
 try:
-    dict_validate(column, COLUMN_SCHEMA)
-    print("Column is valid")
+    dict_validate(column_data, COLUMN_SCHEMA)
+    print("column data is valid")
     dict_validate({}, COLUMN_SCHEMA, True)
     print("Empty dict valid")
 except (KeyError, TypeError) as e:
     print(e)
 
-SCHEMA: Dict[str, Union[str, int, bool]] = {
-    "name": "Roger Moore",
-    "alias": "Bond",
-    "age": 40,
-    "agent": True
-}
+value = dict_get_value({}, COLUMN_NAME, COLUMN_SCHEMA)
+print(value)
 
-print(dict_get_value({}, "name", SCHEMA))
-print(dict_get_value({}, "alias", SCHEMA))
+column_data = dict_create_args(COLUMN_SCHEMA, name="CARTICLE", type=Types.STRING)
+print(column_data)

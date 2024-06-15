@@ -11,9 +11,21 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 from typing import Dict, Union, List
 
-from msfx.lib.db.types import Types
+from msfx.lib.db_back.types import Types
 
 class Column: pass
 class Table: pass
@@ -50,12 +62,12 @@ COLUMN_SCHEMA: Dict[str, Union[str, Types, int, bool]] = {
 
 """ List of columns schema keys and default values. """
 
-COLUMNS_COLUMNS = "columns"
-COLUMNS_ALIASES = "aliases"
-COLUMNS_INDEXES = "indexes"
+COLUMNLIST_COLUMNS = "columns"
+COLUMNLIST_ALIASES = "aliases"
+COLUMNLIST_INDEXES = "indexes"
 
-COLUMNS_SCHEMA: Dict[str, Union[List[str], Dict[str, int]]] = {
-    COLUMNS_COLUMNS: [],
-    COLUMNS_ALIASES: [],
-    COLUMNS_INDEXES: {}
+COLUMNLIST_SCHEMA = {
+    COLUMNLIST_COLUMNS: {},
+    COLUMNLIST_ALIASES: [],
+    COLUMNLIST_INDEXES: {}
 }

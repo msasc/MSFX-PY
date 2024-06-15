@@ -17,7 +17,7 @@ from multiprocessing import Value, Process
 def increment(counter):
     for _ in range(10000):
         with counter.get_lock():
-            counter.value += 1
+            counter.get_value += 1
 
 if __name__ == '__main__':
     counter = Value('i', 0)  # 'i' indicates a signed int
@@ -28,4 +28,4 @@ if __name__ == '__main__':
     for p in processes:
         p.join()
 
-    print(f"Counter value: {counter.value}")
+    print(f"Counter value: {counter.get_value}")

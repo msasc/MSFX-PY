@@ -11,15 +11,25 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
 """
 Database metadata.
 """
-import decimal
 from decimal import Decimal
-from typing import List, Tuple, Dict, Union, Type, Any
 
-from msfx.lib.db.meta_shema import (
+from msfx.lib.db_back.meta_shema import (
     COLUMN_SCHEMA,
     COLUMN_NAME, COLUMN_ALIAS,
     COLUMN_TYPE, COLUMN_LENGTH, COLUMN_DECIMALS,
@@ -28,9 +38,9 @@ from msfx.lib.db.meta_shema import (
     COLUMN_TABLE, COLUMN_VIEW,
     Table, View
 )
-from msfx.lib.db.types import Types
-from msfx.lib.db.value import Value
-from msfx.lib.util.generics import dict_create, dict_set_value, dict_get_value
+from msfx.lib.db_back.types import Types
+from msfx.lib.db_back.value import Value
+from msfx.lib.util.generics import dict_set_value, dict_get_value
 
 class Column:
     """ A column of a table or view. """

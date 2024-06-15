@@ -24,8 +24,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib.db.meta import Column, Order
-from msfx.lib.db.types import Types
+from msfx.lib.db_back.meta import Column, Order
+from msfx.lib.db_back.types import Types
 
 order = Order()
 

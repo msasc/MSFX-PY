@@ -175,7 +175,7 @@ class Window(QMainWindow):
     def timer_exec(self):
         progress: TaskProgress = self.__monitor.get_progress()
         self.__label_message.setText(progress.message)
-        self.__label_state.setText(progress.state.value)
+        self.__label_state.setText(progress.state.get_value)
 
         value = int(100 * progress.work_done / progress.total_work)
         self.__progress_bar.setValue(value)

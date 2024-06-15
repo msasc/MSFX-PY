@@ -32,7 +32,9 @@ def __serializer(obj):
         return {"_dec_": str(obj)}
     elif isinstance(obj, (bytes, bytearray)):
         return {"_bin_": obj.hex()}
-    raise TypeError(f"Type {type(obj)} not serializable")
+    else:
+        return obj.__repr__()
+    # raise TypeError(f"Type {type(obj)} not serializable")
 
 def __deserializer(dct):
     if "_date_" in dct:

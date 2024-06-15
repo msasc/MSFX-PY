@@ -1,4 +1,16 @@
-#  Copyright (c) 2023 Miquel Sas.
+#  Copyright (c) 2024 Miquel Sas.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -12,46 +24,57 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from datetime import date, time, datetime
+from decimal import Decimal
+
 from enum import Enum, EnumMeta, auto
 
+from msfx.lib.db.types import Types
+
 class Types(Enum, metaclass=EnumMeta):
-    """	Supported types mapped to the underlying SQL databases. """
+    """	Supported types. """
 
+    NONE = auto()
     BOOLEAN = auto()
-    """ Boolen value. """
-
     DECIMAL = auto()
-    """ A numeric value with fixed number of decimal places. """
     INTEGER = auto()
-    """ A numeric integer or long value. """
     FLOAT = auto()
-    """ A numeric double (float) value. """
     COMPLEX = auto()
-    """ A numeric complex value. """
-
     DATE = auto()
-    """ A date value with ISO format '2022-12-21' """
     TIME = auto()
-    """ A time value with ISO format '10:25:05.135000000' """
     DATETIME = auto()
-    """ A date-time value with ISO format '2022-12-21T10:25:05.135000000' """
-
     BINARY = auto()
-    """
-    A binary value, stored in the underlying database in fields of types
-    for instance TINYBLOB, BLOB, MEDIUMBLOB or LONGBLOB depending on the length.
-    """
-
     STRING = auto()
-    """
-    A string value, stored in the underlying database in fields of types
-    for instance VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT or LONGTEXT depending on the length. 
-    """
+    LIST = auto()
+    DICTIONARY = auto()
 
-    JSON = auto()
-    """
-    A JSON object value, stored in the underlying database as a STRING.
-    """
+    @staticmethod
+    def get_type(value: object):
+        if isinstance(value, bool): return Types.BOOLEAN
+        if isinstance(value, Decimal): return Types.DECIMAL
+        if isinstance(value, int): return Types.INTEGER
+        if isinstance(value, float): return Types.FLOAT
+        if isinstance(value, complex): return Types.COMPLEX
+        if isinstance(value, date): return Types.DATE
+        if isinstance(value, time): return Types.TIME
+        if isinstance(value, datetime): return Types.DATETIME
+        if isinstance(value, bytes): return Types.BINARY
+        if isinstance(value, str): return Types.STRING
+        if isinstance(value, (tuple, list)): return Types.LIST
+        if isinstance(value, dict): return Types.DICTIONARY
+        raise TypeError(f"Invalid type of value {value}")
 
-TYPES_NULL = (Types.DATE, Types.TIME, Types.DATETIME, Types.BINARY)
-TYPES_LENGTH = (Types.DECIMAL, Types.STRING, Types.BINARY)
+    @staticmethod
+    def get_types_null() -> tuple:
+        return Types.DATE, Types.TIME, Types.DATETIME, Types.BINARY
+
+    @staticmethod
+    def get_types_numeric() -> tuple:
+        return Types.INTEGER, Types.FLOAT, Types.COMPLEX, Types.DECIMAL
+
+    @staticmethod
+    def get_types_length() -> tuple:
+        return Types.DECIMAL, Types.STRING, Types.BINARY
+
+    def __str__(self): return self.name
+    def __repr__(self): return self.name
