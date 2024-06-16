@@ -11,20 +11,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
 from decimal import Decimal
-from msfx.lib.db.schema import (
-    COLUMN_SCHEMA,
-    COLUMN_NAME, COLUMN_ALIAS,
-    COLUMN_TYPE, COLUMN_LENGTH, COLUMN_DECIMALS,
-    COLUMN_PRIMARY_KEY,
-    COLUMN_HEADER, COLUMN_LABEL, COLUMN_DESCRIPTION,
-    COLUMN_TABLE, COLUMN_VIEW,
-    Table, View
-)
+
 from msfx.lib.db.types import Types
 from msfx.lib.db.value import Value
-from msfx.lib.util.generics import dict_get_value, dict_set_value, dict_create_args
-from msfx.lib.util.json import dumps
+from msfx.lib.util.error import check_argument_type, check_argument_value
 
 class Column:
     """ A column of a table or view. """
@@ -47,7 +39,7 @@ class Column:
             self.__type = kwargs.get("type", None)
             self.__length = kwargs.get("length", -1)
             self.__decimals = kwargs.get("decimals", -1)
-            self.__primary_key = kwargs.get("primaryKey", False)
+            self.__primary_key = kwargs.get("primary_key", False)
             self.__header = kwargs.get("header", "")
             self.__label = kwargs.get("label", "")
             self.__description = kwargs.get("description", "")
@@ -139,12 +131,12 @@ class Column:
     def get_table(self):
         return self.__table
     def set_table(self, table):
-        self.__table = table if isinstance(table, Table) else None
+        self.__table = table
 
-    def get_view(self) -> View:
+    def get_view(self):
         return self.__view
     def set_view(self, view):
-        self.__view = view if isinstance(view, View) else None
+        self.__view = view
 
     def to_dict(self):
         data = {}
@@ -160,10 +152,102 @@ class Column:
         if self.__description != "": data["description"] = self.__description
         if self.__table is not None: data["table"] = self.__table.get_name()
         if self.__view is not None: data["view"] = self.__view.get_name()
-
         return data
 
     def __str__(self) -> str:
         return str(self.to_dict())
     def __repr__(self):
         return self.__str__()
+
+class ColumnList:
+    """ An ordered list of columns that can be efficiently accessed either by index or alias. """
+    def __init__(self, column_list=None):
+        self.__columns = []
+        self.__aliases = []
+        self.__indexes = {}
+        self.__pk_columns = []
+        self.__default_values = []
+        if column_list is not None:
+            check_argument_type('column_list', column_list, ColumnList)
+
+    def append_column(self, column):
+        check_argument_type("column", column, (Column,))
+        self.__columns.append(Column(column))
+        self.__setup()
+
+    def remove_column(self, key):
+        check_argument_type("key", key, (int, str))
+        index = -1
+        if isinstance(key, int): index = key
+        if isinstance(key, str): index = self.index_of_column(key)
+        if 0 <= index < len(self.__columns):
+            del self.__columns[index]
+            self.__setup()
+
+    def clear_columns(self):
+        self.__columns.clear()
+        self.__setup()
+
+    def index_of_column(self, alias):
+        check_argument_type('alias', alias, (str,))
+        index = self.__indexes.get(alias)
+        return -1 if index is None else index
+
+    def get_column_by_alias(self, alias):
+        check_argument_type('alias', alias, (str,))
+        index = self.index_of_column(alias)
+        if index < 0: raise ValueError(f"Invalid alias {alias}")
+        return self.__columns[index]
+
+    def get_column_by_index(self, index):
+        check_argument_type("index", index, (int,))
+        check_argument_value("index", index >= 0, index,">= 0")
+        check_argument_value("index", index < 0, index >= len(self.get_columns()),"< len(columns)")
+        return self.get_columns()[index]
+
+    def get_columns(self): return list(self.__columns)
+    def get_aliases(self): return list(self.__aliases)
+    def get_pk_columns(self): return list(self.__pk_columns)
+    def get_default_values(self): return list(self.__default_values)
+
+    def __setup(self):
+
+        self.__aliases.clear()
+        self.__indexes.clear()
+        self.__pk_columns.clear()
+        self.__default_values.clear()
+
+        for i in range(len(self.__columns)):
+            column = self.__columns[i]
+            alias = column.get_alias()
+            self.__aliases.append(alias)
+            self.__indexes[alias] = i
+            if column.is_primary_key():
+                self.__pk_columns.append(column)
+            self.__default_values.append(column.get_default_value())
+
+    def to_dict(self):
+        data = {}
+        columns = []
+        for column in self.__columns:
+            columns.append(column.get_name())
+        data["columns"] = columns
+        data["aliases"] = self.__aliases
+        data["indexes"] = self.__indexes
+        pk_columns = []
+        for column in self.__pk_columns:
+            pk_columns.append(column.get_name())
+        data["pk_columns"] = pk_columns
+        data["default_values"] = self.__default_values
+        return data
+
+    def __str__(self) -> str:
+        return str(self.to_dict())
+    def __repr__(self):
+        return self.__str__()
+    def __iter__(self):
+        return self.__columns.__iter__()
+    def __len__(self) -> int:
+        return len(self.__columns)
+    def __getitem__(self, index: int) -> Column:
+        return self.get_column_by_index(index)

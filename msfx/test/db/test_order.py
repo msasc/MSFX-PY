@@ -23,6 +23,3 @@ print(order)
 print()
 for c, b in order:
     print(f"{c}, {b}")
-print(order)
-# for i in range(len(order)):
-#     print(f"Column: {order[i][0]}, Ascending: {order[i][1]}")

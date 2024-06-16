@@ -27,7 +27,7 @@
 from datetime import date, time, datetime
 from decimal import Decimal
 
-from msfx.lib.db_back.types import Types
+from msfx.lib.db.types import Types
 
 class Value:
     """ Encapsulates an immutable value of one of the supported types. """
@@ -243,4 +243,6 @@ class Value:
     def __str__(self) -> str:
         return str(self.__value)
     def __repr__(self):
+        if self.is_string():
+            return "'" + str(self.__value) + "'"
         return self.__str__()

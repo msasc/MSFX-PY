@@ -11,44 +11,43 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
 from msfx.lib.db.column import Column
-from msfx.lib.util.generics import dict_create_default, dict_get_value
-from msfx.lib.db.schema import ORDER_SCHEMA, ORDER_SEGMENTS, ORDER_COLUMN, ORDER_ASC
+from msfx.lib.util.error import check_argument_type
 
 class Order:
     """ Order definition. """
     def __init__(self, order=None):
-        self.__data = dict_create_default(ORDER_SCHEMA)
+        self.__segments = []
+        if order is not None:
+            check_argument_type("order", order, (Order,))
+            self.__segments.extend(order.__segments)
 
-    def append(self, column: Column, asc: bool = True):
-        if not isinstance(column, Column):
-            raise ValueError("Column must be of type Column")
-        segment = {ORDER_COLUMN: column, ORDER_ASC: asc}
-        self.get_segments().append(segment)
+    def append(self, column, asc = True):
+        check_argument_type("column", column, (Column,))
+        check_argument_type("asc", asc, (bool,))
+        self.__segments.append({ "column": column, "asc": asc })
 
     def get_segments(self) -> list:
-        return dict_get_value(self.__data, ORDER_SEGMENTS, ORDER_SCHEMA)
+        return list(self.__segments)
+
+    def to_dict(self):
+        segments = []
+        for segment in self.__segments:
+            short_segment = {"column": segment["column"].get_name(), "asc": segment["asc"]}
+            segments.append(short_segment)
+        return {"segments": segments}
 
     def __iter__(self):
-        return self.get_segments().__iter__()
+        return self.__segments.__iter__()
     def __len__(self) -> int:
-        return len(self.get_segments())
-    def __getitem__(self, index: int) -> {}:
-        if not isinstance(index, int):
-            raise ValueError("Index must be of type int")
+        return len(self.__segments)
+    def __getitem__(self, index) -> {}:
+        check_argument_type("index", index, (int,))
         if 0 <= index < len(self):
-            return self.get_segments()[index]
+            return self.__segments[index]
         return None
     def __str__(self) -> str:
-        s = "'" + ORDER_SEGMENTS + "': ["
-        segs = self.get_segments()
-        for i in range(len(segs)):
-            seg = segs[i]
-            if i > 0: s += ", "
-            s += "{'" + ORDER_COLUMN + "': '" + seg[ORDER_COLUMN].get_name() + "'"
-            s += ", '" + ORDER_ASC + "': " + str(seg[ORDER_ASC])
-            s += "}"
-        s += "]"
-        return s
+        return str(self.to_dict())
     def __repr__(self):
         return self.__str__()
