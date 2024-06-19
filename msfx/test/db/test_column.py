@@ -32,9 +32,9 @@ column_3.set_decimals(2)
 print(column_3)
 
 column_list = ColumnList()
-column_list.append_column(column_2)
-column_list.append_column(column_3)
-column_list.append_column(column_1)
+column_list.append(column_2)
+column_list.append(column_3)
+column_list.append(column_1)
 print(column_list)
 
-print(column_list.get_column_by_alias("CARTICLE"))
+print(column_list.get_by_alias("CARTICLE"))

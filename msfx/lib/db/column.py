@@ -13,10 +13,14 @@
 #  limitations under the License.
 
 from decimal import Decimal
+from typing import Optional
 
 from msfx.lib.db.types import Types
 from msfx.lib.db.value import Value
-from msfx.lib.util.error import check_argument_type, check_argument_value
+from msfx.lib.util.error import check_argument_type, check_argument_value, check_argument_type_name
+
+class Table: pass
+class View: pass
 
 class Column:
     """ A column of a table or view. """
@@ -27,6 +31,7 @@ class Column:
         self.__length = -1
         self.__decimals = -1
         self.__primary_key = False
+        self.__nullable = False
         self.__header = ""
         self.__label = ""
         self.__description = ""
@@ -40,6 +45,7 @@ class Column:
             self.__length = kwargs.get("length", -1)
             self.__decimals = kwargs.get("decimals", -1)
             self.__primary_key = kwargs.get("primary_key", False)
+            self.__nullable = kwargs.get("nullable", False)
             self.__header = kwargs.get("header", "")
             self.__label = kwargs.get("label", "")
             self.__description = kwargs.get("description", "")
@@ -52,6 +58,7 @@ class Column:
             self.__length = column.__length
             self.__decimals = column.__decimals
             self.__primary_key = column.__primary_key
+            self.__nullable = column.__nullable
             self.__header = column.__header
             self.__label = column.__label
             self.__description = column.__description
@@ -59,57 +66,77 @@ class Column:
             self.__table = column.__table
             self.__view = column.__view
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.__name
-    def set_name(self, name):
-        self.__name = name if isinstance(name, str) else ""
+    def set_name(self, name: str):
+        check_argument_type("name", name, (str,))
+        self.__name = name
 
-    def get_alias(self):
+    def get_alias(self) -> str:
         return self.__alias if len(self.__alias) > 0 else self.get_name()
-    def set_alias(self, alias):
-        self.__alias = alias if isinstance(alias, str) else ""
+    def set_alias(self, alias: str):
+        check_argument_type("alias", alias, (str,))
+        self.__alias = alias
 
-    def get_type(self):
+    def get_type(self) -> Types:
         return self.__type
-    def set_type(self, type):
-        self.__type = type if isinstance(type, Types) else None
+    def set_type(self, type: Types):
+        check_argument_type("type", type, (Types,))
+        self.__type = type
 
-    def get_length(self):
+    def get_length(self) -> int:
         return self.__length
     def set_length(self, length: int):
-        self.__length = length if isinstance(length, int) else -1
+        check_argument_type("length", length, (int,))
+        self.__length = length if length > 0 else -1
 
-    def get_decimals(self):
+    def get_decimals(self) -> int:
         return self.__decimals
-    def set_decimals(self, decimals):
-        self.__decimals = decimals if isinstance(decimals, int) else -1
+    def set_decimals(self, decimals: int):
+        check_argument_type("decimals", decimals, (int,))
+        self.__decimals = decimals if decimals >= 0 else -1
 
-    def is_primary_key(self):
+    def is_primary_key(self) -> bool:
         return self.__primary_key
-    def set_primary_key(self, primary_key):
-        self.__primary_key = primary_key if isinstance(primary_key, bool) else False
+    def set_primary_key(self, primary_key: bool):
+        check_argument_type("primary_key", primary_key, (bool,))
+        self.__primary_key = primary_key
+        if primary_key:
+            self.__nullable = False
 
-    def is_uppercase(self):
+    def is_nullable(self) -> bool:
+        return self.__nullable
+    def set_nullable(self, nullable: bool):
+        check_argument_type("nullable", nullable, (bool,))
+        if self.__primary_key and not nullable:
+            raise ValueError("Primary key columns cannot be null")
+        self.__nullable = nullable
+
+    def is_uppercase(self) -> bool:
         return self.__uppercase
-    def set_uppercase(self, uppercase):
-        self.__uppercase = uppercase if isinstance(uppercase, bool) else False
+    def set_uppercase(self, uppercase: bool):
+        check_argument_type("uppercase", uppercase, (bool,))
+        self.__uppercase = uppercase
 
-    def get_header(self):
+    def get_header(self) -> str:
         return self.__header
-    def set_header(self, header):
-        self.__header = header if isinstance(header, str) else ""
+    def set_header(self, header: str):
+        check_argument_type("header", header, (str,))
+        self.__header = header
 
-    def get_label(self):
+    def get_label(self) -> str:
         return self.__label
-    def set_label(self, label):
-        self.__label = label if isinstance(label, str) else ""
+    def set_label(self, label: str):
+        check_argument_type("label", label, (str,))
+        self.__label = label
 
-    def get_description(self):
+    def get_description(self) -> str:
         return self.__description
-    def set_description(self, description):
-        self.__description = description if isinstance(description, bool) else ""
+    def set_description(self, description: str):
+        check_argument_type("description", description, (str,))
+        self.__description = description
 
-    def get_default_value(self):
+    def get_default_value(self) -> Optional[Value]:
         type: Types = self.get_type()
         decs: int = self.get_decimals()
         decs = decs if decs >= 0 else 0
@@ -128,17 +155,19 @@ class Column:
         if type == Types.DICTIONARY: return Value(dict({}))
         raise ValueError(f"Unsupported type {type}")
 
-    def get_table(self):
+    def get_table(self) -> Optional[Table]:
         return self.__table
-    def set_table(self, table):
+    def set_table(self, table: Table):
+        check_argument_type_name("table", table, ("Table",))
         self.__table = table
 
-    def get_view(self):
+    def get_view(self) -> Optional[View]:
         return self.__view
-    def set_view(self, view):
+    def set_view(self, view: View):
+        check_argument_type_name("view", view, ("View",))
         self.__view = view
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         data = {}
         if self.__name != "": data["name"] = self.__name
         if self.__alias != "": data["alias"] = self.__alias
@@ -167,48 +196,49 @@ class ColumnList:
         self.__indexes = {}
         self.__pk_columns = []
         self.__default_values = []
-        if column_list is not None:
-            check_argument_type('column_list', column_list, ColumnList)
+        if column_list is not None and isinstance(column_list, ColumnList):
+            self.__columns |= column_list.__columns
+            self.__setup()
 
-    def append_column(self, column):
+    def append(self, column: Column):
         check_argument_type("column", column, (Column,))
         self.__columns.append(Column(column))
         self.__setup()
 
-    def remove_column(self, key):
+    def remove(self, key: (int, str)):
         check_argument_type("key", key, (int, str))
         index = -1
         if isinstance(key, int): index = key
-        if isinstance(key, str): index = self.index_of_column(key)
+        if isinstance(key, str): index = self.index_of(key)
         if 0 <= index < len(self.__columns):
             del self.__columns[index]
             self.__setup()
 
-    def clear_columns(self):
+    def clear(self):
         self.__columns.clear()
         self.__setup()
 
-    def index_of_column(self, alias):
+    def index_of(self, alias: str) -> int:
         check_argument_type('alias', alias, (str,))
         index = self.__indexes.get(alias)
         return -1 if index is None else index
 
-    def get_column_by_alias(self, alias):
+    def get_by_alias(self, alias: str) -> Column:
         check_argument_type('alias', alias, (str,))
-        index = self.index_of_column(alias)
+        index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
         return self.__columns[index]
 
-    def get_column_by_index(self, index):
+    def get_by_index(self, index: int) -> Column:
         check_argument_type("index", index, (int,))
-        check_argument_value("index", index >= 0, index,">= 0")
-        check_argument_value("index", index < 0, index >= len(self.get_columns()),"< len(columns)")
-        return self.get_columns()[index]
+        check_argument_value("index", index >= 0, index,(">= 0",))
+        check_argument_value("index", index < 0, index >= len(self.__columns),("< len(columns)",))
+        return self.__columns[index]
 
-    def get_columns(self): return list(self.__columns)
-    def get_aliases(self): return list(self.__aliases)
-    def get_pk_columns(self): return list(self.__pk_columns)
-    def get_default_values(self): return list(self.__default_values)
+    def columns(self) -> list: return list(self.__columns)
+    def aliases(self) -> list: return list(self.__aliases)
+    def pk_columns(self) -> list: return list(self.__pk_columns)
+    def default_values(self) -> list: return list(self.__default_values)
 
     def __setup(self):
 
@@ -250,4 +280,4 @@ class ColumnList:
     def __len__(self) -> int:
         return len(self.__columns)
     def __getitem__(self, index: int) -> Column:
-        return self.get_column_by_index(index)
+        return self.get_by_index(index)

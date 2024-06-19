@@ -11,11 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db.table import TableLink
-
-class ForeignKey(TableLink):
-    def __init__(self):
-        super().__init__()
-        self.__name = ""
-        self.__persistent = False
-        self.__delete_restriction = ""

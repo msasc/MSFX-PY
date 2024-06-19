@@ -1,12 +1,12 @@
 from msfx.lib.db.column import Column
-from msfx.lib.db.table import Table, TableLink
+from msfx.lib.db.foreign_key import ForeignKey
+from msfx.lib.db.table import Table
 from msfx.lib.db.types import Types
 
 ccompany = Column(name="CCOMPANY", type=Types.STRING, length=30, primary_key=True)
 carticle = Column(name="CARTICLE", type=Types.STRING, length=20, primary_key=True)
 darticle = Column(name="DARTICLE", type=Types.STRING, length=80)
 qsales = Column(name="QSALES", type=Types.DECIMAL, decimals=2)
-
 
 sales = Table()
 sales.set_name("SALES")
@@ -19,12 +19,15 @@ articles.set_name("ARTICLES")
 articles.columns().append(carticle)
 articles.columns().append(darticle)
 
-table_lnk = TableLink()
-table_lnk.set_local_table(sales)
-table_lnk.set_foreign_table(articles)
-table_lnk.append_segment(
+fk = ForeignKey()
+fk.set_name("SALES_FK0")
+fk.set_persistent(True)
+fk.set_delete_restriction("CASCADE")
+fk.set_local_table(sales)
+fk.set_foreign_table(articles)
+fk.append_segment(
     sales.columns().get_by_alias("CARTICLE"),
     articles.columns().get_by_alias("CARTICLE")
 )
 
-print(table_lnk)
+print(fk)

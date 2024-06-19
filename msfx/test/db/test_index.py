@@ -8,8 +8,8 @@ carticle = Column(name="CARTICLE", type=Types.STRING, length=20)
 
 table_sales = Table()
 table_sales.set_name("SALES")
-table_sales.append_column(ccompany)
-table_sales.append_column(carticle)
+table_sales.columns().append(ccompany)
+table_sales.columns().append(carticle)
 
 pk = Index()
 pk.set_name("SALES_PK")

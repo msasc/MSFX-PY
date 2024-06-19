@@ -10,6 +10,6 @@ except Exception as e:
 
 try:
     index = -1
-    check_argument_value("index", index >= 0, -1, ">= 0")
+    check_argument_value("index", index >= 0, -1, (">= 0",))
 except Exception as e:
     print(e)

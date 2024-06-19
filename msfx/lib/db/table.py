@@ -12,7 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from msfx.lib.db.column import ColumnList, Column
-from msfx.lib.util.error import check_argument_type
+from msfx.lib.util.error import check_argument_type, check_argument_type_name
+
+class ColumnListTable(ColumnList):
+    def __init__(self, table, column_list=None):
+        super(ColumnListTable, self).__init__()
+        self.__table = table
+        if column_list is not None and isinstance(column_list, ColumnList):
+            for column in column_list:
+                self.append(column)
+
+    def append(self, column: Column):
+        column.set_table(self.__table)
+        super().append(column)
+
 
 class Table:
     """ A table definition. """
@@ -23,7 +36,7 @@ class Table:
         self.__title = ""
         self.__description = ""
 
-        self.__columns = ColumnList()
+        self.__columns = ColumnListTable(self)
 
         self.__primary_key = None
         self.__indexes = []
@@ -31,20 +44,10 @@ class Table:
 
         self.__schema = ""
         self.__peristent_constraints = False
+        self.__trace_table = False
 
-    def append_column(self, column):
-        column.set_table(self)
-        self.__columns.append_column(column)
-    def remove_column(self, key):
-        self.__columns.remove_column(key)
-    def index_of_column(self, alias):
-        return self.__columns.index_of_column(alias)
-    def get_column_by_alias(self, alias):
-        return self.__columns.get_column_by_alias(alias)
-    def get_column_by_index(self, index):
-        return self.__columns.get_column_by_index(index)
-    def get_column_count(self):
-        return len(self.__columns)
+    def columns(self) -> ColumnListTable:
+        return self.__columns
 
     def get_name(self):
         return self.__name
@@ -73,14 +76,17 @@ class Table:
     def get_primary_key(self):
         return self.__primary_key
     def set_primary_key(self, primary_key):
+        check_argument_type_name("primary_key", primary_key, ("Index",))
         self.__primary_key = primary_key
 
     def append_index(self, index):
+        check_argument_type_name("index", index, ("Index",))
         self.__indexes.append(index)
     def clear_indexes(self):
         self.__indexes.clear()
 
     def append_foreign_key(self, foreign_key):
+        check_argument_type_name("foreign_key", foreign_key, ("ForeignKey",))
         self.__foreign_keys.append(foreign_key)
     def clear_foreign_keys(self):
         self.__foreign_keys.clear()
@@ -123,7 +129,7 @@ class TableLink:
         for segment in self.__segments:
             local_column = segment["local_column"]
             foreign_column = segment["foreign_column"]
-            short_segment = {"local_column": local_column.get_name(), "foreign_column": foreign_column}
+            short_segment = {"local_column": local_column.get_name(), "foreign_column": foreign_column.get_name()}
             segments.append(short_segment)
         data["segments"] = segments
         return data
