@@ -13,7 +13,7 @@
 #  limitations under the License.
 from msfx.lib.db.order import Order
 from msfx.lib.db.table import Table
-from msfx.lib.util.error import check_argument_type
+from msfx.lib.util.globals import error_msg
 
 class Index(Order):
     """ An index of a table. """
@@ -28,31 +28,41 @@ class Index(Order):
     def get_name(self):
         return self.__name
     def set_name(self, name):
-        check_argument_type("name", name, (str,))
+        if name is None or not isinstance(name, str):
+            error = error_msg("type error", "name", type(name), (str,))
+            raise TypeError(error)
         self.__name = name
 
     def get_description(self):
         return self.__description
     def set_description(self, description):
-        check_argument_type("description", description, (str,))
+        if description is None or not isinstance(description, str):
+            error = error_msg("type error", "description", type(description), (str,))
+            raise TypeError(error)
         self.__description = description
 
     def is_unique(self):
         return self.__unique
     def set_unique(self, unique=False):
-        check_argument_type("unique", unique, (bool,))
+        if unique is None or not isinstance(unique, bool):
+            error = error_msg("type error", "unique", type(unique), (bool,))
+            raise TypeError(error)
         self.__unique = unique
 
     def get_table(self):
         return self.__table
-    def set_table(self, table):
-        check_argument_type("table", table, (Table,))
+    def set_table(self, table: Table):
+        if table is None or not isinstance(table, Table):
+            error = error_msg("type error", "table", type(table), (Table,))
+            raise TypeError(error)
         self.__table = table
 
     def get_schema(self):
         return self.__schema
     def set_schema(self, schema):
-        check_argument_type("schema", schema, (str,))
+        if schema is None or not isinstance(schema, str):
+            error = error_msg("type error", "schema", type(schema), (str,))
+            raise TypeError(error)
         self.__schema = schema
 
     # noinspection PyDictCreation

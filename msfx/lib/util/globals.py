@@ -94,3 +94,15 @@ def list_get(lst, index, default=None):
     try: return lst[index]
     except IndexError: return default
 
+def error_msg(msg: str, arg: str, val: object, exp: (object,)):
+    err = "argument '" + arg + "' " + msg + ", expected "
+    if len(exp) == 1:
+        err += "'" + str(exp[0]) + "'"
+    else:
+        err += "one of ("
+        for i in range(len(exp)):
+            if i > 0: err += ", "
+            err += "'" + str(exp[i]) + "'"
+        err += ")"
+    err += ", got '" + str(val) + "'"
+    return err

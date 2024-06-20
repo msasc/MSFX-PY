@@ -17,7 +17,7 @@ from typing import Optional
 
 from msfx.lib.db.types import Types
 from msfx.lib.db.value import Value
-from msfx.lib.util.error import check_argument_type, check_argument_value, check_argument_type_name
+from msfx.lib.util.globals import error_msg
 
 class Table: pass
 class View: pass
@@ -69,71 +69,91 @@ class Column:
     def get_name(self) -> str:
         return self.__name
     def set_name(self, name: str):
-        check_argument_type("name", name, (str,))
+        if name is None or not isinstance(name, str):
+            error = error_msg("type error", "alias", type(name), (str,))
+            raise TypeError(error)
         self.__name = name
 
     def get_alias(self) -> str:
         return self.__alias if len(self.__alias) > 0 else self.get_name()
     def set_alias(self, alias: str):
-        check_argument_type("alias", alias, (str,))
+        if alias is None or not isinstance(alias, str):
+            error = error_msg("type error", "alias", type(alias), (str,))
+            raise TypeError(error)
         self.__alias = alias
 
     def get_type(self) -> Types:
         return self.__type
-    def set_type(self, type: Types):
-        check_argument_type("type", type, (Types,))
-        self.__type = type
+    def set_type(self, dbtype: Types):
+        if dbtype is None or not isinstance(dbtype, Types):
+            error = error_msg("type error", "vtype", type(dbtype), (Types,))
+            raise TypeError(error)
+        self.__type = dbtype
 
     def get_length(self) -> int:
         return self.__length
     def set_length(self, length: int):
-        check_argument_type("length", length, (int,))
+        if length is None or not isinstance(length, int):
+            error = error_msg("type error", "length", type(length), (int,))
+            raise TypeError(error)
         self.__length = length if length > 0 else -1
 
     def get_decimals(self) -> int:
         return self.__decimals
     def set_decimals(self, decimals: int):
-        check_argument_type("decimals", decimals, (int,))
+        if decimals is None or not isinstance(decimals, int):
+            error = error_msg("type error", "decimals", type(decimals), (int,))
+            raise TypeError(error)
         self.__decimals = decimals if decimals >= 0 else -1
 
     def is_primary_key(self) -> bool:
         return self.__primary_key
     def set_primary_key(self, primary_key: bool):
-        check_argument_type("primary_key", primary_key, (bool,))
+        if primary_key is None or not isinstance(primary_key, bool):
+            error = error_msg("type error", "primay_key", type(primary_key), (bool,))
+            raise TypeError(error)
         self.__primary_key = primary_key
-        if primary_key:
-            self.__nullable = False
+        if primary_key: self.__nullable = False
 
     def is_nullable(self) -> bool:
         return self.__nullable
     def set_nullable(self, nullable: bool):
-        check_argument_type("nullable", nullable, (bool,))
-        if self.__primary_key and not nullable:
-            raise ValueError("Primary key columns cannot be null")
+        if nullable is None or not isinstance(nullable, bool):
+            error = error_msg("type error", "nullable", type(nullable), (bool,))
+            raise TypeError(error)
+        if self.__primary_key: nullable = False
         self.__nullable = nullable
 
     def is_uppercase(self) -> bool:
         return self.__uppercase
     def set_uppercase(self, uppercase: bool):
-        check_argument_type("uppercase", uppercase, (bool,))
+        if uppercase is None or not isinstance(uppercase, bool):
+            error = error_msg("type error", "uppercase", type(uppercase), (bool,))
+            raise TypeError(error)
         self.__uppercase = uppercase
 
     def get_header(self) -> str:
         return self.__header
     def set_header(self, header: str):
-        check_argument_type("header", header, (str,))
+        if header is None or not isinstance(header, str):
+            error = error_msg("type error", "header", type(header), (str,))
+            raise TypeError(error)
         self.__header = header
 
     def get_label(self) -> str:
         return self.__label
     def set_label(self, label: str):
-        check_argument_type("label", label, (str,))
+        if label is None or not isinstance(label, str):
+            error = error_msg("type error", "label", type(label), (str,))
+            raise TypeError(error)
         self.__label = label
 
     def get_description(self) -> str:
         return self.__description
     def set_description(self, description: str):
-        check_argument_type("description", description, (str,))
+        if description is None or not isinstance(description, str):
+            error = error_msg("type error", "description", type(description), (str,))
+            raise TypeError(error)
         self.__description = description
 
     def get_default_value(self) -> Optional[Value]:
@@ -158,14 +178,20 @@ class Column:
     def get_table(self) -> Optional[Table]:
         return self.__table
     def set_table(self, table: Table):
-        check_argument_type_name("table", table, ("Table",))
-        self.__table = table
+        if table is not None:
+            if type(table).__name__ != "Table":
+                error = error_msg("type name error", "table", type(table).__name__, ("Table",))
+                raise TypeError(error)
+            self.__table = table
 
     def get_view(self) -> Optional[View]:
         return self.__view
     def set_view(self, view: View):
-        check_argument_type_name("view", view, ("View",))
-        self.__view = view
+        if view is not None:
+            if type(view).__name__ != "View":
+                error = error_msg("type name error", "view", type(view).__name__, ("View",))
+                raise TypeError(error)
+            self.__view = view
 
     def to_dict(self) -> dict:
         data = {}
@@ -201,12 +227,16 @@ class ColumnList:
             self.__setup()
 
     def append(self, column: Column):
-        check_argument_type("column", column, (Column,))
+        if column is None or not isinstance(column, Column):
+            error = error_msg("type error", "column", type(column), (Column,))
+            raise TypeError(error)
         self.__columns.append(Column(column))
         self.__setup()
 
     def remove(self, key: (int, str)):
-        check_argument_type("key", key, (int, str))
+        if key is None or not isinstance(key, (int, str)):
+            error = error_msg("type error", "key", type(key), (int, str))
+            raise TypeError(error)
         index = -1
         if isinstance(key, int): index = key
         if isinstance(key, str): index = self.index_of(key)
@@ -219,20 +249,30 @@ class ColumnList:
         self.__setup()
 
     def index_of(self, alias: str) -> int:
-        check_argument_type('alias', alias, (str,))
+        if alias is None or not isinstance(alias, str):
+            error = error_msg("type error", "alias", type(alias), (str,))
+            raise TypeError(error)
         index = self.__indexes.get(alias)
         return -1 if index is None else index
 
     def get_by_alias(self, alias: str) -> Column:
-        check_argument_type('alias', alias, (str,))
+        if alias is None or not isinstance(alias, str):
+            error = error_msg("type error", "alias", type(alias), (str,))
+            raise TypeError(error)
         index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
         return self.__columns[index]
 
     def get_by_index(self, index: int) -> Column:
-        check_argument_type("index", index, (int,))
-        check_argument_value("index", index >= 0, index,(">= 0",))
-        check_argument_value("index", index < 0, index >= len(self.__columns),("< len(columns)",))
+        if index is None or not isinstance(index, int):
+            error = error_msg("type error", "index", type(index), (int,))
+            raise TypeError(error)
+        if index < 0:
+            error = error_msg("value error", "index", "< 0", (">= 0",))
+            raise ValueError(error)
+        if index >= len(self.__columns):
+            error = error_msg("value error", "index", ">= len(columns)", ("< len(columns)",))
+            raise ValueError(error)
         return self.__columns[index]
 
     def columns(self) -> list: return list(self.__columns)
@@ -241,7 +281,6 @@ class ColumnList:
     def default_values(self) -> list: return list(self.__default_values)
 
     def __setup(self):
-
         self.__aliases.clear()
         self.__indexes.clear()
         self.__pk_columns.clear()

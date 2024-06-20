@@ -13,19 +13,25 @@
 #  limitations under the License.
 
 from msfx.lib.db.column import Column
-from msfx.lib.util.error import check_argument_type
+from msfx.lib.util.globals import error_msg
 
 class Order:
     """ Order definition. """
     def __init__(self, order=None):
         self.__segments = []
         if order is not None:
-            check_argument_type("order", order, (Order,))
+            if not isinstance(order, Order):
+                error = error_msg("type error", "order", type(order), (Order,))
+                raise TypeError(error)
             self.__segments.extend(order.__segments)
 
     def append(self, column, asc = True):
-        check_argument_type("column", column, (Column,))
-        check_argument_type("asc", asc, (bool,))
+        if column is None or not isinstance(column, Column):
+            error = error_msg("type error", "column", type(column), (Column,))
+            raise TypeError(error)
+        if asc is None or not isinstance(asc, bool):
+            error = error_msg("type error", "asc", type(asc), (bool,))
+            raise TypeError(error)
         self.__segments.append({ "column": column, "asc": asc })
 
     def get_segments(self) -> list:
@@ -43,7 +49,9 @@ class Order:
     def __len__(self) -> int:
         return len(self.__segments)
     def __getitem__(self, index) -> {}:
-        check_argument_type("index", index, (int,))
+        if index is None or not isinstance(index, int):
+            error = error_msg("type error", "index", type(index), (int,))
+            raise TypeError(error)
         if 0 <= index < len(self):
             return self.__segments[index]
         return None

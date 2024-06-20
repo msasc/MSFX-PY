@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from msfx.lib.db.column import ColumnList, Column
-from msfx.lib.util.error import check_argument_type, check_argument_type_name
+from msfx.lib.util.globals import error_msg
 
 class ColumnListTable(ColumnList):
     def __init__(self, table, column_list=None):
@@ -52,42 +52,65 @@ class Table:
     def get_name(self):
         return self.__name
     def set_name(self, name):
-        check_argument_type("name", name, (str,))
+        if name is None or not isinstance(name, str):
+            error = error_msg("type error", "name", type(name), (str,))
+            raise TypeError(error)
         self.__name = name
 
     def get_alias(self):
         return self.__alias
     def set_alias(self, alias):
-        check_argument_type("alias", alias, (str,))
+        if alias is None or not isinstance(alias, str):
+            error = error_msg("type error", "alias", type(alias), (str,))
+            raise TypeError(error)
         self.__alias = alias
 
     def get_title(self):
         return self.__title
     def set_title(self, title):
-        check_argument_type("title", title, (str,))
+        if title is None or not isinstance(title, str):
+            error = error_msg("type error", "title", type(title), (str,))
+            raise TypeError(error)
         self.__title = title
 
     def get_description(self):
         return self.__description
     def set_description(self, description):
-        check_argument_type("description", description, (str,))
+        if description is None or not isinstance(description, str):
+            error = error_msg("type error", "description", type(description), (str,))
+            raise TypeError(error)
         self.__description = description
 
     def get_primary_key(self):
         return self.__primary_key
     def set_primary_key(self, primary_key):
-        check_argument_type_name("primary_key", primary_key, ("Index",))
-        self.__primary_key = primary_key
+        if primary_key is not None:
+            if type(primary_key).__name__ != "Index":
+                error = error_msg("type name error", "index", type(primary_key).__name__, ("Index",))
+                raise TypeError(error)
+            # TODO Validate that columns of the index are columns of this table
+            primary_key.set_table(self)
+            self.__primary_key = primary_key
 
     def append_index(self, index):
-        check_argument_type_name("index", index, ("Index",))
-        self.__indexes.append(index)
+        if index is not None:
+            if type(index).__name__ != "Index":
+                error = error_msg("type name error", "index", type(index).__name__, ("Index",))
+                raise TypeError(error)
+            # TODO Validate that columns of the index are columns of this table
+            index.set_table(self)
+            self.__indexes.append(index)
     def clear_indexes(self):
         self.__indexes.clear()
 
     def append_foreign_key(self, foreign_key):
-        check_argument_type_name("foreign_key", foreign_key, ("ForeignKey",))
-        self.__foreign_keys.append(foreign_key)
+        if foreign_key is not None:
+            if type(foreign_key).__name__ != "ForeignKey":
+                error = error_msg("type name error", "table", type(foreign_key).__name__, ("ForeignKey",))
+                raise TypeError(error)
+            # TODO Validate that local columns of the foreign key are columns of this table.
+            foreign_key.set_local_table(self)
+            self.__foreign_keys.append(foreign_key)
     def clear_foreign_keys(self):
         self.__foreign_keys.clear()
 
@@ -102,18 +125,26 @@ class TableLink:
     def get_local_table(self):
         return self.__local_table
     def set_local_table(self, local_table):
-        check_argument_type("local_table", local_table, (Table,))
+        if local_table is None or not isinstance(local_table, Table):
+            error = error_msg("type error", "local_table", type(local_table), (Table,))
+            raise TypeError(error)
         self.__local_table = local_table
 
     def get_foreign_table(self):
         return self.__foreign_table
     def set_foreign_table(self, foreign_table):
-        check_argument_type("foreign_table", foreign_table, (Table,))
+        if foreign_table is None or not isinstance(foreign_table, Table):
+            error = error_msg("type error", "foreign_table", type(foreign_table), (Table,))
+            raise TypeError(error)
         self.__foreign_table = foreign_table
 
     def append_segment(self, local_column, foreign_column):
-        check_argument_type("local_column", local_column, (Column,))
-        check_argument_type("foreign_column", foreign_column, (Column,))
+        if local_column is None or not isinstance(local_column, Column):
+            error = error_msg("type error", "local_column", type(local_column), (Column,))
+            raise TypeError(error)
+        if foreign_column is None or not isinstance(foreign_column, Column):
+            error = error_msg("type error", "foreign_column", type(foreign_column), (Column,))
+            raise TypeError(error)
         self.__segments.append({"local_column": local_column, "foreign_column": foreign_column})
 
     def clear_segment(self):
@@ -138,8 +169,10 @@ class TableLink:
         return self.__segments.__iter__()
     def __len__(self) -> int:
         return len(self.__segments)
-    def __getitem__(self, index) -> {}:
-        check_argument_type("index", index, (int,))
+    def __getitem__(self, index: int) -> {}:
+        if index is None or not isinstance(index, int):
+            error = error_msg("type error", "index", type(index), (int,))
+            raise TypeError(error)
         if 0 <= index < len(self):
             return self.__segments[index]
         return None

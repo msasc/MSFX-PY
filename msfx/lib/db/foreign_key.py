@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from msfx.lib.db.table import TableLink
-from msfx.lib.util.error import check_argument_value, check_argument_type
+from msfx.lib.util.globals import error_msg
 
 class ForeignKey(TableLink):
     """ A foreign key of a table. """
@@ -35,12 +35,13 @@ class ForeignKey(TableLink):
     def get_delete_restriction(self):
         return self.__delete_restriction
     def set_delete_restriction(self, delete_restriction):
-        check_argument_type("delete_restriction", delete_restriction, (str,))
+        if delete_restriction is None or not isinstance(delete_restriction, str):
+            error = error_msg("type error", "alias", type(delete_restriction), (str,))
+            raise TypeError(error)
         delete_restrictions = ("RESTRICT", "CASCADE", "SET NULL")
-        check_argument_value(
-            "delete_restriction",
-            delete_restriction in delete_restrictions,
-            delete_restriction, delete_restrictions)
+        if not delete_restriction in delete_restrictions:
+            error = error_msg("value error", "delete_restriction", delete_restriction, delete_restrictions)
+            raise ValueError(error)
         self.__delete_restriction = delete_restriction
 
     # noinspection PyDictCreation

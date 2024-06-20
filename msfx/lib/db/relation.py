@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from msfx.lib.db.table import TableLink
-from msfx.lib.util.error import check_argument_type, check_argument_value
+from msfx.lib.util.globals import error_msg
 
 class Relation(TableLink):
     """ a Relation between two tables. """
@@ -23,12 +23,13 @@ class Relation(TableLink):
     def get_type(self):
         return self.__relation_type
     def set_type(self, relation_type):
-        check_argument_type("relation_type", relation_type, (str,))
+        if relation_type is None or not isinstance(relation_type, str):
+            error = error_msg("type error", "relation_type", type(relation_type), (str,))
+            raise TypeError(error)
         relation_types = ("INNER", "LEFT", "RIGHT", "FULL", "CROSS")
-        check_argument_value(
-            "relation_type",
-            relation_type in relation_types,
-            relation_type, relation_types)
+        if not relation_type in relation_types:
+            error = error_msg("value error", "relation_type", relation_type, relation_types)
+            raise ValueError(error)
         self.__relation_type = relation_type
 
     # noinspection PyDictCreation
