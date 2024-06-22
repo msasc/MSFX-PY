@@ -1,7 +1,7 @@
-from msfx.lib.db.column import Column
-from msfx.lib.db.foreign_key import ForeignKey
-from msfx.lib.db.table import Table
-from msfx.lib.db.types import Types
+from msfx.lib.db_back.column import Column
+from msfx.lib.db_back.foreign_key import ForeignKey
+from msfx.lib.db_back.table import Table
+from msfx.lib.db_back.types import Types
 
 ccompany = Column(name="CCOMPANY", type=Types.STRING, length=30, primary_key=True)
 carticle = Column(name="CARTICLE", type=Types.STRING, length=20, primary_key=True)
@@ -31,3 +31,4 @@ fk.append_segment(
 )
 
 print(fk)
+print(articles)

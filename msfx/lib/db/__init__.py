@@ -12,3 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+BOOLEAN = "BOOLEAN"
+DECIMAL = "DECIMAL"
+INTEGER = "INTEGER"
+FLOAT = "FLOAT"
+COMPLEX = "COMPLEX"
+DATE = "DATE"
+TIME = "TIME"
+DATETIME = "DATETIME"
+BINARY = "BINARY"
+STRING = "STRING"
+JSON = "JSON"
+
+TYPES = (BOOLEAN, DECIMAL, INTEGER, FLOAT, COMPLEX, DATE, TIME, DATETIME, BINARY, STRING, JSON)

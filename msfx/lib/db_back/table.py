@@ -11,21 +11,31 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db.column import ColumnList, Column
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+from msfx.lib.db_back.column import ColumnList, Column
+from msfx.lib.db_back.index import Index
 from msfx.lib.util.globals import error_msg
 
 class ColumnListTable(ColumnList):
-    def __init__(self, table, column_list=None):
-        super(ColumnListTable, self).__init__()
+    def __init__(self, table):
+        super().__init__()
         self.__table = table
-        if column_list is not None and isinstance(column_list, ColumnList):
-            for column in column_list:
-                self.append(column)
 
     def append(self, column: Column):
         column.set_table(self.__table)
         super().append(column)
-
 
 class Table:
     """ A table definition. """
@@ -52,37 +62,52 @@ class Table:
     def get_name(self):
         return self.__name
     def set_name(self, name):
-        if name is None or not isinstance(name, str):
-            error = error_msg("type error", "name", type(name), (str,))
-            raise TypeError(error)
-        self.__name = name
+        if name is not None:
+            if not isinstance(name, str):
+                error = error_msg("type error", "name", type(name), (str,))
+                raise TypeError(error)
+            self.__name = name
 
     def get_alias(self):
         return self.__alias
     def set_alias(self, alias):
-        if alias is None or not isinstance(alias, str):
-            error = error_msg("type error", "alias", type(alias), (str,))
-            raise TypeError(error)
-        self.__alias = alias
+        if alias is not None:
+            if not isinstance(alias, str):
+                error = error_msg("type error", "alias", type(alias), (str,))
+                raise TypeError(error)
+            self.__alias = alias
 
     def get_title(self):
         return self.__title
     def set_title(self, title):
-        if title is None or not isinstance(title, str):
-            error = error_msg("type error", "title", type(title), (str,))
-            raise TypeError(error)
-        self.__title = title
+        if title is not None:
+            if not isinstance(title, str):
+                error = error_msg("type error", "title", type(title), (str,))
+                raise TypeError(error)
+            self.__title = title
 
     def get_description(self):
         return self.__description
     def set_description(self, description):
-        if description is None or not isinstance(description, str):
-            error = error_msg("type error", "description", type(description), (str,))
-            raise TypeError(error)
-        self.__description = description
+        if description is not None:
+            if not isinstance(description, str):
+                error = error_msg("type error", "description", type(description), (str,))
+                raise TypeError(error)
+            self.__description = description
 
     def get_primary_key(self):
+        if self.__primary_key is None:
+            pk_columns = self.columns().pk_columns()
+            if len(pk_columns) > 0 and len(self.__name) > 0:
+                pk = Index()
+                pk.set_name(self.__name + "_PK")
+                pk.set_schema(self.__schema)
+                pk.set_table(self)
+                for column in pk_columns:
+                    pk.append(column)
+                self.__primary_key = pk
         return self.__primary_key
+
     def set_primary_key(self, primary_key):
         if primary_key is not None:
             if type(primary_key).__name__ != "Index":
@@ -102,6 +127,8 @@ class Table:
             self.__indexes.append(index)
     def clear_indexes(self):
         self.__indexes.clear()
+    def get_indexes(self):
+        return list(self.__indexes)
 
     def append_foreign_key(self, foreign_key):
         if foreign_key is not None:
@@ -113,7 +140,22 @@ class Table:
             self.__foreign_keys.append(foreign_key)
     def clear_foreign_keys(self):
         self.__foreign_keys.clear()
+    def get_foreign_keys(self):
+        return list(self.__foreign_keys)
 
+    def to_dict(self):
+        data = {}
+        data["name"] = self.get_name()
+        data["alias"] = self.get_alias()
+        data["title"] = self.get_title()
+        data["description"] = self.get_description()
+        data["primary_key"] = self.get_primary_key()
+        return data
+
+    def __str__(self) -> str:
+        return str(self.to_dict())
+    def __repr__(self):
+        return self.__str__()
 
 class TableLink:
     """ A link between two tables. """

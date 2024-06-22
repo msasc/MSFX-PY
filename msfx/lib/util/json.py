@@ -55,63 +55,63 @@ def loads(json_data) -> dict:
 def dumps(dct: dict, **kwargs) -> str:
     return json.dumps(dct, default=__serializer, **kwargs)
 
-def get_bool(dct: dict, key: str) -> bool:
-    value = dct.get(key)
+def get_bool(dct: dict, key: str, default=None) -> bool:
+    value = dct.get(key, default)
     if isinstance(value, bool): return value
     raise TypeError(f"pair key {key} / value {value} is not a boolean")
 
-def get_integer(dct: dict, key: str) -> int:
-    value = dct.get(key)
+def get_integer(dct: dict, key: str, default=None) -> int:
+    value = dct.get(key, default)
     if isinstance(value, (int, float, Decimal)): return int(value)
     if isinstance(value, complex): return int(value.real)
     raise TypeError(f"pair key {key} / value {value} is not a number")
 
-def get_float(dct: dict, key: str) -> float:
-    value = dct.get(key)
+def get_float(dct: dict, key: str, default=None) -> float:
+    value = dct.get(key, default)
     if isinstance(value, (int, float, Decimal)): return float(value)
     if isinstance(value, complex): return float(value.real)
     raise TypeError(f"pair key {key} / value {value} is not a number")
 
-def get_decimal(dct: dict, key: str) -> decimal:
-    value = dct.get(key)
+def get_decimal(dct: dict, key: str, default=None) -> decimal:
+    value = dct.get(key, default)
     if isinstance(value, (int, float, Decimal)): return Decimal(value)
     if isinstance(value, complex): return Decimal(value.real)
     raise TypeError(f"pair key {key} / value {value} is not a number")
 
-def get_string(dct: dict, key: str) -> str:
-    value = dct.get(key)
+def get_string(dct: dict, key: str, default=None) -> str:
+    value = dct.get(key, default)
     if isinstance(value, str): return value
     raise TypeError(f"pair key {key} / value {value} is not a string")
 
-def get_date(dct: dict, key: str) -> date:
-    value = dct.get(key)
+def get_date(dct: dict, key: str, default=None) -> date:
+    value = dct.get(key, default)
     if isinstance(value, date): return value
     if isinstance(value, datetime): return value.date()
     raise TypeError(f"pair key {key} / value {value} is not a date or datetime")
 
-def get_time(dct: dict, key: str) -> time:
-    value = dct.get(key)
+def get_time(dct: dict, key: str, default=None) -> time:
+    value = dct.get(key, default)
     if isinstance(value, time): return value
     if isinstance(value, datetime): return value.time()
     raise TypeError(f"pair key {key} / value {value} is not a time or datetime")
 
-def get_binary(dct: dict, key: str) -> bytes or bytearray:
-    value = dct.get(key)
+def get_binary(dct: dict, key: str, default=None) -> bytes or bytearray:
+    value = dct.get(key, default)
     if isinstance(value, (bytes, bytearray)): return value
     raise TypeError(f"pair key {key} / value {value} is not a binary")
 
-def get_tuple(dct: dict, key: str) -> tuple:
-    value = dct.get(key)
+def get_tuple(dct: dict, key: str, default=None) -> tuple:
+    value = dct.get(key, default)
     if isinstance(value, tuple): return value
     raise TypeError(f"pair key {key} / value {value} is not a tuple")
 
-def get_list(dct: dict, key: str) -> list:
-    value = dct.get(key)
+def get_list(dct: dict, key: str, default=None) -> list:
+    value = dct.get(key, default)
     if isinstance(value, list): return value
     raise TypeError(f"pair key {key} / value {value} is not a list")
 
-def get_dict(dct: dict, key: str) -> dict:
-    value = dct.get(key)
+def get_dict(dct: dict, key: str, default=None) -> dict:
+    value = dct.get(key, default)
     if isinstance(value, dict): return value
     raise TypeError(f"pair key {key} / value {value} is not a dictionary")
 
