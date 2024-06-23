@@ -11,9 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import List, Optional
+from typing import Optional
 
-from msfx.lib.db.types import Types
 from msfx.lib.util.generics import SCHEMA_TYPE, SCHEMA_DEFAULT
 
 class Value: pass
@@ -37,7 +36,7 @@ COLUMN_VIEW = "view"
 COLUMN_SCHEMA = {
     COLUMN_NAME: {SCHEMA_TYPE: str, SCHEMA_DEFAULT: ""},
     COLUMN_ALIAS: {SCHEMA_TYPE: str, SCHEMA_DEFAULT: ""},
-    COLUMN_TYPE: {SCHEMA_TYPE: Optional[Types], SCHEMA_DEFAULT: None},
+    COLUMN_TYPE: {SCHEMA_TYPE: str, SCHEMA_DEFAULT: None},
     COLUMN_LENGTH: {SCHEMA_TYPE: int, SCHEMA_DEFAULT: -1},
     COLUMN_DECIMALS: {SCHEMA_TYPE: int, SCHEMA_DEFAULT: -1},
     COLUMN_PRIMARY_KEY: {SCHEMA_TYPE: bool, SCHEMA_DEFAULT: False},
