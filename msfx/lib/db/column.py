@@ -16,7 +16,7 @@ from decimal import Decimal
 from msfx.lib.db import (
     BOOLEAN,INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
 )
-from msfx.lib.json import Schema, JSON, create_from_kwargs
+from msfx.lib.json import Schema, JSON, create_from_kwargs, register_class
 from msfx.lib.util.globals import error_msg
 
 class Column:
@@ -242,3 +242,6 @@ class ColumnList:
         return len(columns)
     def __getitem__(self, index: int) -> Column:
         return self.get_by_index(index)
+
+register_class("column", Column)
+register_class("columns", ColumnList)

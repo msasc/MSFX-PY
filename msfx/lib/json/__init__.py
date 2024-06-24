@@ -15,10 +15,22 @@
 import json
 from datetime import date, datetime, time
 from decimal import Decimal
+from importlib import import_module
 from typing import Optional
-from msfx.lib.db import CLASS_NAME_COLUMN
 
 from msfx.lib.util.globals import error_msg, instantiate
+
+registered_classes = {}
+def register_class(key: str, clazz):
+    registered_classes[key] = f"{clazz.__module__}.{clazz.__qualname__}"
+
+def instantiate_class(key, *args, **kwargs):
+    if key in registered_classes:
+        full_class_name = registered_classes[key]
+        instance = instantiate(full_class_name,*args, **kwargs)
+        return instance
+    return None
+
 
 def __serializer(obj):
     if isinstance(obj, date) and not isinstance(obj, datetime):
@@ -52,7 +64,7 @@ def __deserializer(dct):
         return bytes.fromhex(dct["binary"])
     if "column" in dct:
         data = dct["column"]
-        instance = instantiate(CLASS_NAME_COLUMN, data)
+        instance = instantiate_class("column", data)
         if instance is not None:
             return instance
     return dct
