@@ -18,21 +18,23 @@ from decimal import Decimal
 from importlib import import_module
 from typing import Optional
 
-from msfx.lib.util.globals import error_msg, instantiate
+from msfx.lib.util.globals import error_msg, instantiate, full_class_name
 
 registered_classes = {}
 def register_class(key: str, clazz):
-    registered_classes[key] = f"{clazz.__module__}.{clazz.__qualname__}"
+    registered_classes[key] = full_class_name(clazz)
 
 def instantiate_class(key, *args, **kwargs):
     if key in registered_classes:
-        full_class_name = registered_classes[key]
-        instance = instantiate(full_class_name,*args, **kwargs)
+        class_name = registered_classes[key]
+        instance = instantiate(class_name,*args, **kwargs)
         return instance
     return None
 
 
 def __serializer(obj):
+
+    # Extended JSON types: date, time, datetie, decimal, complex and binary.
     if isinstance(obj, date) and not isinstance(obj, datetime):
         return {"date": obj.isoformat()}
     if isinstance(obj, time):
@@ -45,11 +47,19 @@ def __serializer(obj):
         return {"complex": str(obj)}
     if isinstance(obj, (bytes, bytearray)):
         return {"binary": obj.hex()}
-    if type(obj).__name__ == "Column":
-        return {"column": obj.to_dict()}
+
+    # Registered full class names.
+    class_name = full_class_name(type(obj))
+    for key, registered_class_name in registered_classes.items():
+        if class_name == registered_class_name:
+            return {key: obj.to_dict()}
+
+    # Not supported.
     raise TypeError(f"Type {type(obj)} not serializable")
 
 def __deserializer(dct):
+
+    # Extended JSON types: date, time, datetie, decimal, complex and binary.
     if "date" in dct:
         return date.fromisoformat(dct["date"])
     if "time" in dct:
@@ -62,11 +72,16 @@ def __deserializer(dct):
         return complex(dct["complex"])
     if "binary" in dct:
         return bytes.fromhex(dct["binary"])
-    if "column" in dct:
-        data = dct["column"]
-        instance = instantiate_class("column", data)
-        if instance is not None:
-            return instance
+
+    # Registered full class names.
+    for key in registered_classes:
+        if key in dct:
+            data = dct[key]
+            instance = instantiate_class(key, data)
+            if instance is not None:
+                return instance
+
+    # Return content as default.
     return dct
 
 def dumps(dct: dict, **kwargs) -> str: return json.dumps(dct, default=__serializer, **kwargs)
@@ -143,7 +158,7 @@ class JSON:
         if obj is not None and isinstance(obj, JSON):
             self.__data |= obj.__data
         if obj is not None and isinstance(obj, str):
-            self.__data |= loads(obj)
+            self.__data = loads(obj)
         if obj is not None and isinstance(obj, Schema):
             self.__data = create_from_schema(obj)
 

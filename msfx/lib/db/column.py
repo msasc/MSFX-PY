@@ -136,6 +136,10 @@ class ColumnList:
 
     def __init__(self, column_list=None):
         self.__data = JSON(ColumnList.schema)
+        if column_list is not None and isinstance(column_list, ColumnList):
+            self.__data.merge(column_list.__data)
+        if column_list is not None and isinstance(column_list, (JSON, dict)):
+            self.__data.merge(column_list)
 
     def append(self, column: Column):
         if column is None or not isinstance(column, Column):
@@ -199,8 +203,11 @@ class ColumnList:
         aliases = self.__data.get_list(ColumnList.ALIASES)
         return list(aliases)
     def pk_columns(self) -> list:
-        pk_columns = self.__data.get_list(ColumnList.PK_COLUMNS)
-        return list(pk_columns)
+        pk_aliases = self.__data.get_list(ColumnList.PK_COLUMNS)
+        pk_columns = []
+        for alias in pk_aliases:
+            pk_columns.append(self.get_by_alias(alias))
+        return pk_columns
     def default_values(self) -> list:
         default_values = self.__data.get_list(ColumnList.DEFAULT_VALUES)
         return list(default_values)

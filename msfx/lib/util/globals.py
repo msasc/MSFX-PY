@@ -146,6 +146,9 @@ def dict_str(data: dict, indent=0) -> str:
     s += "}"
     return s
 
+def full_class_name(clazz):
+    return f"{clazz.__module__}.{clazz.__qualname__}"
+
 def instantiate(full_class_name, *args, **kwargs):
     # Split the full class name into module path and class name
     module_path, class_name = full_class_name.rsplit('.', 1)
