@@ -1,7 +1,7 @@
 
 from msfx.lib.db import STRING, DECIMAL
 from msfx.lib.db.column import Column, ColumnList
-from msfx.lib.json import JSON, dumps
+from msfx.lib.dn import dumps
 
 ccompany = Column(name="CCOMPANY", type=STRING, length=20, primary_key=True)
 carticle = Column(name="CARTICLE", type=STRING, length=20, primary_key=True)
@@ -19,3 +19,5 @@ print(columns)
 cols_data = dumps(columns.to_dict())
 cols2 = ColumnList(cols_data)
 print(cols2)
+
+print(columns.default_values())

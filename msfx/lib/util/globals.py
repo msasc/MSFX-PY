@@ -108,47 +108,6 @@ def error_msg(msg: str, arg: str, val: object, exp: (object,)):
     err += ", got '" + str(val) + "'"
     return err
 
-def value_str(v: object, indent=0) -> str:
-    s = ""
-    if isinstance(v, str):
-        s += "'" + v + "'"
-    if isinstance(v, (int, float, complex, Decimal, bool)):
-        s += str(v)
-    if isinstance(v, (list, tuple)):
-        s += list_str(v)
-    if isinstance(v, dict):
-        s += dict_str(v)
-    return s
-
-def item_str(item: (str, object), indent= 0):
-    k, v = item
-    s = "'" + k + "': "
-    s += value_str(v)
-    return s
-
-def list_str(lst: (list, tuple), indent= 0) -> str:
-    comma = False
-    s = "["
-    for v in lst:
-        if comma: s += ", "
-        s += value_str(v, indent)
-        comma = True
-    s += "]"
-    return s
-
-def dict_str(data: dict, indent=0) -> str:
-    comma = False
-    s = "{"
-    for item in data.items():
-        if comma: s += ", "
-        s += item_str(item, indent)
-        comma = True
-    s += "}"
-    return s
-
-def full_class_name(clazz):
-    return f"{clazz.__module__}.{clazz.__qualname__}"
-
 def instantiate(full_class_name, *args, **kwargs):
     # Split the full class name into module path and class name
     module_path, class_name = full_class_name.rsplit('.', 1)
