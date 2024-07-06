@@ -24,8 +24,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib.db_back.table import TableLink
-from msfx.lib.util.globals import error_msg
+from msfx.lib.db_back2.table import TableLink
+from msfx.lib import error_msg
 
 class ForeignKey(TableLink):
     """ A foreign key of a table. """

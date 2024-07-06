@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from msfx.lib.db.column import Column
+from msfx.lib.db_back.column import Column
 print(int())
 print(float())
 print(complex())

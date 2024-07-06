@@ -11,19 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-from msfx.lib.db import STRING, DECIMAL
-from msfx.lib.db_back.column import Column
-from msfx.lib.db_back.index import Index
-
-ccompany = Column(name="CCOMPANY", type=STRING, length=20, primary_key=True)
-carticle = Column(name="CARTICLE", type=STRING, length=20, primary_key=True)
-qsales = Column(name="QSALES", type=DECIMAL, length=24, decimals=2)
-
-index = Index()
-index.set_name("COMPANY_ARTS_PK")
-
-index.append(ccompany)
-index.append(carticle)
-
-print(index)

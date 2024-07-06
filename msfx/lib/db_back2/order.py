@@ -23,56 +23,51 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db_back.column import Column
-from msfx.lib.dn import Schema, create_from_schema, get_list, dumps, loads, register_class
+
+from msfx.lib.db_back2.column import Column
 from msfx.lib import error_msg
 
 class Order:
     """ Order definition. """
-
-    SEGMENTS = "segments"
-
-    schema = Schema()
-    schema.add(key=SEGMENTS, value_type=list, default_value=[])
-
     def __init__(self, order=None):
-        self.__data = create_from_schema(Order.schema)
-        if order is not None and isinstance(order, Order):
-            self.__data |= order.__data
-        if order is not None and isinstance(order, dict):
-            self.__data |= order
+        self.__segments = []
+        if order is not None:
+            if not isinstance(order, Order):
+                error = error_msg("type error", "order", type(order), (Order,))
+                raise TypeError(error)
+            self.__segments.extend(order.__segments)
 
-    def _data(self): return self.__data
-    def __segments(self): return get_list(self.__data, Order.SEGMENTS)
-
-    def get_column(self, index: int) -> Column: return self.__segments()[index][0]
-    def is_asc(self, index: int) -> bool: return self.__segments()[index][1]
-
-    def append(self, column: Column, asc: bool = True):
+    def append(self, column, asc = True):
         if column is None or not isinstance(column, Column):
             error = error_msg("type error", "column", type(column), (Column,))
             raise TypeError(error)
         if asc is None or not isinstance(asc, bool):
             error = error_msg("type error", "asc", type(asc), (bool,))
             raise TypeError(error)
-        self.__segments().append([column, asc])
+        self.__segments.append({ "column": column, "asc": asc })
 
-    def to_string(self, **kwargs) -> str: return dumps(self.__data, **kwargs)
-    def from_string(self, data: str): self.__data = loads(data)
-    def to_dict(self) -> dict: return dict(self.__data)
+    def get_segments(self) -> list:
+        return list(self.__segments)
 
-    def __iter__(self): return self.__segments().__iter__()
-    def __len__(self) -> int: return len(self.__segments())
+    def to_dict(self):
+        segments = []
+        for segment in self.__segments:
+            short_segment = {"column": segment["column"].get_name(), "asc": segment["asc"]}
+            segments.append(short_segment)
+        return {"segments": segments}
 
+    def __iter__(self):
+        return self.__segments.__iter__()
+    def __len__(self) -> int:
+        return len(self.__segments)
     def __getitem__(self, index) -> {}:
         if index is None or not isinstance(index, int):
             error = error_msg("type error", "index", type(index), (int,))
             raise TypeError(error)
         if 0 <= index < len(self):
-            return self.__segments()[index]
+            return self.__segments[index]
         return None
-
-    def __str__(self) -> str: return str(self.__data)
-    def __repr__(self): return self.__str__()
-
-register_class("order", Order)
+    def __str__(self) -> str:
+        return str(self.to_dict())
+    def __repr__(self):
+        return self.__str__()

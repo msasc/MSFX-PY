@@ -11,20 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from datetime import date
-from decimal import Decimal
-
-from msfx.lib.db_back.types import Types
-from msfx.lib.db_back.value import Value
-
-val = Value(Types.DATE)
-print(val)
-
-print(Types.get_types_null())
-val_decimal = Value(Decimal(2.45))
-val_float = Value(2.45)
-print(val_decimal == val_float)
-
-val_date = Value(date.today())
-print(val_decimal == val_date)
-print(val_decimal.is_comparable(val_float))

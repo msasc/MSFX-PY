@@ -1,7 +1,7 @@
-from msfx.lib.db_back.column import Column
-from msfx.lib.db_back.foreign_key import ForeignKey
-from msfx.lib.db_back.table import Table
-from msfx.lib.db_back.types import Types
+from msfx.lib.db_back2.column import Column
+from msfx.lib.db_back2.relation import Relation
+from msfx.lib.db_back2.table import Table
+from msfx.lib.db_back2.types import Types
 
 ccompany = Column(name="CCOMPANY", type=Types.STRING, length=30, primary_key=True)
 carticle = Column(name="CARTICLE", type=Types.STRING, length=20, primary_key=True)
@@ -19,16 +19,13 @@ articles.set_name("ARTICLES")
 articles.columns().append(carticle)
 articles.columns().append(darticle)
 
-fk = ForeignKey()
-fk.set_name("SALES_FK0")
-fk.set_persistent(True)
-fk.set_delete_restriction("CASCADE")
-fk.set_local_table(sales)
-fk.set_foreign_table(articles)
-fk.append_segment(
+rel = Relation()
+rel.set_type("FULL")
+rel.set_local_table(sales)
+rel.set_foreign_table(articles)
+rel.append_segment(
     sales.columns().get_by_alias("CARTICLE"),
     articles.columns().get_by_alias("CARTICLE")
 )
 
-print(fk)
-print(articles)
+print(rel)

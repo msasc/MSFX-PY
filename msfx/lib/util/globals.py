@@ -91,34 +91,3 @@ def is_valid_decimal(string: str) -> bool:
 def is_numeric(value) -> bool:
     return isinstance(value, (int, float, Decimal, complex))
 
-def list_get(lst, index, default=None):
-    try: return lst[index]
-    except IndexError: return default
-
-def error_msg(msg: str, arg: str, val: object, exp: (object,)):
-    err = "argument '" + arg + "' " + msg + ", expected "
-    if len(exp) == 1:
-        err += "'" + str(exp[0]) + "'"
-    else:
-        err += "one of ("
-        for i in range(len(exp)):
-            if i > 0: err += ", "
-            err += "'" + str(exp[i]) + "'"
-        err += ")"
-    err += ", got '" + str(val) + "'"
-    return err
-
-def instantiate(full_class_name, *args, **kwargs):
-    # Split the full class name into module path and class name
-    module_path, class_name = full_class_name.rsplit('.', 1)
-
-    # Dynamically import the module
-    module = import_module(module_path)
-
-    # Retrieve the class from the module
-    cls = getattr(module, class_name)
-
-    # Instantiate the class
-    instance = cls(*args, **kwargs)
-
-    return instance

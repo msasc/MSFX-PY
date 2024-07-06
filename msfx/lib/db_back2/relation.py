@@ -23,8 +23,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db_back.table import TableLink
-from msfx.lib.util.globals import error_msg
+from msfx.lib.db_back2.table import TableLink
+from msfx.lib import error_msg
 
 class Relation(TableLink):
     """ a Relation between two tables. """

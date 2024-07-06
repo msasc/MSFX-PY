@@ -11,19 +11,20 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from datetime import date
+from decimal import Decimal
 
-from msfx.lib.db import STRING, DECIMAL
-from msfx.lib.db_back.column import Column
-from msfx.lib.db_back.index import Index
+from msfx.lib.db_back2.types import Types
+from msfx.lib.db_back2.value import Value
 
-ccompany = Column(name="CCOMPANY", type=STRING, length=20, primary_key=True)
-carticle = Column(name="CARTICLE", type=STRING, length=20, primary_key=True)
-qsales = Column(name="QSALES", type=DECIMAL, length=24, decimals=2)
+val = Value(Types.DATE)
+print(val)
 
-index = Index()
-index.set_name("COMPANY_ARTS_PK")
+print(Types.get_types_null())
+val_decimal = Value(Decimal(2.45))
+val_float = Value(2.45)
+print(val_decimal == val_float)
 
-index.append(ccompany)
-index.append(carticle)
-
-print(index)
+val_date = Value(date.today())
+print(val_decimal == val_date)
+print(val_decimal.is_comparable(val_float))

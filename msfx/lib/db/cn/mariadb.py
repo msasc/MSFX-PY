@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-""" Implementation of the db connector interface for MariaDB. """
+""" Implementation of the db_back connector interface for MariaDB. """
 from mariadb import Cursor, Connection, ConnectionPool
 
 from msfx.lib.db.cn import DBCursor, DBConnection, DBConnectionPool

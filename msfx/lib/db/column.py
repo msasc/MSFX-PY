@@ -13,21 +13,11 @@
 #  limitations under the License.
 from decimal import Decimal
 
-from msfx.lib.db import (
-    BOOLEAN,INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
-)
-from msfx.lib.dn import (
-    Schema, create_from_kwargs, create_from_schema,
-    get_string, put_string,
-    get_integer, put_integer,
-    get_bool, put_bool,
-    get_list, get_dict,
-    dumps, loads,
-    register_class
-)
-from msfx.lib.util.globals import error_msg
+from msfx.lib import Data, create_from_kwargs, get_string, put_string, get_integer, put_integer, get_bool, put_bool, \
+    register_class, merge_dicts, error_msg, check_args
+from msfx.lib.db import BOOLEAN, INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
 
-class Column:
+class Column(Data):
     """ A column definition. """
 
     NAME = "name"
@@ -42,26 +32,20 @@ class Column:
     LABEL = "label"
     DESCRIPTION = "description"
 
-    schema = Schema()
-    schema.add(key=NAME, value_type=str, default_value="")
-    schema.add(key=ALIAS, value_type=str, default_value="")
-    schema.add(key=TYPE, value_type=str, default_value=STRING)
-    schema.add(key=LENGTH, value_type=int, default_value=-1)
-    schema.add(key=DECIMALS, value_type=int, default_value=-1)
-    schema.add(key=PRIMARY_KEY, value_type=bool, default_value=False)
-    schema.add(key=NULLABLE, value_type=bool, default_value=False)
-    schema.add(key=UPPERCASE, value_type=bool, default_value=False)
-    schema.add(key=HEADER, value_type=str, default_value="")
-    schema.add(key=LABEL, value_type=str, default_value="")
-    schema.add(key=DESCRIPTION, value_type=str, default_value="")
+    KEYS = [
+        NAME, ALIAS, TYPE, LENGTH, DECIMALS,
+        PRIMARY_KEY, NULLABLE, UPPERCASE,
+        HEADER, LABEL, DESCRIPTION
+    ]
 
     def __init__(self, column=None, **kwargs):
+        super().__init__()
         self.__data = {}
         if column is not None and isinstance(column, Column):
-            self.__data |= column.__data
+            self.from_dict(column.__data)
         if column is not None and isinstance(column, dict):
-            self.__data |= column
-        self.__data |= create_from_kwargs(Column.schema, **kwargs)
+            self.from_dict(column)
+        self.__data = create_from_kwargs(Column.KEYS, **kwargs)
 
     def get_name(self) -> str: return get_string(self.__data, Column.NAME)
     def set_name(self, name: str): put_string(self.__data, Column.NAME, name)
@@ -112,21 +96,12 @@ class Column:
         if column_type == BINARY: return None
         if column_type == OBJECT: return {}
 
-    def to_string(self, **kwargs) -> str: return dumps(self.__data, **kwargs)
-    def from_string(self, data: str): self.__data = loads(data)
-
     def to_dict(self) -> dict: return dict(self.__data)
+    def from_dict(self, data: dict): merge_dicts(data, self.__data, Column.KEYS)
 
-    def __str__(self) -> str:
-        return str(self.__data)
-    def __repr__(self):
-        return self.__str__()
-    def __iter__(self):
-        return self.__data.__iter__()
-    def __len__(self) -> int:
-        return len(self.__data)
+register_class("column", Column)
 
-class ColumnList:
+class ColumnList(Data):
     """ An ordered list of columns that can be efficiently accessed either by index or alias. """
 
     COLUMNS = "columns"
@@ -135,99 +110,56 @@ class ColumnList:
     PK_COLUMNS = "pk_columns"
     DEFAULT_VALUES = "default_values"
 
-    schema = Schema()
-    schema.add(key=COLUMNS, value_type=list, default_value=[])
-    schema.add(key=ALIASES, value_type=list, default_value=[])
-    schema.add(key=INDEXES, value_type=dict, default_value={})
-    schema.add(key=PK_COLUMNS, value_type=list, default_value=[])
-    schema.add(key=DEFAULT_VALUES, value_type=list, default_value=[])
+    KEYS = [COLUMNS, ALIASES, INDEXES, PK_COLUMNS, DEFAULT_VALUES]
 
     def __init__(self, column_list=None):
-        self.__data =  create_from_schema(ColumnList.schema)
+        self.__data = {
+            ColumnList.COLUMNS: [],
+            ColumnList.ALIASES: [],
+            ColumnList.INDEXES: {},
+            ColumnList.PK_COLUMNS: [],
+            ColumnList.DEFAULT_VALUES: []
+        }
         if column_list is not None and isinstance(column_list, ColumnList):
-            self.__data |= column_list.__data
+            self.from_dict(column_list.__data)
         if column_list is not None and isinstance(column_list, dict):
-            self.__data |= column_list
+            self.from_dict(column_list)
 
     def append(self, column: Column):
-        if column is None or not isinstance(column, Column):
-            error = error_msg("type error", "column", type(column), (Column,))
-            raise TypeError(error)
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        columns.append(column)
+        self.__data[ColumnList.COLUMNS].append(column)
         self.__setup()
 
-    def remove(self, key: (int, str)):
-        if key is None or not isinstance(key, (int, str)):
-            error = error_msg("type error", "key", type(key), (int, str))
-            raise TypeError(error)
-        index = -1
-        if isinstance(key, int): index = key
-        if isinstance(key, str): index = self.index_of(key)
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        if 0 <= index < len(columns):
-            del columns[index]
-            self.__setup()
-
     def clear(self):
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        columns.clear()
+        self.__data[ColumnList.COLUMNS].clear()
         self.__setup()
 
     def index_of(self, alias: str) -> int:
-        if alias is None or not isinstance(alias, str):
-            error = error_msg("type error", "alias", type(alias), (str,))
-            raise TypeError(error)
-        indexes = get_dict(self.__data, ColumnList.INDEXES)
-        index = indexes.get(alias)
+        check_args("type error", "alias", type(alias), (str,))
+        index = self.__data[ColumnList.INDEXES].get(alias)
         return -1 if index is None else index
 
     def get_by_alias(self, alias: str) -> Column:
-        if alias is None or not isinstance(alias, str):
-            error = error_msg("type error", "alias", type(alias), (str,))
-            raise TypeError(error)
+        check_args("type error", "alias", type(alias), (str,))
         index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        return columns[index]
+        return self.__data[ColumnList.COLUMNS][index]
 
     def get_by_index(self, index: int) -> Column:
-        if index is None or not isinstance(index, int):
-            error = error_msg("type error", "index", type(index), (int,))
-            raise TypeError(error)
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        if index < 0:
-            error = error_msg("value error", "index", "< 0", (">= 0",))
-            raise ValueError(error)
-        if index >= len(columns):
-            error = error_msg("value error", "index", ">= len(columns)", ("< len(columns)",))
-            raise ValueError(error)
-        return columns[index]
+        check_args("type error", "index", type(index), (int,))
+        check_args("value error", "index", "< 0", (">= 0",))
+        check_args("value error", "index", ">= len(columns)", ("< len(columns)",))
+        return self.__data[ColumnList.COLUMNS][index]
 
-    def columns(self) -> list:
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        return list(columns)
-    def aliases(self) -> list:
-        aliases = get_list(self.__data, ColumnList.ALIASES)
-        return list(aliases)
-    def pk_columns(self) -> list:
-        pk_aliases = get_list(self.__data, ColumnList.PK_COLUMNS)
-        pk_columns = []
-        for alias in pk_aliases:
-            pk_columns.append(self.get_by_alias(alias))
-        return pk_columns
-    def default_values(self) -> list:
-        default_values = get_list(self.__data, ColumnList.DEFAULT_VALUES)
-        return list(default_values)
+    def to_dict(self) -> dict: return dict(self.__data)
+    def from_dict(self, data: dict): merge_dicts(data, self.__data, ColumnList.KEYS)
 
     def __setup(self):
+        columns = self.__data[ColumnList.COLUMNS]
 
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-
-        aliases = get_list(self.__data, ColumnList.ALIASES)
-        indexes = get_dict(self.__data, ColumnList.INDEXES)
-        pk_columns = get_list(self.__data, ColumnList.PK_COLUMNS)
-        default_values = get_list(self.__data, ColumnList.DEFAULT_VALUES)
+        aliases = self.__data[ColumnList.ALIASES]
+        indexes = self.__data[ColumnList.INDEXES]
+        pk_columns = self.__data[ColumnList.PK_COLUMNS]
+        default_values = self.__data[ColumnList.DEFAULT_VALUES]
 
         aliases.clear()
         indexes.clear()
@@ -243,20 +175,7 @@ class ColumnList:
                 pk_columns.append(alias)
             default_values.append(column.get_default_value())
 
-    def to_dict(self) -> dict: return dict(self.__data)
-
-    def __str__(self) -> str:
-        return str(self.__data)
-    def __repr__(self):
-        return self.__str__()
-    def __iter__(self):
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        return columns.__iter__()
-    def __len__(self) -> int:
-        columns = get_list(self.__data, ColumnList.COLUMNS)
-        return len(columns)
+    def __iter__(self): return self.__data[ColumnList.COLUMNS].__iter__()
+    def __len__(self) -> int: return len(self.__data[ColumnList.COLUMNS])
     def __getitem__(self, index: int) -> Column:
         return self.get_by_index(index)
-
-register_class("column", Column)
-register_class("columns", ColumnList)

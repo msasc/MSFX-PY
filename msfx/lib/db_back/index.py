@@ -24,68 +24,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from msfx.lib.db_back.order import Order
-from msfx.lib.util.globals import error_msg
-
-class Table: pass
+from msfx.lib.dn import Schema, get_string, put_string
 
 class Index(Order):
-    """ An index of a table. """
-    def __init__(self):
-        super().__init__()
-        self.__name = ""
-        self.__description = ""
-        self.__unique = False
-        self.__table = None
-        self.__schema = ""
+    """ An index definition. """
 
-    def get_name(self):
-        return self.__name
-    def set_name(self, name):
-        if name is None or not isinstance(name, str):
-            error = error_msg("type error", "name", type(name), (str,))
-            raise TypeError(error)
-        self.__name = name
+    NAME = "name"
+    DESCRIPTION = "description"
+    UNIQUE = "unique"
+    TABLE = "table"
+    SCHEMA = "schema"
 
-    def get_description(self):
-        return self.__description
-    def set_description(self, description):
-        if description is None or not isinstance(description, str):
-            error = error_msg("type error", "description", type(description), (str,))
-            raise TypeError(error)
-        self.__description = description
+    schema = Schema()
+    schema.add(key=NAME, value_type=str, default_value="")
 
-    def is_unique(self):
-        return self.__unique
-    def set_unique(self, unique=False):
-        if unique is None or not isinstance(unique, bool):
-            error = error_msg("type error", "unique", type(unique), (bool,))
-            raise TypeError(error)
-        self.__unique = unique
+    def __init__(self, index=None):
+        super(Index, self).__init__(index)
 
-    def get_table(self):
-        return self.__table
-    def set_table(self, table: Table):
-        if table is not None:
-            if type(table).__name__ != Table.__name__:
-                error = error_msg("type error", "table", type(table).__name__, (Table.__name__,))
-                raise TypeError(error)
-            self.__table = table
+    def get_name(self): return get_string(self._data(), Index.NAME)
+    def set_name(self, name: str): put_string(self._data(), Index.NAME, name)
 
-    def get_schema(self):
-        return self.__schema
-    def set_schema(self, schema):
-        if schema is None or not isinstance(schema, str):
-            error = error_msg("type error", "schema", type(schema), (str,))
-            raise TypeError(error)
-        self.__schema = schema
-
-    # noinspection PyDictCreation
-    def to_dict(self):
-        data = {}
-        data["name"] = self.__name
-        data["description"] = self.__description
-        data["unique"] = self.__unique
-        data["table"] = None if self.__table is None else self.__table.get_name()
-        data["schema"] = self.__schema
-        data |= super().to_dict()
-        return data
+    def __str__(self) -> str: return str(self._data())
+    def __repr__(self): return self.__str__()
