@@ -40,47 +40,47 @@ class Column(Data):
 
     def __init__(self, column=None, **kwargs):
         super().__init__()
-        self.__data = {}
+        self._data = {}
         if column is not None and isinstance(column, Column):
-            self.from_dict(column.__data)
+            self.from_dict(column._data)
         if column is not None and isinstance(column, dict):
             self.from_dict(column)
-        self.__data = create_from_kwargs(Column.KEYS, **kwargs)
+        self._data = create_from_kwargs(Column.KEYS, **kwargs)
 
-    def get_name(self) -> str: return get_string(self.__data, Column.NAME)
-    def set_name(self, name: str): put_string(self.__data, Column.NAME, name)
+    def get_name(self) -> str: return get_string(self._data, Column.NAME)
+    def set_name(self, name: str): put_string(self._data, Column.NAME, name)
 
     def get_alias(self) -> str:
-        alias = get_string(self.__data, Column.ALIAS)
+        alias = get_string(self._data, Column.ALIAS)
         return alias if len(alias) > 0 else self.get_name()
-    def set_alias(self, alias: str): put_string(self.__data, Column.ALIAS, alias)
+    def set_alias(self, alias: str): put_string(self._data, Column.ALIAS, alias)
 
-    def get_type(self) -> str: return get_string(self.__data, Column.TYPE)
-    def set_type(self, type: str): put_string(self.__data, Column.TYPE, type)
+    def get_type(self) -> str: return get_string(self._data, Column.TYPE)
+    def set_type(self, type: str): put_string(self._data, Column.TYPE, type)
 
-    def get_length(self) -> int: return get_integer(self.__data, Column.LENGTH)
-    def set_length(self, length: int): put_integer(self.__data, Column.LENGTH, length)
+    def get_length(self) -> int: return get_integer(self._data, Column.LENGTH)
+    def set_length(self, length: int): put_integer(self._data, Column.LENGTH, length)
 
-    def get_decimals(self) -> int: return get_integer(self.__data, Column.DECIMALS)
-    def set_decimals(self, decimals: int): put_integer(self.__data, Column.DECIMALS, decimals)
+    def get_decimals(self) -> int: return get_integer(self._data, Column.DECIMALS)
+    def set_decimals(self, decimals: int): put_integer(self._data, Column.DECIMALS, decimals)
 
-    def is_primary_key(self) -> bool: return get_bool(self.__data, Column.PRIMARY_KEY)
-    def set_primary_key(self, primary_key: bool): put_bool(self.__data, Column.PRIMARY_KEY, primary_key)
+    def is_primary_key(self) -> bool: return get_bool(self._data, Column.PRIMARY_KEY)
+    def set_primary_key(self, primary_key: bool): put_bool(self._data, Column.PRIMARY_KEY, primary_key)
 
-    def is_nullable(self) -> bool: return get_bool(self.__data, Column.NULLABLE)
-    def set_nullable(self, nullable: bool): put_bool(self.__data, Column.NULLABLE, nullable)
+    def is_nullable(self) -> bool: return get_bool(self._data, Column.NULLABLE)
+    def set_nullable(self, nullable: bool): put_bool(self._data, Column.NULLABLE, nullable)
 
-    def is_uppercase(self) -> bool: return get_bool(self.__data, Column.UPPERCASE)
-    def set_uppercase(self, uppercase: bool): put_bool(self.__data, Column.UPPERCASE, uppercase)
+    def is_uppercase(self) -> bool: return get_bool(self._data, Column.UPPERCASE)
+    def set_uppercase(self, uppercase: bool): put_bool(self._data, Column.UPPERCASE, uppercase)
 
-    def get_header(self) -> str: return get_string(self.__data, Column.HEADER)
-    def set_header(self, header: str): put_string(self.__data, Column.HEADER, header)
+    def get_header(self) -> str: return get_string(self._data, Column.HEADER)
+    def set_header(self, header: str): put_string(self._data, Column.HEADER, header)
 
-    def get_label(self) -> str: return get_string(self.__data, Column.LABEL)
-    def set_label(self, label: str): put_string(self.__data, Column.LABEL, label)
+    def get_label(self) -> str: return get_string(self._data, Column.LABEL)
+    def set_label(self, label: str): put_string(self._data, Column.LABEL, label)
 
-    def get_description(self) -> str: return get_string(self.__data, Column.DESCRIPTION)
-    def set_description(self, description: str): put_string(self.__data, Column.DESCRIPTION, description)
+    def get_description(self) -> str: return get_string(self._data, Column.DESCRIPTION)
+    def set_description(self, description: str): put_string(self._data, Column.DESCRIPTION, description)
 
     def get_default_value(self) -> object:
         column_type = self.get_type()
@@ -96,8 +96,8 @@ class Column(Data):
         if column_type == BINARY: return None
         if column_type == OBJECT: return {}
 
-    def to_dict(self) -> dict: return dict(self.__data)
-    def from_dict(self, data: dict): merge_dicts(data, self.__data, Column.KEYS)
+    def keys(self) -> list: return Column.KEYS
+
 
 register_class("column", Column)
 
@@ -113,7 +113,8 @@ class ColumnList(Data):
     KEYS = [COLUMNS, ALIASES, INDEXES, PK_COLUMNS, DEFAULT_VALUES]
 
     def __init__(self, column_list=None):
-        self.__data = {
+        super().__init__()
+        self._data = {
             ColumnList.COLUMNS: [],
             ColumnList.ALIASES: [],
             ColumnList.INDEXES: {},
@@ -121,45 +122,45 @@ class ColumnList(Data):
             ColumnList.DEFAULT_VALUES: []
         }
         if column_list is not None and isinstance(column_list, ColumnList):
-            self.from_dict(column_list.__data)
+            self.from_dict(column_list._data)
         if column_list is not None and isinstance(column_list, dict):
             self.from_dict(column_list)
 
     def append(self, column: Column):
-        self.__data[ColumnList.COLUMNS].append(column)
+        self._data[ColumnList.COLUMNS].append(column)
         self.__setup()
 
     def clear(self):
-        self.__data[ColumnList.COLUMNS].clear()
+        self._data[ColumnList.COLUMNS].clear()
         self.__setup()
 
     def index_of(self, alias: str) -> int:
         check_args("type error", "alias", type(alias), (str,))
-        index = self.__data[ColumnList.INDEXES].get(alias)
+        index = self._data[ColumnList.INDEXES].get(alias)
         return -1 if index is None else index
 
     def get_by_alias(self, alias: str) -> Column:
         check_args("type error", "alias", type(alias), (str,))
         index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
-        return self.__data[ColumnList.COLUMNS][index]
+        return self._data[ColumnList.COLUMNS][index]
 
     def get_by_index(self, index: int) -> Column:
         check_args("type error", "index", type(index), (int,))
         check_args("value error", "index", "< 0", (">= 0",))
         check_args("value error", "index", ">= len(columns)", ("< len(columns)",))
-        return self.__data[ColumnList.COLUMNS][index]
+        return self._data[ColumnList.COLUMNS][index]
 
-    def to_dict(self) -> dict: return dict(self.__data)
-    def from_dict(self, data: dict): merge_dicts(data, self.__data, ColumnList.KEYS)
+    def to_dict(self) -> dict: return dict(self._data)
+    def from_dict(self, data: dict): merge_dicts(data, self._data, ColumnList.KEYS)
 
     def __setup(self):
-        columns = self.__data[ColumnList.COLUMNS]
+        columns = self._data[ColumnList.COLUMNS]
 
-        aliases = self.__data[ColumnList.ALIASES]
-        indexes = self.__data[ColumnList.INDEXES]
-        pk_columns = self.__data[ColumnList.PK_COLUMNS]
-        default_values = self.__data[ColumnList.DEFAULT_VALUES]
+        aliases = self._data[ColumnList.ALIASES]
+        indexes = self._data[ColumnList.INDEXES]
+        pk_columns = self._data[ColumnList.PK_COLUMNS]
+        default_values = self._data[ColumnList.DEFAULT_VALUES]
 
         aliases.clear()
         indexes.clear()
@@ -175,7 +176,8 @@ class ColumnList(Data):
                 pk_columns.append(alias)
             default_values.append(column.get_default_value())
 
-    def __iter__(self): return self.__data[ColumnList.COLUMNS].__iter__()
-    def __len__(self) -> int: return len(self.__data[ColumnList.COLUMNS])
-    def __getitem__(self, index: int) -> Column:
-        return self.get_by_index(index)
+    def keys(self) -> list: return ColumnList.KEYS
+
+    def __iter__(self): return self._data[ColumnList.COLUMNS].__iter__()
+    def __len__(self) -> int: return len(self._data[ColumnList.COLUMNS])
+    def __getitem__(self, index: int) -> Column: return self.get_by_index(index)

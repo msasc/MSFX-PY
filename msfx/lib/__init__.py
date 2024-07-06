@@ -46,11 +46,14 @@ class Data(ABC):
     Defines an interface for classes that can export and import their data
     from a dictionary.
     """
+    def __init__(self):
+        self._data = {}
 
     @abstractmethod
-    def to_dict(self) -> dict: pass
-    @abstractmethod
-    def from_dict(self, data: dict): pass
+    def keys(self) -> list: pass
+
+    def to_dict(self) -> dict: return dict(self._data)
+    def from_dict(self, data: dict): merge_dicts(data, self._data, self.keys())
 
     def to_string(self, **kwargs) -> str: return dumps(self.to_dict(), **kwargs)
     def from_string(self, data: str): self.from_dict(loads(data))

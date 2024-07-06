@@ -17,29 +17,30 @@ from msfx.lib.db.column import Column
 
 class Order(Data):
     """ Order definition. """
+
     SEGMENTS = "segments"
     KEYS = [SEGMENTS]
 
     def __init__(self, order=None):
-        self.__data = {"segments": []}
+        super().__init__()
+        self._data = {"segments": []}
         if order is not None and isinstance(order, Order):
             self.from_dict(order.to_dict())
 
     def append(self, column: Column, asc: bool = True):
         check_args("type error", "column", column, (Column,))
         check_args("type error", "asc", type(asc), (bool,))
-        self.__data[Order.SEGMENTS].append([column, asc])
+        self._data[Order.SEGMENTS].append([column, asc])
 
-    def get_column(self, index: int) -> Column: return self.__data[Order.SEGMENTS][index][0]
-    def is_asc(self, index: int) -> bool: return self.__data[Order.SEGMENTS][index][1]
+    def get_column(self, index: int) -> Column: return self._data[Order.SEGMENTS][index][0]
+    def is_asc(self, index: int) -> bool: return self._data[Order.SEGMENTS][index][1]
 
-    def to_dict(self) -> dict: return dict(self.__data)
-    def from_dict(self, data: dict): merge_dicts(data, self.__data, Order.KEYS)
+    def keys(self) -> list: return Order.KEYS
 
-    def __iter__(self): return self.__data[Order.SEGMENTS].__iter__()
-    def __len__(self) -> int: return len(self.__data[Order.SEGMENTS])
+    def __iter__(self): return self._data[Order.SEGMENTS].__iter__()
+    def __len__(self) -> int: return len(self._data[Order.SEGMENTS])
 
-    def __getitem__(self, index) -> {}:
+    def __getitem__(self, index) -> []:
         check_args("type error", "index", type(index), (int,))
-        if 0 <= index < len(self): return self.__data[Order.SEGMENTS][index]
+        if 0 <= index < len(self): return self._data[Order.SEGMENTS][index]
         return None
