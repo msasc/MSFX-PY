@@ -30,16 +30,21 @@ def error_msg(msg: str, arg: str, val: object, exp: (object,)):
     err += ", got '" + str(val) + "'"
     return err
 
-def check_args(msg: str, arg: str, val: object, exp: (object,)):
-    if val is None or not isinstance(val, exp):
-        error = error_msg(msg, arg, type(val), exp)
+def check_type(argument: str, got_type: type, expected_types: (type,)):
+    if got_type is None or not got_type in expected_types:
+        error = error_msg("type error", argument, got_type, expected_types)
         raise TypeError(error)
 
+def check_value(argument: str, condition: bool, got_value: object, expected_values: (object,)):
+    if condition and not got_value in expected_values:
+        error = error_msg("value error", argument, got_value, expected_values)
+        raise ValueError(error)
 
-def merge_dicts(dct_src: dict, dct_dst: dict, keys: list):
+
+def merge_dicts(dict_src: dict, dict_dst: dict, keys: list):
     for key in keys:
-        if key in dct_dst:
-            dct_src[key] = dct_dst[key]
+        if key in dict_src:
+            dict_dst[key] = dict_src[key]
 
 class Data(ABC):
     """
@@ -50,13 +55,11 @@ class Data(ABC):
         self._data = {}
 
     @abstractmethod
-    def keys(self) -> list: pass
-
+    def from_dict(self, data: dict): pass
     def to_dict(self) -> dict: return dict(self._data)
-    def from_dict(self, data: dict): merge_dicts(data, self._data, self.keys())
 
-    def to_string(self, **kwargs) -> str: return dumps(self.to_dict(), **kwargs)
     def from_string(self, data: str): self.from_dict(loads(data))
+    def to_string(self, **kwargs) -> str: return dumps(self.to_dict(), **kwargs)
 
     def __str__(self) -> str: return str(self.to_dict())
     def __repr__(self): return self.__str__()

@@ -1,3 +1,4 @@
+from msfx.lib import loads
 from msfx.lib.db import STRING
 from msfx.lib.db.column import Column, ColumnList
 
@@ -14,8 +15,12 @@ print()
 cols = ColumnList()
 cols.append(ccompany)
 cols.append(carticle)
+print(cols)
 print(cols.to_string())
+print(loads(cols.to_string()))
 
-cols2 = ColumnList()
-cols2.from_string(cols.to_string())
-print(cols2)
+# cols2 = ColumnList()
+# cols2.from_string(cols.to_string())
+# print(cols2)
+# print(len(cols2))
+# print(cols2.get_by_index(0))

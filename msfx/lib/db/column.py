@@ -14,7 +14,7 @@
 from decimal import Decimal
 
 from msfx.lib import Data, create_from_kwargs, get_string, put_string, get_integer, put_integer, get_bool, put_bool, \
-    register_class, merge_dicts, error_msg, check_args
+    register_class, merge_dicts, error_msg, check_type, check_value
 from msfx.lib.db import BOOLEAN, INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
 
 class Column(Data):
@@ -96,7 +96,7 @@ class Column(Data):
         if column_type == BINARY: return None
         if column_type == OBJECT: return {}
 
-    def keys(self) -> list: return Column.KEYS
+    def from_dict(self, data: dict): merge_dicts(data, self._data, Column.KEYS)
 
 
 register_class("column", Column)
@@ -135,24 +135,21 @@ class ColumnList(Data):
         self.__setup()
 
     def index_of(self, alias: str) -> int:
-        check_args("type error", "alias", type(alias), (str,))
+        check_type("alias", type(alias), (str,))
         index = self._data[ColumnList.INDEXES].get(alias)
         return -1 if index is None else index
 
     def get_by_alias(self, alias: str) -> Column:
-        check_args("type error", "alias", type(alias), (str,))
+        check_type("alias", type(alias), (str,))
         index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
         return self._data[ColumnList.COLUMNS][index]
 
     def get_by_index(self, index: int) -> Column:
-        check_args("type error", "index", type(index), (int,))
-        check_args("value error", "index", "< 0", (">= 0",))
-        check_args("value error", "index", ">= len(columns)", ("< len(columns)",))
+        check_type("index", type(index), (int,))
+        check_value("index", index < 0,"index < 0", ("index >= 0",))
+        check_value("index", index >= len(self), "index >= len(columns)", ("index < len(columns)",))
         return self._data[ColumnList.COLUMNS][index]
-
-    def to_dict(self) -> dict: return dict(self._data)
-    def from_dict(self, data: dict): merge_dicts(data, self._data, ColumnList.KEYS)
 
     def __setup(self):
         columns = self._data[ColumnList.COLUMNS]
@@ -176,8 +173,14 @@ class ColumnList(Data):
                 pk_columns.append(alias)
             default_values.append(column.get_default_value())
 
-    def keys(self) -> list: return ColumnList.KEYS
+    def from_dict(self, data: dict):
+        # merge_dicts(data, self._data, ColumnList.KEYS)
+        for key in ColumnList.KEYS:
+            if key in data:
+                self._data[key] = data[key]
 
     def __iter__(self): return self._data[ColumnList.COLUMNS].__iter__()
     def __len__(self) -> int: return len(self._data[ColumnList.COLUMNS])
     def __getitem__(self, index: int) -> Column: return self.get_by_index(index)
+
+register_class("columns", ColumnList)
