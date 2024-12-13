@@ -39,7 +39,7 @@
 from datetime import date, time, datetime
 from decimal import Decimal
 
-from msfx.lib.db_back2.types import Types
+from msfx.lib_back.db_back2.types import Types
 
 class Value:
     """ Encapsulates an immutable value of one of the supported types. """

@@ -14,7 +14,7 @@
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
-from msfx.lib.qt import getBackgroundColor, setBackgroundColor
+from msfx.lib_back.qt import getBackgroundColor, setBackgroundColor
 
 
 class QBorderLayout(QVBoxLayout):

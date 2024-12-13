@@ -13,8 +13,8 @@
 #  limitations under the License.
 
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow
-from msfx.lib.qt import setWidgetSize
-from msfx.lib.qt.layout import QBorderLayout
+from msfx.lib_back.qt import setWidgetSize
+from msfx.lib_back.qt.layout import QBorderLayout
 
 if __name__ == '__main__':
     app = QApplication([])

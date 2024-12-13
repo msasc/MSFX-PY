@@ -42,9 +42,9 @@ from PyQt6.QtWidgets import (
     QHBoxLayout
 )
 
-import msfx.lib.qt
-from msfx.lib.task.monitor import TaskProgress, TaskMonitor
-from msfx.lib.task.task import Task
+import msfx.lib_back.qt
+from msfx.lib_back.task.monitor import TaskProgress, TaskMonitor
+from msfx.lib_back.task.task import Task
 
 # Define a generic class
 class TaskTestMonitor(Task):

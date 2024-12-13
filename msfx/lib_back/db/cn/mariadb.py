@@ -15,7 +15,7 @@
 """ Implementation of the db_back connector interface for MariaDB. """
 from mariadb import Cursor, Connection, ConnectionPool
 
-from msfx.lib.db.cn import DBCursor, DBConnection, DBConnectionPool
+from msfx.lib_back.db.cn import DBCursor, DBConnection, DBConnectionPool
 
 class MariaDBCursor(DBCursor):
     def __init__(self, cursor: Cursor):

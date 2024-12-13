@@ -1,7 +1,7 @@
-from msfx.lib.db_back2.column import Column
-from msfx.lib.db_back2.index import Index
-from msfx.lib.db_back2.table import Table
-from msfx.lib.db_back2.types import Types
+from msfx.lib_back.db_back2.column import Column
+from msfx.lib_back.db_back2.index import Index
+from msfx.lib_back.db_back2.table import Table
+from msfx.lib_back.db_back2.types import Types
 
 ccompany = Column(name="CCOMPANY", type=Types.STRING, length=30)
 carticle = Column(name="CARTICLE", type=Types.STRING, length=20)

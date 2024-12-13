@@ -27,9 +27,9 @@
 from decimal import Decimal
 from typing import Optional
 
-from msfx.lib.db_back2.types import Types
-from msfx.lib.db_back2.value import Value
-from msfx.lib import error_msg
+from msfx.lib_back.db_back2.types import Types
+from msfx.lib_back.db_back2.value import Value
+from msfx.lib_back import error_msg
 
 class Table: pass
 class View: pass

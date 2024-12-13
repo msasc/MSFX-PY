@@ -13,10 +13,10 @@
 #  limitations under the License.
 from decimal import Decimal
 
-from msfx.lib.db import (
+from msfx.lib_back.db import (
     BOOLEAN,INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
 )
-from msfx.lib.dn import (
+from msfx.lib_back.dn import (
     Schema, create_from_kwargs, create_from_schema,
     get_string, put_string,
     get_integer, put_integer,
@@ -25,7 +25,7 @@ from msfx.lib.dn import (
     dumps, loads,
     register_class
 )
-from msfx.lib import error_msg
+from msfx.lib_back import error_msg
 
 class Column:
     """ A column definition. """

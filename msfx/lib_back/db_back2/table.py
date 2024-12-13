@@ -24,9 +24,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib.db_back2.column import ColumnList, Column
-from msfx.lib.db_back2.index import Index
-from msfx.lib import error_msg
+from msfx.lib_back.db_back2.column import ColumnList, Column
+from msfx.lib_back.db_back2.index import Index
+from msfx.lib_back import error_msg
 
 class ColumnListTable(ColumnList):
     def __init__(self, table):

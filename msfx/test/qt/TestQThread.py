@@ -15,7 +15,7 @@
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
-import msfx.lib.qt
+import msfx.lib_back.qt
 
 class Worker(QObject):
     progress = pyqtSignal(int)  # Signal to update progress bar

@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
     QApplication, QPushButton
 )
 
-from msfx.lib.qt.alert import QAlert
+from msfx.lib_back.qt.alert import QAlert
 
 def action_button(**kwargs):
     name = kwargs.get("name")

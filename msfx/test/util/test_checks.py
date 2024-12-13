@@ -1,4 +1,4 @@
-from msfx.lib import check_type, check_value
+from msfx.lib_back import check_type, check_value
 
 try:
     check_type("code", str, (int, float))

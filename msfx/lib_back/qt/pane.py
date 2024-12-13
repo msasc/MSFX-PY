@@ -13,7 +13,7 @@
 #  limitations under the License.
 from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
-from msfx.lib.qt.layout import QBorderLayout
+from msfx.lib_back.qt.layout import QBorderLayout
 
 class QBorderPane(QWidget):
     def __init__(self):

@@ -14,7 +14,7 @@
 from datetime import datetime
 from threading import RLock
 
-from msfx.lib.task.task import TaskState
+from msfx.lib_back.task.task import TaskState
 
 class TaskProgress:
     """

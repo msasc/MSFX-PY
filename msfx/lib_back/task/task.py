@@ -15,8 +15,8 @@ import time
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from msfx.lib.task.monitor import TaskMonitor
-from msfx.lib.task.concurrent import Atomic
+from msfx.lib_back.task.monitor import TaskMonitor
+from msfx.lib_back.task.concurrent import Atomic
 
 class TaskState(Enum):
     """

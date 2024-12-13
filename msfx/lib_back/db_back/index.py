@@ -23,30 +23,26 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db_back2.table import TableLink
-from msfx.lib import error_msg
+from msfx.lib_back.db_back.order import Order
+from msfx.lib_back.dn import Schema, get_string, put_string
 
-class Relation(TableLink):
-    """ a Relation between two tables. """
-    def __init__(self):
-        super().__init__()
-        self.__relation_type = "LEFT"
+class Index(Order):
+    """ An index definition. """
 
-    def get_type(self):
-        return self.__relation_type
-    def set_type(self, relation_type):
-        if relation_type is None or not isinstance(relation_type, str):
-            error = error_msg("type error", "relation_type", type(relation_type), (str,))
-            raise TypeError(error)
-        relation_types = ("INNER", "LEFT", "RIGHT", "FULL", "CROSS")
-        if not relation_type in relation_types:
-            error = error_msg("value error", "relation_type", relation_type, relation_types)
-            raise ValueError(error)
-        self.__relation_type = relation_type
+    NAME = "name"
+    DESCRIPTION = "description"
+    UNIQUE = "unique"
+    TABLE = "table"
+    SCHEMA = "schema"
 
-    # noinspection PyDictCreation
-    def to_dict(self):
-        data = {}
-        data["relation_type"] = self.__relation_type
-        data |= super().to_dict()
-        return data
+    schema = Schema()
+    schema.add(key=NAME, value_type=str, default_value="")
+
+    def __init__(self, index=None):
+        super(Index, self).__init__(index)
+
+    def get_name(self): return get_string(self._data(), Index.NAME)
+    def set_name(self, name: str): put_string(self._data(), Index.NAME, name)
+
+    def __str__(self) -> str: return str(self._data())
+    def __repr__(self): return self.__str__()

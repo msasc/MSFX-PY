@@ -13,9 +13,9 @@
 #  limitations under the License.
 from decimal import Decimal
 
-from msfx.lib import Data, create_from_kwargs, get_string, put_string, get_integer, put_integer, get_bool, put_bool, \
-    register_class, merge_dicts, error_msg, check_type, check_value
-from msfx.lib.db import BOOLEAN, INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
+from msfx.lib_back import Data, create_from_kwargs, get_string, put_string, get_integer, put_integer, get_bool, put_bool, \
+    register_class, merge_dicts, check_type, check_value
+from msfx.lib_back.db import BOOLEAN, INTEGER, FLOAT, COMPLEX, DECIMAL, STRING, DATE, TIME, DATETIME, BINARY, OBJECT
 
 class Column(Data):
     """ A column definition. """
@@ -96,8 +96,8 @@ class Column(Data):
         if column_type == BINARY: return None
         if column_type == OBJECT: return {}
 
-    def from_dict(self, data: dict): merge_dicts(data, self._data, Column.KEYS)
-
+    def from_dict(self, data: dict):
+        merge_dicts(data, self._data, Column.KEYS)
 
 register_class("column", Column)
 
@@ -173,14 +173,11 @@ class ColumnList(Data):
                 pk_columns.append(alias)
             default_values.append(column.get_default_value())
 
-    def from_dict(self, data: dict):
-        # merge_dicts(data, self._data, ColumnList.KEYS)
-        for key in ColumnList.KEYS:
-            if key in data:
-                self._data[key] = data[key]
+    def from_dict(self, data):
+        merge_dicts(data, self._data, ColumnList.KEYS)
 
     def __iter__(self): return self._data[ColumnList.COLUMNS].__iter__()
     def __len__(self) -> int: return len(self._data[ColumnList.COLUMNS])
     def __getitem__(self, index: int) -> Column: return self.get_by_index(index)
 
-register_class("columns", ColumnList)
+register_class("column-list", ColumnList)

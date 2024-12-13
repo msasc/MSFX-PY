@@ -16,7 +16,7 @@ from datetime import datetime, time, date
 from decimal import Decimal
 from importlib import import_module
 from typing import Optional
-from msfx.lib import error_msg
+from msfx.lib_back import error_msg
 
 """ JSON extensions for data notation. """
 

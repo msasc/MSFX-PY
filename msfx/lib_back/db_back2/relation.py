@@ -23,45 +23,30 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from msfx.lib_back.db_back2.table import TableLink
+from msfx.lib_back import error_msg
 
-from msfx.lib.db_back2.table import TableLink
-from msfx.lib import error_msg
-
-class ForeignKey(TableLink):
-    """ A foreign key of a table. """
+class Relation(TableLink):
+    """ a Relation between two tables. """
     def __init__(self):
         super().__init__()
-        self.__name = ""
-        self.__persistent = False
-        self.__delete_restriction = "RESTRICT"
+        self.__relation_type = "LEFT"
 
-    def get_name(self):
-        return self.__name
-    def set_name(self, name):
-        self.__name = name if isinstance(name, str) else ""
-
-    def is_persistent(self):
-        return self.__persistent
-    def set_persistent(self, persistent):
-        self.__persistent = persistent if isinstance(persistent, bool) else False
-
-    def get_delete_restriction(self):
-        return self.__delete_restriction
-    def set_delete_restriction(self, delete_restriction):
-        if delete_restriction is None or not isinstance(delete_restriction, str):
-            error = error_msg("type error", "alias", type(delete_restriction), (str,))
+    def get_type(self):
+        return self.__relation_type
+    def set_type(self, relation_type):
+        if relation_type is None or not isinstance(relation_type, str):
+            error = error_msg("type error", "relation_type", type(relation_type), (str,))
             raise TypeError(error)
-        delete_restrictions = ("RESTRICT", "CASCADE", "SET NULL")
-        if not delete_restriction in delete_restrictions:
-            error = error_msg("value error", "delete_restriction", delete_restriction, delete_restrictions)
+        relation_types = ("INNER", "LEFT", "RIGHT", "FULL", "CROSS")
+        if not relation_type in relation_types:
+            error = error_msg("value error", "relation_type", relation_type, relation_types)
             raise ValueError(error)
-        self.__delete_restriction = delete_restriction
+        self.__relation_type = relation_type
 
     # noinspection PyDictCreation
     def to_dict(self):
         data = {}
-        data["name"] = self.__name
-        data["persistent"] = self.__persistent
-        data["deleteRestriction"] = self.__delete_restriction
+        data["relation_type"] = self.__relation_type
         data |= super().to_dict()
         return data

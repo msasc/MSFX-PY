@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib import Data, merge_dicts, check_type, register_class
-from msfx.lib.db.column import Column
+from msfx.lib_back import Data, merge_dicts, check_type, register_class
+from msfx.lib_back.db.column import Column
 
 class Order(Data):
     """ Order definition. """
@@ -28,8 +28,8 @@ class Order(Data):
             self.from_dict(order.to_dict())
 
     def append(self, column: Column, asc: bool = True):
-        check_type("type error", "column", column, (Column,))
-        check_type("type error", "asc", asc, (bool,))
+        check_type("column", column, (Column,))
+        check_type("asc", asc, (bool,))
         self._data[Order.SEGMENTS].append([column, asc])
 
     def get_column(self, index: int) -> Column: return self._data[Order.SEGMENTS][index][0]
@@ -44,5 +44,8 @@ class Order(Data):
         check_type("type error", "index", type(index), (int,))
         if 0 <= index < len(self): return self._data[Order.SEGMENTS][index]
         return None
+
+    def from_dict(self, data: dict):
+        merge_dicts(data, self._data, Order.KEYS)
 
 register_class("order", Order)

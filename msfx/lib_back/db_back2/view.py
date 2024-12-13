@@ -23,11 +23,11 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib.db_back2.column import ColumnList, Column
-from msfx.lib.db_back2.order import Order
-from msfx.lib.db_back2.relation import Relation
-from msfx.lib.db_back2.table import Table
-from msfx.lib import error_msg
+from msfx.lib_back.db_back2.column import ColumnList, Column
+from msfx.lib_back.db_back2.order import Order
+from msfx.lib_back.db_back2.relation import Relation
+from msfx.lib_back.db_back2.table import Table
+from msfx.lib_back import error_msg
 
 class ColumnListView(ColumnList):
     def __init__(self, view):
