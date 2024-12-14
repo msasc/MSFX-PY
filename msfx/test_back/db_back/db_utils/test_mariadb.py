@@ -1,6 +1,6 @@
 from mariadb import ConnectionPool
 
-pool = ConnectionPool(pool_name='test', host='localhost', user='root', password='carrlasass')
+pool = ConnectionPool(pool_name='test_back', host='localhost', user='root', password='carrlasass')
 conn = pool.get_connection()
 
 cursor = conn.cursor(buffered=False)

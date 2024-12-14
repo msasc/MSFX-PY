@@ -14,7 +14,7 @@
 
 """
 Application in charge of managing market data, drawing charts, generating
-sequences of images to test reinforcement algorithms, and many more.
+sequences of images to test_back reinforcement algorithms, and many more.
 """
 
 # Python language imports.

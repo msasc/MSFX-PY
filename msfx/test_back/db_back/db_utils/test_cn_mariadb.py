@@ -2,7 +2,7 @@
 from msfx.lib_back.db.cn.mariadb import MariaDBConnectionPool
 
 pool = MariaDBConnectionPool(
-    pool_name='test',
+    pool_name='test_back',
     pool_size=50,
     pool_validation_interval=5000,
     host='localhost', user='root', password='carrlasass')

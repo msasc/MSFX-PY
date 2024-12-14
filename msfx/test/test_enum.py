@@ -11,3 +11,20 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
+from enum import Enum, auto
+
+class StrEnum(Enum):
+    BOOLEAN = "BOOLEAN"
+    INTEGER = "INTEGER"
+    STRING = "STRING"
+
+class SStrEnum(Enum):
+    BOOLEAN = "BOOLEAN"
+    INTEGER = "INTEGER"
+    STRING = "STRING"
+
+print(StrEnum.BOOLEAN == "BOOLEAN")
+print(StrEnum.BOOLEAN.value == "BOOLEAN")
+print(StrEnum.BOOLEAN.name)
+print(StrEnum.BOOLEAN == SStrEnum.BOOLEAN)

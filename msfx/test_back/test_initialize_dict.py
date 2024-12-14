@@ -13,7 +13,7 @@
 #  limitations under the License.
 from typing import Dict, Any, Union
 
-from msfx.test.test_validate_dict import Types
+from msfx.test_back.test_validate_dict import Types
 
 def dict_data(schema: Dict[str, Any]) -> Dict[str, Any]:
     return {key: value for key, value in schema.items()}
