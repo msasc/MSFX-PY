@@ -1,6 +1,6 @@
-from msfx.lib_back import loads
-from msfx.lib_back.db import STRING
-from msfx.lib_back.db.column import Column, ColumnList
+from msfx.lib_back2 import loads
+from msfx.lib_back2.db import STRING
+from msfx.lib_back2.db.column import Column, ColumnList
 
 ccompany = Column(name="CCOMPANY", type=STRING, length=30, header="Company", primary_key=True)
 carticle = Column(name="CARTICLE", type=STRING, length=30, header="Article")

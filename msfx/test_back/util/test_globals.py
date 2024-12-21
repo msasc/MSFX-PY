@@ -13,7 +13,7 @@
 #  limitations under the License.
 from datetime import datetime
 
-from msfx.lib_back.util.globals import is_valid_iso_date, is_valid_iso_time, is_valid_iso_datetime, is_valid_integer, \
+from msfx.lib_back2.util.globals import is_valid_iso_date, is_valid_iso_time, is_valid_iso_datetime, is_valid_integer, \
     is_valid_float
 
 def print_chk(label: str, value: str, check: bool):

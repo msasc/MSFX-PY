@@ -1,7 +1,7 @@
 
-from msfx.lib_back.db_back2.column import Column
-from msfx.lib_back.db_back2.order import Order
-from msfx.lib_back.db_back2.types import Types
+from msfx.lib_back2.db_back2.column import Column
+from msfx.lib_back2.db_back2.order import Order
+from msfx.lib_back2.db_back2.types import Types
 
 order = Order()
 

@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar
 )
 
-import msfx.lib_back.qt
+import msfx.lib_back2.qt
 
 class Worker(QObject):
     # Signals to update and set visible or not, the status progress bar

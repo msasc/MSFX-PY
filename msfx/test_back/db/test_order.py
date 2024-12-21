@@ -1,6 +1,6 @@
-from msfx.lib_back.db import STRING, DECIMAL
-from msfx.lib_back.db.column import Column, ColumnList
-from msfx.lib_back.db.order import Order
+from msfx.lib_back2.db import STRING, DECIMAL
+from msfx.lib_back2.db.column import Column, ColumnList
+from msfx.lib_back2.db.order import Order
 
 ccompany = Column(name="CCOMPANY", type=STRING, length=30, header="Company", primary_key=True)
 carticle = Column(name="CARTICLE", type=STRING, length=30, header="Article", primary_key=True)

@@ -1,20 +1,28 @@
-from msfx.lib import get_bool, put_bool
+from torch.optim.optimizer import required
+
+from msfx.lib.vdict import get_bool, validate_dict
 
 data = {}
-data["K"] = True
-print(data)
+data["one"] = "One"
+data["two"] = "Two"
+data["three"] = "Three"
+data["four"] = "Four"
+data["five"] = "Five"
+data["six"] = "Six"
+data["seven"] = "Seven"
+data["eight"] = "Eight"
+data["nine"] = "Nine"
 
 try:
-    print(get_bool(data, "K"))
+    print(get_bool(data, "one"))
 except Exception as e:
     print(e)
-else:
-    print("No exc")
+
+master_keys = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
+required_keys = ["six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 
 try:
-    put_bool(data, "F", "ERRR")
+    print("Hello")
+    # validate_dict(data, master_keys, required_keys)
 except Exception as e:
     print(e)
-else:
-    print("No exc")
-

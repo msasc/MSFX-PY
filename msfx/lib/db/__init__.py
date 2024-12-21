@@ -12,38 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from enum import Enum, auto
 from datetime import date, time, datetime
 from decimal import Decimal
-from msfx.lib import (
-    get_string, put_string, get_integer, put_integer, get_bool, put_bool, get_any, put_any, get_dict, put_dict,
-    validate_keys, put_list
-)
+from enum import Enum
+from typing import Any, Optional
 
 class Types(Enum):
-    """
-    Types accepted within this database SQL metadata.
-
-    The adapter of the underlying database engine will be responsible
-    for saving/retrieving correctly the value. By default,
-
-    BOOLEAN
-        Will be stored in a VARCHAR(1) T/F.
-    DECIMAL, INTEGER, FLOAT
-        Will be stored in the appropriate numeric types.
-    DATE, TIME, DATETIME
-        Will be stored in the appropriate datetime types.
-    BINARY
-        As RAW, BINARY, VARBINARY, BLOB, LOB, depending on the database and the size.
-    STRING
-        As VARCHAR, CLOB, depending on the database and the size.
-    LIST, DICT
-        As JSON objects.
-    """
+    """ Types accepted within this database SQL metadata. """
     BOOLEAN = "BOOLEAN"
     DECIMAL = "DECIMAL"
     INTEGER = "INTEGER"
     FLOAT = "FLOAT"
+    COMPLEX = "COMPLEX"
     DATE = "DATE"
     TIME = "TIME"
     DATETIME = "DATETIME"
@@ -69,13 +49,12 @@ class Types(Enum):
     @staticmethod
     def get_types_none() -> tuple: return Types.DATE, Types.TIME, Types.DATETIME, Types.BINARY
     @staticmethod
-    def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL
+    def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL, Types.COMPLEX
     @staticmethod
     def get_types_length() -> tuple: return Types.DECIMAL, Types.STRING, Types.BINARY
 
-    # End Types
 class Value:
-    """ Encapsulates an immutable value of one of the supported types. """
+    """ Encapsulates a mutable value of one of the supported types. """
     def __init__(self, value):
         # Argument value can not be None: either it is a non None value,
         # or a type which value can be None.
@@ -88,7 +67,8 @@ class Value:
                 raise TypeError(f"Only types {Types.get_types_none()} accept a None value")
 
         self.__value = None
-        self.__type = None
+        self.__type: Optional[Types] = None
+        self.__modified: bool = False
 
         # The type is passed as argument value is None, and we are done.
         if isinstance(value, Types):
@@ -104,20 +84,23 @@ class Value:
     def type(self) -> Types: return self.__type
     def value(self) -> object: return self.__value
 
+    def is_modified(self) -> bool: return self.__modified
+
     def is_none(self) -> bool: return self.__value is None
     def is_boolean(self) -> bool: return self.__type == Types.BOOLEAN
     def is_decimal(self) -> bool: return self.__type == Types.DECIMAL
     def is_integer(self) -> bool: return self.__type == Types.INTEGER
     def is_float(self) -> bool: return self.__type == Types.FLOAT
+    def is_complex(self) -> bool: return self.__type == Types.COMPLEX
+    def is_numeric(self) -> bool: return self.__type in Types.get_types_numeric()
     def is_date(self) -> bool: return self.__type == Types.DATE
     def is_time(self) -> bool: return self.__type == Types.TIME
     def is_datetime(self) -> bool: return self.__type == Types.DATETIME
     def is_binary(self) -> bool: return self.__type == Types.BINARY
     def is_string(self) -> bool: return self.__type == Types.STRING
     def is_list(self) -> bool: return self.__type == Types.LIST
-    def is_dictionary(self) -> bool: return self.__type == Types.DICT
+    def is_dict(self) -> bool: return self.__type == Types.DICT
 
-    def is_numeric(self) -> bool: return self.__type in Types.get_types_numeric()
     def get_boolean(self) -> bool:
         if not self.is_boolean(): raise TypeError("Type is not BOOLEAN")
         if self.is_none(): return False
@@ -134,15 +117,19 @@ class Value:
         if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
         if self.is_none(): return 0.0
         return float(self.__value)
-    def get_date(self) -> date or None:
+    def get_complex(self) -> complex:
+        if not self.is_numeric(): raise TypeError("Type is not NUMERIC")
+        if self.is_none(): return complex(0, 0)
+        return complex(self.__value)
+    def get_date(self) -> Optional[date]:
         if not self.is_date(): raise TypeError("Type is not DATE.")
         if self.is_none(): return None
         return self.__value
-    def get_time(self) -> time or None:
+    def get_time(self) -> Optional[time]:
         if not self.is_time(): raise TypeError("Type is not TIME.")
         if self.is_none(): return None
         return self.__value
-    def get_datetime(self) -> datetime or None:
+    def get_datetime(self) -> Optional[datetime]:
         if not self.is_datetime(): raise TypeError("Type is not DATETIME.")
         if self.is_none(): return None
         return self.__value
@@ -158,16 +145,52 @@ class Value:
         if not self.is_list(): raise TypeError("Type is not LIST.")
         if self.is_none(): return []
         return self.__value
-    def get_dictionary(self) -> dict:
-        if not self.is_dictionary(): raise TypeError("Type is not DICTIONARY.")
+    def get_dict(self) -> dict:
+        if not self.is_dict(): raise TypeError("Type is not DICT"
+                                                     ".")
         if self.is_none(): return {}
         return self.__value
+
+    def __set__(self, value):
+
+        # Exact type matching
+        exact_matches = [
+            (lambda v: isinstance(v, bool), lambda: self.is_boolean()),
+            (lambda v: isinstance(v, Decimal), lambda: self.is_decimal()),
+            (lambda v: isinstance(v, int), lambda: self.is_integer()),
+            (lambda v: isinstance(v, float), lambda: self.is_float()),
+            (lambda v: isinstance(v, complex), lambda: self.is_complex()),
+            (lambda v: isinstance(v, date), lambda: self.is_date()),
+            (lambda v: isinstance(v, time), lambda: self.is_time()),
+            (lambda v: isinstance(v, datetime), lambda: self.is_datetime()),
+            (lambda v: isinstance(v, (bytes, bytearray)), lambda: self.is_binary()),
+            (lambda v: isinstance(v, str), lambda: self.is_string()),
+            (lambda v: isinstance(v, list), lambda: self.is_list()),
+            (lambda v: isinstance(v, dict), lambda: self.is_dict())
+        ]
+        for value_type, self_type in exact_matches:
+            if value_type(value) and self_type():
+                self.__set_value__(value)
+                return
+
+        # Compatible numeric type matching
+        if isinstance(value, (Decimal, int, float, complex)) and self.is_numeric():
+            if self.is_decimal():
+                if isinstance(value, complex):
+                    self.__set_value__(Decimal(value.real));
+                    return
+            pass
+
+        raise TypeError("Argument type does not match this value type")
+
+    def __set_value__(self, value):
+        self.value = value
+        self.__modified = True
 
     def compare_to(self, other) -> int:
         if self.__eq__(other): return 0
         if self.__lt__(other): return -1
         return 1
-
     def is_comparable(self, other) -> bool:
         if isinstance(other, Value):
             if self.is_numeric() and other.is_numeric(): return True
@@ -181,7 +204,7 @@ class Value:
         if self.is_binary(): return isinstance(other, bytes)
         if self.is_string(): return isinstance(other, str)
         if self.is_list(): return isinstance(other, list)
-        if self.is_dictionary(): return isinstance(other, dict)
+        if self.is_dict(): return isinstance(other, dict)
         return False
 
     def __lt__(self, other) -> bool:
@@ -212,5 +235,3 @@ class Value:
     def __repr__(self):
         if self.is_string(): return "'" + str(self.__value) + "'"
         return self.__str__()
-
-    # End Value

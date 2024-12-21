@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QColor, QPen, QGuiApplication
 from PyQt6.QtWidgets import QMainWindow, QSizePolicy, QGridLayout, QApplication
 
-from msfx.lib_back.qt.canvas import QCanvas
+from msfx.lib_back2.qt.canvas import QCanvas
 
 class Window(QMainWindow):
     def __init__(self):

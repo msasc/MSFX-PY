@@ -32,9 +32,9 @@ from PyQt6.QtCore import (
     QSize
 )
 
-from msfx.lib_back.qt import setWidgetSize
-from msfx.lib_back.qt.console import QConsole
-from msfx.lib_back.qt.icon import QIconButton, QIconClose
+from msfx.lib_back2.qt import setWidgetSize
+from msfx.lib_back2.qt.console import QConsole
+from msfx.lib_back2.qt.icon import QIconButton, QIconClose
 
 class MainWindow(QMainWindow):
     def __init__(self):

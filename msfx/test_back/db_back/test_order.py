@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib_back.db import STRING, DECIMAL
-from msfx.lib_back.db_back.column import Column
-from msfx.lib_back.db_back.order import Order
+from msfx.lib_back2.db import STRING, DECIMAL
+from msfx.lib_back2.db_back.column import Column
+from msfx.lib_back2.db_back.order import Order
 
 ccompany = Column(name="CCOMPANY", type=STRING, length=20, primary_key=True)
 carticle = Column(name="CARTICLE", type=STRING, length=20, primary_key=True)

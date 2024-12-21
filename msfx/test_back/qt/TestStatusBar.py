@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QStatusBar, QLabel, QProgressBar, QWidget
 )
 
-import msfx.lib_back.qt
+import msfx.lib_back2.qt
 
 class Worker(QObject):
 

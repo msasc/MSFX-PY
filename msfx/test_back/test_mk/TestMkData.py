@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib_back.mk.data import MkDataVChart
+from msfx.lib_back2.mk.data import MkDataVChart
 
 mk_data = MkDataVChart()
 mk_info = mk_data.get_ticker_info(file_name="D:/Development/Databases/VChart/FX_EUR_USD_MIN_005.txt")

@@ -15,7 +15,7 @@
 from PyQt6.QtCore import QObject, QThread
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar
 
-import msfx.lib_back.qt
+import msfx.lib_back2.qt
 
 class Worker(QObject):
     def __init__(self, progressBar: QProgressBar):

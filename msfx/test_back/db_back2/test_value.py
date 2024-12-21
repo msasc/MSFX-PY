@@ -14,8 +14,8 @@
 from datetime import date
 from decimal import Decimal
 
-from msfx.lib_back.db_back2.types import Types
-from msfx.lib_back.db_back2.value import Value
+from msfx.lib_back2.db_back2.types import Types
+from msfx.lib_back2.db_back2.value import Value
 
 val = Value(Types.DATE)
 print(val)

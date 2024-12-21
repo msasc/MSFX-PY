@@ -16,11 +16,11 @@ import sys
 from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtWidgets import QVBoxLayout
 
-import msfx.lib_back.qt
+import msfx.lib_back2.qt
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
-from msfx.lib_back.qt.console import QConsole
+from msfx.lib_back2.qt.console import QConsole
 
 class Worker(QObject):
     progress = pyqtSignal(str)  # Signal to write to the console

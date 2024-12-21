@@ -1,3 +1,5 @@
+#  Copyright (c) 2024 Miquel Sas.
+#
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -10,287 +12,161 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import json
-from abc import ABC, abstractmethod
 from datetime import datetime, time, date
 from decimal import Decimal
-from importlib import import_module
-from typing import Optional
+from enum import Enum
+from typing import Any, Optional, Dict, List, Type
 
-class ClassError(Exception): pass
-
-def error_msg(msg: str, arg: str, val: object, exp: (object,)):
-    err = "argument '" + arg + "' " + msg + ", expected "
-    if len(exp) == 1:
-        err += "'" + str(exp[0]) + "'"
-    else:
-        err += "one of ("
-        for i in range(len(exp)):
-            if i > 0: err += ", "
-            err += "'" + str(exp[i]) + "'"
-        err += ")"
-    err += ", got '" + str(val) + "'"
+def __err_quote__(value) -> str:
+    err: str = ""
+    if isinstance(value, str): err += "\""
+    err += "{}"
+    if isinstance(value, str): err += "\""
     return err
 
-def check_type(argument: str, got_type: object, expected_types: (type,)):
-    if got_type is None or not isinstance(got_type, expected_types):
-        error = error_msg("type error", argument, type(got_type), expected_types)
-        raise TypeError(error)
+def __err_get__(key, value, expected) -> str:
+    err: str = "The pair \"{}\"/" + __err_quote__(value) + " is included in the dictionary but is not a {}"
+    return err.format(key, value, expected)
 
-def check_value(argument: str, condition: bool, got_value: object, expected_values: (object,)):
-    if condition and not got_value in expected_values:
-        error = error_msg("value error", argument, got_value, expected_values)
-        raise ValueError(error)
+def __err_put__(value, expected) -> str:
+    return ("The value " + __err_quote__(value) + " must be a {}").format(value, expected)
 
+def __err_key__(key) -> str:
+    return "The key {} must be a string".format(key)
 
-def merge_dicts(dict_src: dict, dict_dst: dict, keys: list):
-    check_type("dict_src", dict_src, (dict,))
-    for key in keys:
-        if key in dict_src:
-            dict_dst[key] = dict_src[key]
+"""
+Helpers to get/put values from/to a dictionary checking that the value,
+if contained in the dictionary, is of the proper type.
 
-class Data(ABC):
-    """
-    Root of classes that can export and import their data from a dictionary.
-    """
-    def __init__(self):
-        self._data = {}
+Theese functions are aimed to be used in objects that store its internal
+data in a dictionary and the overload of validation is not significative. 
+"""
 
-    @abstractmethod
-    def from_dict(self, data: dict):
-        """
-        :param data: The dictionary to retrieve the data from.
-        """
-        pass
-
-    def to_dict(self) -> dict:
-        """
-        :return: The dictionary representation of the data.
-        """
-        return dict(self._data)
-
-    def from_string(self, data: str):
-        """
-        :param data: The string representation of the data in a JSON format.
-        """
-        self.from_dict(loads(data))
-
-    def to_string(self, **kwargs) -> str:
-        """
-        :return: The string representation of the data in a JSON format.
-        :param kwargs: Optional keyword arguments to pass to json.dumps.
-        """
-        return dumps(self._data, **kwargs)
-
-    def __str__(self) -> str: return str(self.to_dict())
-    def __repr__(self): return self.__str__()
-
-def create_from_kwargs(keys: list, **kwargs) -> dict:
-    """
-    :param keys: The keys of the dictionary to retrieve the data from.
-    :param kwargs: Keyword arguments to retrieve the data from.
-    :return: The dictionary representation of the data.
-    """
-    data = {}
-    for key in keys:
-        if key in kwargs:
-            arg_value = kwargs[key]
-            data[key] = arg_value
-    return data
-
-registered_classes = {}
-""" Registered Data classes."""
-
-def register_class(key: str, clazz):
-    """
-    :param key: The key of the class to register.
-    :param clazz: The Data class to register.
-    """
-    if not issubclass(clazz, Data):
-        raise ClassError(clazz.__name__ + " is not a Data class.")
-    registered_classes[key] = f"{clazz.__module__}.{clazz.__qualname__}"
-
-def __instantiate_class(key, *args, **kwargs):
-    if key in registered_classes:
-        class_name = registered_classes[key]
-        module_path, class_name = class_name.rsplit('.', 1)
-        module = import_module(module_path)
-        clazz = getattr(module, class_name)
-        instance = clazz(*args, **kwargs)
-        return instance
-    return None
-
-def __serializer(obj):
-    # Extended JSON types: date, time, datetie, decimal, complex and binary.
-    if isinstance(obj, date) and not isinstance(obj, datetime):
-        return {"date": obj.isoformat()}
-    if isinstance(obj, time):
-        return {"time": obj.isoformat()}
-    if isinstance(obj, datetime):
-        return {"datetime": obj.isoformat()}
-    if isinstance(obj, Decimal):
-        return {"decimal": str(obj)}
-    if isinstance(obj, complex):
-        return {"complex": str(obj)}
-    if isinstance(obj, (bytes, bytearray)):
-        return {"binary": obj.hex()}
-
-    # Registered full class names.
-    class_name = f"{type(obj).__module__}.{type(obj).__qualname__}"
-    for key, registered_class_name in registered_classes.items():
-        if class_name == registered_class_name and isinstance(obj, Data):
-            return {key: obj.to_dict()}
-
-    # Not supported.
-    raise TypeError(f"Type {type(obj)} not serializable")
-
-def __deserializer(dct):
-    # Extended JSON types: date, time, datetie, decimal, complex and binary.
-    if "date" in dct:
-        return date.fromisoformat(dct["date"])
-    if "time" in dct:
-        return time.fromisoformat(dct["time"])
-    if "datetime" in dct:
-        return datetime.fromisoformat(dct["datetime"])
-    if "decimal" in dct:
-        return Decimal(dct["decimal"])
-    if "complex" in dct:
-        return complex(dct["complex"])
-    if "binary" in dct:
-        return bytes.fromhex(dct["binary"])
-
-    # Registered full class names.
-    for key in registered_classes:
-        if key in dct:
-            data = dct[key]
-            instance = __instantiate_class(key, data)
-            if instance is not None and isinstance(instance, Data):
-                instance.from_dict(data)
-                return instance
-
-    # Return content as default.
-    return dct
-
-def dumps(dct: dict, **kwargs) -> str: return json.dumps(dct, default=__serializer, **kwargs)
-def loads(obj) -> dict: return json.loads(obj, object_hook=__deserializer)
-
-def get_bool(data: dict, key: str, default=False) -> bool:
+def get_bool(data: dict, key, default=False) -> bool:
     value = data.get(key, default)
     if isinstance(value, bool): return value
-    raise TypeError(f"pair key {key} / value {value} is not a number")
+    raise TypeError(__err_get__(key, value, "boolean"))
 
-def get_integer(data: dict, key: str, default=0) -> int:
+def get_integer(data: dict, key, default=0) -> int:
     value = data.get(key, default)
     if isinstance(value, (int, float, Decimal)): return int(value)
     if isinstance(value, complex): return int(value.real)
-    raise TypeError(f"pair key {key} / value {value} is not a number")
+    raise TypeError(__err_get__(key, value, "number"))
 
-def get_float(data: dict, key: str, default=0.0) -> float:
+def get_float(data: dict, key, default=0.0) -> float:
     value = data.get(key, default)
     if isinstance(value, (int, float, Decimal)): return float(value)
     if isinstance(value, complex): return float(value.real)
-    raise TypeError(f"pair key {key} / value {value} is not a number")
+    raise TypeError(__err_get__(key, value, "number"))
 
-def get_decimal(data: dict, key: str, default=Decimal(0)) -> Decimal:
+def get_decimal(data: dict, key, default=Decimal(0)) -> Decimal:
     value = data.get(key, default)
     if isinstance(value, (int, float, Decimal)): return Decimal(value)
     if isinstance(value, complex): return Decimal(value.real)
-    raise TypeError(f"pair key {key} / value {value} is not a number")
+    raise TypeError(__err_get__(key, value, "number"))
 
-def get_complex(data: dict, key: str, default=complex(0, 0)) -> complex:
+def get_complex(data: dict, key, default=complex(0, 0)) -> complex:
     value = data.get(key, default)
     if isinstance(value, (int, float, Decimal, complex)): return complex(value)
-    raise TypeError(f"pair key {key} / value {value} is not a number")
+    raise TypeError(__err_get__(key, value, "number"))
 
-def get_string(data: dict, key: str, default="") -> str:
+def get_string(data: dict, key, default="") -> str:
     value = data.get(key, default)
     if isinstance(value, str): return value
-    raise TypeError(f"pair key {key} / value {value} is not a string")
+    raise TypeError(__err_get__(key, value, "string"))
 
-def get_date(data: dict, key: str, default=None) -> Optional[date]:
+def get_date(data: dict, key, default=None) -> Optional[date]:
     value = data.get(key, default)
     if isinstance(value, date): return value
     if isinstance(value, datetime): return value.date()
     if value is None: return None
-    raise TypeError(f"pair key {key} / value {value} is not a date or datetime")
+    raise TypeError(__err_get__(key, value, "date or datetime"))
 
-def get_time(data: dict, key: str, default=None) -> Optional[time]:
+def get_time(data: dict, key, default=None) -> Optional[time]:
     value = data.get(key, default)
     if isinstance(value, time): return value
     if isinstance(value, datetime): return value.time()
     if value is None: return None
-    raise TypeError(f"pair key {key} / value {value} is not a time or datetime")
+    raise TypeError(__err_get__(key, value, "time or datetime"))
 
-def get_datetime(data: dict, key: str, default=None) -> Optional[datetime]:
+def get_datetime(data: dict, key, default=None) -> Optional[datetime]:
     value = data.get(key, default)
     if isinstance(value, datetime): return value
     if value is None: return None
-    raise TypeError(f"pair key {key} / value {value} is not a datetime")
+    raise TypeError(__err_get__(key, value, "datetime"))
 
-def get_binary(data: dict, key: str, default=None) -> bytes or bytearray:
+def get_binary(data: dict, key, default=None) -> bytes or bytearray:
     value = data.get(key, default)
     if isinstance(value, (bytes, bytearray)): return value
     if value is None: return None
-    raise TypeError(f"pair key {key} / value {value} is not a binary")
+    raise TypeError(__err_get__(key, value, "binary"))
 
-def get_list(data: dict, key: str, default=None) -> list:
+def get_list(data: dict, key, default=None) -> list:
     value = data.get(key, default)
     if isinstance(value, list): return value
     if value is None: return []
-    raise TypeError(f"pair key {key} / value {value} is not a list")
+    raise TypeError(__err_get__(key, value, "list"))
 
-def get_dict(data: dict, key: str, default=None) -> dict:
+def get_dict(data: dict, key, default=None) -> dict:
     value = data.get(key, default)
     if isinstance(value, dict): return value
     if value is None: return {}
-    raise TypeError(f"pair key {key} / value {value} is not a dictionary")
+    raise TypeError(__err_get__(key, value, "dictionary"))
 
-def put_bool(data: dict, key: str, value: bool):
-    if not isinstance(value, bool): raise TypeError("Value must be a boolean")
+def get_any(data: dict, key, default=None) -> Any: return data.get(key, default)
+
+def put_bool(data: dict, key, value: bool):
+    if not isinstance(value, bool): raise TypeError(__err_put__(value, "boolean"))
     data[key] = value
 
-def put_integer(data: dict, key: str, value: int):
-    if not isinstance(value, int): raise TypeError("Value must be an integer")
+def put_integer(data: dict, key, value: int):
+    if not isinstance(value, int): raise TypeError(__err_put__(value, "integer"))
     data[key] = value
 
-def put_float(data: dict, key: str, value: float):
-    if not isinstance(value, float): raise TypeError("Value must be a float")
+def put_float(data: dict, key, value: float):
+    if not isinstance(value, float): raise TypeError(__err_put__(value, "float"))
     data[key] = value
 
-def put_complex(data: dict, key: str, value: complex):
-    if not isinstance(value, complex): raise TypeError("Value must be a complex")
+def put_complex(data: dict, key, value: complex):
+    if not isinstance(value, complex): raise TypeError(__err_put__(value, "complex"))
     data[key] = value
 
-def put_decimal(data: dict, key: str, value: Decimal):
-    if not isinstance(value, Decimal): raise TypeError("Value must be a decimal")
+def put_decimal(data: dict, key, value: Decimal):
+    if not isinstance(value, Decimal): raise TypeError(__err_put__(value, "decimal"))
     data[key] = value
 
-def put_string(data: dict, key: str, value: str):
-    if not isinstance(value, str): raise TypeError("Value must be a string")
+def put_string(data: dict, key, value: str):
+    if not isinstance(value, str): raise TypeError(__err_put__(value, "string"))
     data[key] = value
 
-def put_date(data: dict, key: str, value: date):
-    if not isinstance(value, date): raise TypeError("Value must be a date")
+def put_date(data: dict, key, value: date):
+    if not isinstance(value, date): raise TypeError(__err_put__(value, "date"))
     data[key] = value
 
-def put_time(data: dict, key: str, value: time):
-    if not isinstance(value, time): raise TypeError("Value must be a time")
+def put_time(data: dict, key, value: time):
+    if not isinstance(value, time): raise TypeError(__err_put__(value, "time"))
     data[key] = value
 
-def put_datetime(data: dict, key: str, value: datetime):
-    if not isinstance(value, datetime): raise TypeError("Value must be a datetime")
+def put_datetime(data: dict, key, value: datetime):
+    if not isinstance(value, datetime): raise TypeError(__err_put__(value, "datetime"))
     data[key] = value
 
-def put_binary(data: dict, key: str, value: (bytes, bytearray)):
-    if not isinstance(value, (bytes, bytearray)): raise TypeError("Value must be a binary")
+def put_binary(data: dict, key, value: (bytes, bytearray)):
+    if not isinstance(value, (bytes, bytearray)): raise TypeError(__err_put__(value, "binary"))
     data[key] = value
 
-def put_list(data: dict, key: str, value: list):
-    if not isinstance(value, list): raise TypeError("Value must be a list")
-    # validate_list(value)
+def put_list(data: dict, key, value: list):
+    if not isinstance(value, list): raise TypeError(__err_put__(value, "list"))
     data[key] = value
 
-def put_dict(data: dict, key: str, value: dict):
-    if not isinstance(value, dict): raise TypeError("Value must be a dictionary")
-    # validate_dict(value)
+def put_dict(data: dict, key, value: dict):
+    if not isinstance(value, dict): raise TypeError(__err_put__(value, "dictionary"))
     data[key] = value
+
+def put_any(data: dict, key, value: Any): data[key] = value
+
+def validate_enum_keys(data: Dict[any, any], enum_class: Type[Enum], error: str):
+    valid_keys: set = {e.value for e in enum_class}
+    dict_keys = set(data.keys())
+    invalid_keys: set = dict_keys - valid_keys
+    if invalid_keys: raise TypeError("Data is not {} data".format(error))

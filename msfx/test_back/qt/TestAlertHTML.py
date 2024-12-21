@@ -28,9 +28,9 @@ from PyQt6.QtWidgets import (
     QApplication, QPushButton, QSizePolicy
 )
 
-from msfx.lib_back.qt.alert import QAlert
-from msfx.lib_back.qt.canvas import QCanvas
-from msfx.lib_back.util.html import HTML
+from msfx.lib_back2.qt.alert import QAlert
+from msfx.lib_back2.qt.canvas import QCanvas
+from msfx.lib_back2.util.html import HTML
 
 def action_button(**kwargs):
     name = kwargs.get("name")

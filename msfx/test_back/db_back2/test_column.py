@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from msfx.lib_back.db_back2.column import Column, ColumnList
-from msfx.lib_back.db_back2.types import Types
+from msfx.lib_back2.db_back2.column import Column, ColumnList
+from msfx.lib_back2.db_back2.types import Types
 
 column_1 = Column(name="CCOMPANY", type=Types.STRING, length=20, primary_key=True, header="Company")
 print(column_1)
