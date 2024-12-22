@@ -11,14 +11,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from decimal import Decimal
 
-from decimal import Decimal, ROUND_HALF_UP
 
-def check_class_name(arg, clazz):
-    if arg is None: return
-    arg_class = arg.__module__ + '.' + arg.__class__.__name__
-    chk_class = clazz.__module__ + '.' + clazz.__name__
-    if arg_class != chk_class: raise TypeError("{} expected to be {}".format(arg_class, chk_class))
-
-def round_dec(value: float, scale: int) -> Decimal:
-    return Decimal(value).quantize(Decimal(f"1e-{scale}"), rounding=ROUND_HALF_UP)
+d: Decimal = Decimal(10.5)
+c: complex = complex(d)
+print(d)
+print(c)

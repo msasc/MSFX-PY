@@ -105,40 +105,40 @@ def get_dict(data: dict, key, default=None) -> dict:
     raise TypeError("Key: {}, Value: {} is not dict".format(key, value))
 def get_any(data: dict, key, default=None) -> Any: return data.get(key, default)
 
-def put_bool(data: dict, key, value: bool):
+def set_bool(data: dict, key, value: bool):
     if not isinstance(value, bool): raise TypeError("Value {} is not bool".format(value))
     data[key] = value
-def put_integer(data: dict, key, value: int):
+def set_integer(data: dict, key, value: int):
     if not isinstance(value, int): raise TypeError("Value {} is not integer".format(value))
     data[key] = value
-def put_float(data: dict, key, value: float):
+def set_float(data: dict, key, value: float):
     if not isinstance(value, float): raise TypeError("Value {} is not float".format(value))
     data[key] = value
-def put_complex(data: dict, key, value: complex):
+def set_complex(data: dict, key, value: complex):
     if not isinstance(value, complex): raise TypeError("Value {} is not complex".format(value))
     data[key] = value
-def put_decimal(data: dict, key, value: Decimal):
+def set_decimal(data: dict, key, value: Decimal):
     if not isinstance(value, Decimal): raise TypeError("Value {} is not decimal".format(value))
     data[key] = value
-def put_string(data: dict, key, value: str):
+def set_string(data: dict, key, value: str):
     if not isinstance(value, str): raise TypeError("Value {} is not string".format(value))
     data[key] = value
-def put_date(data: dict, key, value: date):
+def set_date(data: dict, key, value: date):
     if not isinstance(value, date): raise TypeError("Value {} is not date".format(value))
     data[key] = value
-def put_time(data: dict, key, value: time):
+def set_time(data: dict, key, value: time):
     if not isinstance(value, time): raise TypeError("Value {} is not time".format(value))
     data[key] = value
-def put_datetime(data: dict, key, value: datetime):
+def set_datetime(data: dict, key, value: datetime):
     if not isinstance(value, datetime): raise TypeError("Value {} is not datetime".format(value))
     data[key] = value
-def put_binary(data: dict, key, value: (bytes, bytearray)):
+def set_binary(data: dict, key, value: (bytes, bytearray)):
     if not isinstance(value, (bytes, bytearray)): raise TypeError("Value {} is not binary".format(value))
     data[key] = value
-def put_list(data: dict, key, value: list):
+def set_list(data: dict, key, value: list):
     if not isinstance(value, list): raise TypeError("Value {} is not list".format(value))
     data[key] = value
-def put_dict(data: dict, key, value: dict):
+def set_dict(data: dict, key, value: dict):
     if not isinstance(value, dict): raise TypeError("Value {} is not dict".format(value))
     data[key] = value
-def put_any(data: dict, key, value: Any): data[key] = value
+def set_any(data: dict, key, value: Any): data[key] = value

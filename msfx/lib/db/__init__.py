@@ -13,9 +13,11 @@
 #  limitations under the License.
 
 from datetime import date, time, datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Optional
+
+from msfx.lib import round_dec
 
 class Types(Enum):
     """ Types accepted within this database SQL metadata. """
@@ -47,7 +49,7 @@ class Types(Enum):
         if isinstance(value, dict): return Types.DICT
         raise TypeError(f"Invalid type of value {value}")
     @staticmethod
-    def get_types_none() -> tuple: return Types.DATE, Types.TIME, Types.DATETIME, Types.BINARY
+    def get_types_none() -> tuple: return Types.DATE, Types.TIME, Types.DATETIME
     @staticmethod
     def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL, Types.COMPLEX
     @staticmethod
@@ -86,7 +88,6 @@ class Value:
 
     def is_modified(self) -> bool: return self.__modified
 
-    def is_none(self) -> bool: return self.__value is None
     def is_boolean(self) -> bool: return self.__type == Types.BOOLEAN
     def is_decimal(self) -> bool: return self.__type == Types.DECIMAL
     def is_integer(self) -> bool: return self.__type == Types.INTEGER
@@ -151,7 +152,35 @@ class Value:
         if self.is_none(): return {}
         return self.__value
 
+    def get_scale(self) -> int:
+        if self.__type not in (Types.DECIMAL, Types.INTEGER):
+            raise TypeError("The scale has sense only for DECIMAL and INTEGER types")
+        if self.is_none(): return 0
+        if self.is_integer(): return 0
+        return abs(int(self.get_decimal().as_tuple().exponent))
+
+    def set_bool(self, value: bool): self.__set__(value)
+    def set_decimal(self, value: float): self.__set__(value)
+    def set_integer(self, value: int): self.__set__(value)
+    def set_float(self, value: float): self.__set__(value)
+    def set_complex(self, value: float): self.__set__(value)
+    def set_date(self, value: Optional[date]): self.__set__(value)
+    def set_time(self, value: Optional[time]): self.__set__(value)
+    def set_datetime(self, value: Optional[datetime]): self.__set__(value)
+    def set_binary(self, value: bool): self.__set__(value)
+    def set_string(self, value: str): self.__set__(value)
+    def set_list(self, value: list): self.__set__(value)
+    def set_dict(self, value: dict): self.__set__(value)
+
+    def is_none(self): return self.__value is None
+    def set_none(self): self.__value = None
+
     def __set__(self, value):
+
+        # The value can not be None in a set operation.
+        if value is None:
+            if self.__type not in (Types.DATE, Types.TIME, Types.DATETIME):
+                raise ValueError("Value can only be None for types DATE, TIME, DATETIME.")
 
         # Exact type matching
         exact_matches = [
@@ -170,22 +199,25 @@ class Value:
         ]
         for value_type, self_type in exact_matches:
             if value_type(value) and self_type():
-                self.__set_value__(value)
+                self.__value = value
+                self.__modified = True
                 return
 
         # Compatible numeric type matching
         if isinstance(value, (Decimal, int, float, complex)) and self.is_numeric():
+            if isinstance(value, complex): value = value.real
             if self.is_decimal():
-                if isinstance(value, complex):
-                    self.__set_value__(Decimal(value.real));
-                    return
-            pass
+                # self is decimal and not None, preserve scale
+                scale = self.get_scale()
+                self.__value = round_dec(value, scale)
+            else:
+                if self.is_integer(): self.__value = int(value)
+                if self.is_float(): self.__value = float(value)
+                if self.is_complex(): self.__value = complex(value)
+            self.__modified = True
+            return
 
         raise TypeError("Argument type does not match this value type")
-
-    def __set_value__(self, value):
-        self.value = value
-        self.__modified = True
 
     def compare_to(self, other) -> int:
         if self.__eq__(other): return 0
@@ -231,7 +263,9 @@ class Value:
         if isinstance(other, Value): return self.__value >= other.__value
         if self.is_comparable(other): return self.__value >= other
         raise TypeError(f"Not comparable value {other}")
-    def __str__(self) -> str: return str(self.__value)
+    def __str__(self) -> str:
+        if self.__value is None: return ""
+        return str(self.__value)
     def __repr__(self):
         if self.is_string(): return "'" + str(self.__value) + "'"
         return self.__str__()

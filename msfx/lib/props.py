@@ -21,8 +21,8 @@ from msfx.lib import check_class_name
 from msfx.lib.vdict import (
     get_bool, get_integer, get_float, get_decimal, get_complex,
     get_string, get_date, get_time, get_datetime, get_binary, get_list, get_dict, get_any,
-    put_bool, put_decimal, put_integer, put_float, put_complex,
-    put_string, put_date, put_time, put_datetime, put_binary, put_list, put_dict, put_any
+    set_bool, set_decimal, set_integer, set_float, set_complex,
+    set_string, set_date, set_time, set_datetime, set_binary, set_list, set_dict, set_any
 )
 
 class Properties:
@@ -54,21 +54,21 @@ class Properties:
         check_class_name(value, Properties)
         return value
 
-    def put_bool(self, key, value: bool): put_bool(self.__props, key, value)
-    def put_decimal(self, key, value): put_decimal(self.__props, key, value)
-    def put_integer(self, key, value): put_integer(self.__props, key, value)
-    def put_float(self, key, value): put_float(self.__props, key, value)
-    def put_complex(self, key, value): put_complex(self.__props, key, value)
-    def put_string(self, key, value): put_string(self.__props, key, value)
-    def put_date(self, key, value): put_date(self.__props, key, value)
-    def put_time(self, key, value): put_time(self.__props, key, value)
-    def put_datetime(self, key, value): put_datetime(self.__props, key, value)
-    def put_binary(self, key, value): put_binary(self.__props, key, value)
-    def put_list(self, key, value): put_list(self.__props, key, value)
-    def put_dict(self, key, value): put_dict(self.__props, key, value)
-    def put_any(self, key, value): put_any(self.__props, key, value)
+    def set_bool(self, key, value: bool): set_bool(self.__props, key, value)
+    def set_decimal(self, key, value): set_decimal(self.__props, key, value)
+    def set_integer(self, key, value): set_integer(self.__props, key, value)
+    def set_float(self, key, value): set_float(self.__props, key, value)
+    def set_complex(self, key, value): set_complex(self.__props, key, value)
+    def set_string(self, key, value): set_string(self.__props, key, value)
+    def set_date(self, key, value): set_date(self.__props, key, value)
+    def set_time(self, key, value): set_time(self.__props, key, value)
+    def set_datetime(self, key, value): set_datetime(self.__props, key, value)
+    def set_binary(self, key, value): set_binary(self.__props, key, value)
+    def set_list(self, key, value): set_list(self.__props, key, value)
+    def set_dict(self, key, value): set_dict(self.__props, key, value)
+    def set_any(self, key, value): set_any(self.__props, key, value)
 
-    def put_props(self, key, value):
+    def set_props(self, key, value):
         check_class_name(value, Properties)
-        put_any(self.__props, key, value)
+        set_any(self.__props, key, value)
 
