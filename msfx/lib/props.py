@@ -22,7 +22,8 @@ from msfx.lib.vdict import (
     get_bool, get_integer, get_float, get_decimal, get_complex,
     get_string, get_date, get_time, get_datetime, get_binary, get_list, get_dict, get_any,
     set_bool, set_decimal, set_integer, set_float, set_complex,
-    set_string, set_date, set_time, set_datetime, set_binary, set_list, set_dict, set_any
+    set_string, set_date, set_time, set_datetime, set_binary,
+    set_list, set_tuple, set_dict, set_any
 )
 
 class Properties:
@@ -65,6 +66,7 @@ class Properties:
     def set_datetime(self, key, value): set_datetime(self.__props, key, value)
     def set_binary(self, key, value): set_binary(self.__props, key, value)
     def set_list(self, key, value): set_list(self.__props, key, value)
+    def set_tuple(self, key, value): set_tuple(self.__props, key, value)
     def set_dict(self, key, value): set_dict(self.__props, key, value)
     def set_any(self, key, value): set_any(self.__props, key, value)
 

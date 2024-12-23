@@ -1,5 +1,5 @@
 
-from msfx.lib_back2.db.cn.mariadb import MariaDBConnectionPool
+from msfx.lib.db.cn import MariaDBConnectionPool
 
 pool = MariaDBConnectionPool(
     pool_name='test_back',

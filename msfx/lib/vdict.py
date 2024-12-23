@@ -138,6 +138,9 @@ def set_binary(data: dict, key, value: (bytes, bytearray)):
 def set_list(data: dict, key, value: list):
     if not isinstance(value, list): raise TypeError("Value {} is not list".format(value))
     data[key] = value
+def set_tuple(data: dict, key, value: tuple):
+    if not isinstance(value, tuple): raise TypeError("Value {} is not tuple".format(value))
+    data[key] = value
 def set_dict(data: dict, key, value: dict):
     if not isinstance(value, dict): raise TypeError("Value {} is not dict".format(value))
     data[key] = value

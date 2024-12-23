@@ -54,7 +54,7 @@ class Types(Enum):
     def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL, Types.COMPLEX
     @staticmethod
     def get_types_length() -> tuple: return Types.DECIMAL, Types.STRING, Types.BINARY
-
+    """ End of class Types """
 class Value:
     """ Encapsulates a mutable value of one of the supported types. """
     def __init__(self, value):
@@ -269,3 +269,46 @@ class Value:
     def __repr__(self):
         if self.is_string(): return "'" + str(self.__value) + "'"
         return self.__str__()
+    """ End of class Value """
+class Key:
+    """
+    A key or list of tuples of a value and an ascending/descending boolean.
+    A key is just aimed to append segments and use it.
+    The clear method is there to reuse the key.
+    """
+    def __init__(self): self.__segments = []
+
+    def append(self, value: Value): self.__segments.append(value)
+    def clear(self): self.__segments.clear()
+
+    def __iter__(self): return self.__segments.__iter__()
+    def __len__(self) -> int: return len(self.__segments)
+    def __getitem__(self, index: int) -> Value: return self.__segments[index]
+    def __lt__(self, other) -> bool: return self.__segments < other.__segments
+    def __le__(self, other) -> bool: return self.__segments <= other.__segments
+    def __eq__(self, other) -> bool: return self.__segments == other.__segments
+    def __ne__(self, other) -> bool: return not self.__segments == other.__segments
+    def __gt__(self, other) -> bool: return self.__segments > other.__segments
+    def __ge__(self, other) -> bool: return self.__segments >= other.__segments
+    """ End of class OrderKey """
+class OrderKey:
+    """
+    An order key or list of tuples of a value and an ascending/descending boolean.
+    An order key is just aimed to append segments and use it.
+    The clear method is there to reuse the key.
+    """
+    def __init__(self): self.__segments = []
+
+    def append(self, value: Value, ascending: bool): self.__segments.append((value, ascending))
+    def clear(self): self.__segments.clear()
+
+    def __iter__(self): return self.__segments.__iter__()
+    def __len__(self) -> int: return len(self.__segments)
+    def __getitem__(self, index: int) -> (Value, bool): return self.__segments[index]
+    def __lt__(self, other) -> bool: return self.__segments < other.__segments
+    def __le__(self, other) -> bool: return self.__segments <= other.__segments
+    def __eq__(self, other) -> bool: return self.__segments == other.__segments
+    def __ne__(self, other) -> bool: return not self.__segments == other.__segments
+    def __gt__(self, other) -> bool: return self.__segments > other.__segments
+    def __ge__(self, other) -> bool: return self.__segments >= other.__segments
+    """ End of class OrderKey """

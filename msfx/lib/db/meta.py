@@ -40,18 +40,23 @@ class ColumnListKeys(Enum):
     INDEXES = "INDEXES"
     PK_COLUMNS = "PK_COLUMNS"
     DEFAULT_VALUES = "DEFAULT_VALUES"
+class OrderKeys(Enum):
+    SEGMENTS = "SEGMENTS"
 
 class Column:
     """ Column metadata. """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.__props = Properties()
 
         # Extra properties initialized so directly can be used.
         self.__props.set_props(ColumnKeys.PROPERTIES, Properties())
 
     def get_name(self) -> str: return self.__props.get_string(ColumnKeys.NAME)
-    def get_alias(self) -> str: return self.__props.get_string(ColumnKeys.ALIAS)
+    def get_alias(self) -> str:
+        alias = self.__props.get_string(ColumnKeys.ALIAS)
+        if len(alias) == 0: alias = self.get_name()
+        return alias
     def get_type(self) -> Types: return self.__props.get_any(ColumnKeys.TYPE, Types.STRING)
     def get_length(self) -> int: return self.__props.get_integer(ColumnKeys.LENGTH, -1)
     def get_scale(self) -> int: return self.__props.get_integer(ColumnKeys.SCALE, -1)
@@ -104,6 +109,23 @@ class Column:
     def set_table_props(self, props: Properties): self.__props.set_props(ColumnKeys.TABLE, props)
     def set_view_props(self, props: Properties): self.__props.set_props(ColumnKeys.VIEW, props)
 
+    def __str__(self) -> str:
+        col = "[\""
+        col += self.get_name()
+        col += "\", \""
+        col += self.get_type().name
+        col += "\", "
+        if self.get_length() >= 0: col += str(self.get_length())
+        else: col += "--"
+        col += ", "
+        if self.get_scale() >= 0: col += str(self.get_scale())
+        else: col += "--"
+        col += ", \""
+        col += self.get_header()
+        col += "\"]"
+        return col
+    def __repr__(self): return self.__str__()
+    """ End of class Column """
 class ColumnList:
     """ Column list metadata. """
     def __init__(self):
@@ -131,6 +153,44 @@ class ColumnList:
         self.__columns.append(column)
         self.__setup__()
 
+    def remove(self, key: (int, str)):
+        if key is None or not isinstance(key, (int, str)):
+            raise TypeError("Argument key must be of type int or str")
+        index = -1
+        if isinstance(key, int): index = key
+        if isinstance(key, str): index = self.index_of(key)
+        if 0 <= index < len(self.__columns):
+            del self.__columns[index]
+            self.__setup__()
+
+    def clear(self):
+        self.__columns.clear()
+        self.__setup__()
+
+    def index_of(self, alias: str) -> int:
+        if alias is None or not isinstance(alias, str):
+            raise TypeError("Argument alias must be of type str")
+        index = self.__indexes.get(alias)
+        return -1 if index is None else index
+
+    def get_by_alias(self, alias: str) -> Column:
+        if alias is None or not isinstance(alias, str):
+            raise TypeError("Argument alias must be of type str")
+        index = self.index_of(alias)
+        if index < 0: raise ValueError(f"Invalid alias {alias}")
+        return self.__columns[index]
+
+    def get_by_index(self, index: int) -> Column:
+        if index is None or not isinstance(index, int): raise TypeError("")
+        if index < 0: raise ValueError("")
+        if index >= len(self.__columns): raise ValueError("Index out of range")
+        return self.__columns[index]
+
+    def columns(self) -> list: return list(self.__columns)
+    def aliases(self) -> list: return list(self.__aliases)
+    def pk_columns(self) -> list: return list(self.__pk_columns)
+    def default_values(self) -> list: return list(self.__default_values)
+
     def __setup__(self):
 
         self.__aliases.clear()
@@ -145,3 +205,13 @@ class ColumnList:
             if column.is_primary_key():
                 self.__pk_columns.append(column)
             self.__default_values.append(column.get_default_value())
+    """ End of class ColumnList """
+class Order:
+    """ An order definition. """
+    def __init__(self):
+        self.__props = Properties()
+        self.__props.set_list(OrderKeys.SEGMENTS, [])
+
+    def append(self, column: Column, ascending: bool = True):
+        if column is None or not isinstance(column, Column):
+            raise TypeError("Argument column must be of type Column")
