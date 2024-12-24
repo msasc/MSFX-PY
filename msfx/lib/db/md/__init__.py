@@ -60,6 +60,7 @@ class TableProps(Enum):
     DESCRIPTION = "DESCRIPTION"
     PERSISTENT = "PERSISTENT"
     PRIMARY_KEY = "PRIMARY_KEY"
+    COLUMNS = "COLUMNS"
     INDEXES = "INDEXES"
     FOREIGN_KEYS = "FOREIGN_KEYS"
 
@@ -176,6 +177,8 @@ class ColumnList:
         self.__props.set_list(ColumnListProps.PK_COLUMNS, [])
         self.__props.set_list(ColumnListProps.DEFAULT_VALUES, [])
 
+    # Private properties.
+
     @property
     def __columns(self) -> list:
         return self.__props.get_list(ColumnListProps.COLUMNS)
@@ -192,12 +195,25 @@ class ColumnList:
     def __default_values(self) -> list:
         return self.__props.get_list(ColumnListProps.DEFAULT_VALUES)
 
+    # Public properties.
+    @property
+    def columns(self) -> list:
+        return list(self.__columns)
+    @property
+    def aliases(self) -> list:
+        return list(self.__aliases)
+    @property
+    def pk_columns(self) -> list:
+        return list(self.__pk_columns)
+    @property
+    def default_values(self) -> list:
+        return list(self.__default_values)
+
     def append(self, column: Column):
         if not isinstance(column, Column):
             raise TypeError("Arg column must be of type Column")
         self.__columns.append(column)
         self.__setup__()
-
     def remove(self, key: (int, str)):
         if not isinstance(key, (int, str)):
             raise TypeError("Arg key must be of type int or str")
@@ -209,7 +225,6 @@ class ColumnList:
         if 0 <= index < len(self.__columns):
             del self.__columns[index]
             self.__setup__()
-
     def clear(self):
         self.__columns.clear()
         self.__setup__()
@@ -219,7 +234,6 @@ class ColumnList:
             raise TypeError("Arg alias must be of type str")
         index = self.__indexes.get(alias)
         return -1 if index is None else index
-
     def get_by_alias(self, alias: str) -> Column:
         if not isinstance(alias, str):
             raise TypeError("Arg alias must be of type str")
@@ -227,22 +241,12 @@ class ColumnList:
         if index < 0:
             raise ValueError(f"Invalid alias {alias}")
         return self.__columns[index]
-
     def get_by_index(self, index: int) -> Column:
         if index is None or not isinstance(index, int):
             raise TypeError("Arg index must be of type int")
         if index < 0 or index >= len(self.__columns):
             raise ValueError("Index out of range")
         return self.__columns[index]
-
-    def columns(self) -> list:
-        return list(self.__columns)
-    def aliases(self) -> list:
-        return list(self.__aliases)
-    def pk_columns(self) -> list:
-        return list(self.__pk_columns)
-    def default_values(self) -> list:
-        return list(self.__default_values)
 
     def __setup__(self):
         self.__aliases.clear()
@@ -375,17 +379,40 @@ class ForeignKey:
     """ End of class ForeignKey """
 class Table:
     """ A table definition. """
-    def __init__(self):
-        self.__props = Properties()
-        self.__props.set_list(TableProps.INDEXES, [])
-        self.__props.set_list(TableProps.FOREIGN_KEYS, [])
+    def __init__(self, props: Properties = None):
+        self.__props = None
+        if isinstance(props, Properties):
+            self.__props = props
+        else:
+            self.__props = Properties()
+            self.__props.set_any(TableProps.COLUMNS, ColumnList())
+            self.__props.set_list(TableProps.INDEXES, [])
+            self.__props.set_list(TableProps.FOREIGN_KEYS, [])
 
+    # Private accessors to columns, indexes and foreign keys.
+
+    @property
+    def __columns(self) -> ColumnList:
+        return self.__props.get_any(TableProps.COLUMNS)
     @property
     def __indexes(self) -> list:
         return self.__props.get_list(TableProps.INDEXES)
     @property
     def __foreign_keys(self) -> list:
         return self.__props.get_list(TableProps.FOREIGN_KEYS)
+
+    # Public accessors to columns, indexes and foreign keys
+    # that protect private members to be modified.
+
+    @property
+    def columns(self) -> list:
+        return self.__columns.columns
+    @property
+    def indexes(self) -> list:
+        return list(self.__indexes)
+    @property
+    def foreign_keys(self) -> list:
+        return list(self.__foreign_keys)
 
     def get_name(self) -> str:
         return self.__props.get_string(TableProps.NAME)
@@ -406,6 +433,16 @@ class Table:
         self.__props.set_string(TableProps.DESCRIPTION, description)
     def set_persistent(self, persistent: bool):
         self.__props.set_bool(TableProps.PERSISTENT, persistent)
-    def set_primary_key(self, index: Index):
-        self.__props.set_any(TableProps.PRIMARY_KEY, index)
+    def set_primary_key(self, primary_key: Index):
+        primary_key.set_table_props(self.__props)
+        self.__props.set_any(TableProps.PRIMARY_KEY, primary_key)
 
+    def append_column(self, column: Column):
+        column.set_table_props(self.__props)
+        self.__columns.append(column)
+    def append_index(self, index: Index):
+        index.set_table_props(self.__props)
+        self.__indexes.append(index)
+    def append_foreign_key(self, foreign_key: ForeignKey):
+        foreign_key.set_local_table_props(self.__props)
+        self.__foreign_keys.append(foreign_key)
