@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 """ Utility functions for dictionaries """
-from typing import Any, Type, Dict
+from typing import Any, Type
 
 SCHEMA_TYPE = "type"
 SCHEMA_DEFAULT = "default"

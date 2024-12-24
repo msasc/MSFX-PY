@@ -1,4 +1,4 @@
-from msfx.lib_back2 import error_msg, check_type
+from msfx.lib_back2 import error_msg
 
 error = error_msg("function error", "function", "EXP", ("MIN", "MAX", "AVG"))
 print(error)

@@ -11,9 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from msfx.lib import check_class_name
 from msfx.lib.props import Properties
-from msfx.test_back.test_self import Column
 
 props = Properties()
 props_get = props.get_props("RE")

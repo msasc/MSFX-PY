@@ -19,7 +19,6 @@ splited into category files per subject.
 """
 from _decimal import Decimal
 from datetime import datetime
-from importlib import import_module
 
 def is_valid_datetime(datetime_string: str, datetime_format: str) -> bool:
     try:

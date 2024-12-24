@@ -49,7 +49,7 @@ class Value:
         if value is None: raise TypeError(f"Value can not be {None}.")
 
         # If value is an instance of Types is must be one of the types
-        # that are nullable (DATE, TIME, DATETIME and BINARY.
+        # that are nullable (DATE, TIME, DATETIME and BINARY).
         if isinstance(value, Types):
             if value not in Types.get_types_null():
                 raise TypeError(f"Only types {Types.get_types_null()} accept a None value")

@@ -1,6 +1,4 @@
-from torch.optim.optimizer import required
-
-from msfx.lib.vdict import get_bool, validate_dict
+from msfx.lib.vdict import get_bool
 
 data = {}
 data["one"] = "One"

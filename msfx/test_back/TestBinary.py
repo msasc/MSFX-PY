@@ -20,6 +20,7 @@ hex_data = b.hex()
 print(hex_data)
 print(bytes.fromhex(hex_data))
 
+# noinspection PyBroadException
 try:
     print(bytes.fromhex('ffkkk'))
 except Exception:

@@ -74,7 +74,6 @@ class QIconButton(QPushButton):
         self.__pressed = False
 
     def __updateIconBaseColor(self):
-        color: QColor = self.__backgroundColor
         if self.__entered:
             if self.__pressed:
                 color = self.__pressedColor

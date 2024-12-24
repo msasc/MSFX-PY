@@ -13,16 +13,16 @@
 #  limitations under the License.
 # Define your conditions as a list of lambdas
 conditions = [
-    (lambda value: isinstance(value, bool), "BOOL"),
-    (lambda value: isinstance(value, str), "STRING"),
-    (lambda value: isinstance(value, int), "INTEGER"),
+    (lambda v: isinstance(v, bool), "BOOL"),
+    (lambda v: isinstance(v, str), "STRING"),
+    (lambda v: isinstance(v, int), "INTEGER"),
     # Add more conditions as needed
 ]
 
 # Function to evaluate the conditions
-def check_conditions(value, vtype):
+def check_conditions(arg_value, arg_type):
     for condition, expected_type in conditions:
-        if condition(value) and vtype == expected_type:
+        if condition(arg_value) and arg_type == expected_type:
             return True
     return False
 

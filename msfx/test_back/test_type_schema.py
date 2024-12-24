@@ -1,7 +1,7 @@
 
-from typing import Type, Dict, Any, Tuple
+from typing import Dict, Any
 
-from msfx.lib_back2.util.generics import dict_validate, SCHEMA_TYPE, SCHEMA_DEFAULT
+from msfx.lib_back2.util.generics import dict_validate, SCHEMA_TYPE
 
 DATA_SCHEMA = {
     "name": {"type": str, "default": ""},

@@ -1,5 +1,3 @@
-from typing import Optional
-
 def get_name(name):
     return name if isinstance(name, str) else "None"
     # return name if name else "None"

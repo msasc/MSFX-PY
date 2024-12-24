@@ -14,10 +14,10 @@
 
 from multiprocessing import Value, Process
 
-def increment(counter):
+def increment(arg_counter):
     for _ in range(10000):
-        with counter.get_lock():
-            counter.get_value += 1
+        with arg_counter.get_lock():
+            arg_counter.get_value += 1
 
 if __name__ == '__main__':
     counter = Value('i', 0)  # 'i' indicates a signed int

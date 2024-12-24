@@ -15,8 +15,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
 # Hyperparameters
 batch_size = 64
@@ -70,9 +70,11 @@ def train_model():
             loss.backward()
             optimizer.step()
 
+        # noinspection PyUnboundLocalVariable
         print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}")
 
 # 5. Evaluation Function
+# noinspection PyUnresolvedReferences
 def evaluate_model():
     model.eval()
     total, correct = 0, 0

@@ -14,14 +14,14 @@
 
 from multiprocessing import Pool
 
-def square(x):
-    print("s: " + str(x) + ", " + str(x * x))
+def square(arg_x):
+    print("s: " + str(arg_x) + ", " + str(arg_x * arg_x))
 
-def cube(x):
-    print("c: " + str(x) + ", "  + str(x * x * x))
+def cube(arg_x):
+    print("c: " + str(arg_x) + ", " + str(arg_x * arg_x * arg_x))
 
-def double(x):
-    print("d: " + str(x) + ", "  + str(x + x))
+def double(arg_x):
+    print("d: " + str(arg_x) + ", " + str(arg_x + arg_x))
 
 if __name__ == '__main__':
     with Pool(1) as p:

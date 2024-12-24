@@ -74,3 +74,8 @@ class Properties:
         check_class_name(value, Properties)
         set_any(self.__props, key, value)
 
+    def __iter__(self): return self.__props.__iter__()
+    def __len__(self) -> int: return len(self.__props)
+    def __eq__(self, other) -> bool: return self.__props == other.__props
+    def __str__(self) -> str: return str(self.__props)
+    def __repr__(self): return self.__str__()

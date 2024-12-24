@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
 
 import msfx.lib_back2.qt
 
+# noinspection PyUnresolvedReferences
 class Worker(QObject):
     # Signals to update and set visible or not, the status progress bar
     bar_progress = pyqtSignal(int)
@@ -34,7 +35,7 @@ class Worker(QObject):
     label_text = pyqtSignal(str)
     label_visible = pyqtSignal(bool)
 
-    def __init__(self, arg=None):
+    def __init__(self):
         super().__init__()
 
     def run(self):
@@ -68,6 +69,7 @@ class Worker(QObject):
         self.bar_visible.emit(False)
         self.label_visible.emit(False)
 
+# noinspection PyUnresolvedReferences
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -103,10 +105,11 @@ class Window(QMainWindow):
 
         # Set up the thread and worker
         self.thread = QThread()
-        self.worker = Worker(None)
+        self.worker = Worker()
         self.worker.moveToThread(self.thread)
 
         # Connect signals and slots
+        # noinspection PyUnresolvedReferences
         self.worker.label_text.connect(self.statusLabel.setText)
         self.worker.label_visible.connect(self.statusLabel.setVisible)
         self.worker.bar_progress.connect(self.progressBar.setValue)
@@ -121,6 +124,6 @@ if __name__ == "__main__":
     screen = QGuiApplication.primaryScreen()
 
     window = Window()
-    msfx.lib.qt.setWidgetSize(window, 0.6, 0.6)
+    msfx.lib_back2.qt.setWidgetSize(window, 0.6, 0.6)
     window.show()
     sys.exit(app.exec())

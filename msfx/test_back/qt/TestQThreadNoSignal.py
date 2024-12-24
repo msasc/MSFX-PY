@@ -54,6 +54,6 @@ class MainWindow(QMainWindow):
 
 app = QApplication(sys.argv)
 window = MainWindow()
-msfx.lib.qt.setWidgetSize(window, 0.4, 0.3)
+msfx.lib_back2.qt.setWidgetSize(window, 0.4, 0.3)
 window.show()
 sys.exit(app.exec())

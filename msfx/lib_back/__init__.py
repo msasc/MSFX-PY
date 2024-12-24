@@ -15,7 +15,7 @@
 from datetime import datetime, time, date
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Optional, Dict, List, Type
+from typing import Any, Optional, Dict, Type
 
 def __err_quote__(value) -> str:
     err: str = ""

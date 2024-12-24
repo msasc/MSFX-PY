@@ -13,9 +13,9 @@
 #  limitations under the License.
 
 from datetime import date, time, datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 from msfx.lib import round_dec
 
@@ -63,7 +63,7 @@ class Value:
         if value is None: raise TypeError(f"Value can not be {None}.")
 
         # If value is an instance of Types is must be one of the types
-        # that are nullable (DATE, TIME, DATETIME and BINARY.
+        # that are nullable (DATE, TIME, DATETIME and BINARY).
         if isinstance(value, Types):
             if value not in Types.get_types_none():
                 raise TypeError(f"Only types {Types.get_types_none()} accept a None value")
@@ -299,7 +299,7 @@ class OrderKey:
     """
     def __init__(self): self.__segments = []
 
-    def append(self, value: Value, ascending: bool): self.__segments.append((value, ascending))
+    def append(self, value: Value, asc: bool): self.__segments.append((value, asc))
     def clear(self): self.__segments.clear()
 
     def __iter__(self): return self.__segments.__iter__()

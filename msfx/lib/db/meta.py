@@ -13,15 +13,13 @@
 #  limitations under the License.
 
 from enum import Enum
-from typing import Optional
 
 from msfx.lib import round_dec
 from msfx.lib.db import Types, Value
 from msfx.lib.props import Properties
 
-class ColumnKeys(Enum):
+class ColumnProps(Enum):
     NAME = "NAME"
-    ALIAS = "ALIAS"
     TYPE = "TYPE"
     LENGTH = "LENGTH"
     SCALE = "SCALE"
@@ -34,46 +32,56 @@ class ColumnKeys(Enum):
     TABLE = "TABLE"
     VIEW = "VIEW"
     PROPERTIES = "PROPERTIES"
-class ColumnListKeys(Enum):
+class ColumnListProps(Enum):
     COLUMNS = "COLUMNS"
     ALIASES = "ALIASES"
     INDEXES = "INDEXES"
     PK_COLUMNS = "PK_COLUMNS"
     DEFAULT_VALUES = "DEFAULT_VALUES"
-class OrderKeys(Enum):
+class OrderProps(Enum):
     SEGMENTS = "SEGMENTS"
+class IndexProps(Enum):
+    NAME = "NAME"
+    SCHEMA = "SCHEMA"
+    DESCRIPTION = "DESCRIPTION"
+    UNIQUE = "UNIQUE"
+    TABLE = "TABLE"
+    SEGMENTS = "SEGMENTS"
+class ForeignKeyProps(Enum):
+    NAME = "NAME"
+    PERSISTENT = "PERSISTENT"
+    ON_DELETE = "ON_DELETE"
+    LOCAL_TABLE = "LOCAL_TABLE"
+    FOREIGN_TABLE = "FOREIGN_TABLE"
+    SEGMENTS = "SEGMENTS"
+class TableProps(Enum):
+    NAME = "NAME"
+    SCHEMA = "SCHEMA"
+    DESCRIPTION = "DESCRIPTION"
 
 class Column:
     """ Column metadata. """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self.__props = Properties()
 
         # Extra properties initialized so directly can be used.
-        self.__props.set_props(ColumnKeys.PROPERTIES, Properties())
+        self.__props.set_props(ColumnProps.PROPERTIES, Properties())
 
-    def get_name(self) -> str: return self.__props.get_string(ColumnKeys.NAME)
-    def get_alias(self) -> str:
-        alias = self.__props.get_string(ColumnKeys.ALIAS)
-        if len(alias) == 0: alias = self.get_name()
-        return alias
-    def get_type(self) -> Types: return self.__props.get_any(ColumnKeys.TYPE, Types.STRING)
-    def get_length(self) -> int: return self.__props.get_integer(ColumnKeys.LENGTH, -1)
-    def get_scale(self) -> int: return self.__props.get_integer(ColumnKeys.SCALE, -1)
+    def get_name(self) -> str: return self.__props.get_string(ColumnProps.NAME)
+    def get_type(self) -> Types: return self.__props.get_any(ColumnProps.TYPE, Types.STRING)
+    def get_length(self) -> int: return self.__props.get_integer(ColumnProps.LENGTH, -1)
+    def get_scale(self) -> int: return self.__props.get_integer(ColumnProps.SCALE, -1)
 
-    def is_primary_key(self) -> bool: return self.__props.get_bool(ColumnKeys.PRIMARY_KEY, False)
-    def is_nullable(self) -> bool: return self.__props.get_bool(ColumnKeys.NULLABLE, True)
-    def is_uppercase(self) -> bool: return self.__props.get_bool(ColumnKeys.UPPERCASE, False)
+    def is_primary_key(self) -> bool: return self.__props.get_bool(ColumnProps.PRIMARY_KEY, False)
+    def is_nullable(self) -> bool: return self.__props.get_bool(ColumnProps.NULLABLE, True)
+    def is_uppercase(self) -> bool: return self.__props.get_bool(ColumnProps.UPPERCASE, False)
 
-    def get_header(self) -> str: return self.__props.get_string(ColumnKeys.HEADER)
-    def get_label(self) -> str: return self.__props.get_string(ColumnKeys.LABEL)
-    def get_description(self) -> str: return self.__props.get_string(ColumnKeys.DESCRIPTION)
+    def get_header(self) -> str: return self.__props.get_string(ColumnProps.HEADER)
+    def get_label(self) -> str: return self.__props.get_string(ColumnProps.LABEL)
+    def get_description(self) -> str: return self.__props.get_string(ColumnProps.DESCRIPTION)
 
-    # To avoid circular references, table and view store their properties
-    def get_table_props(self) -> Optional[Properties]: return self.__props.get_props(ColumnKeys.TABLE)
-    def get_view_props(self) -> Optional[Properties]: return self.__props.get_props(ColumnKeys.VIEW)
-
-    def get_props(self) -> Properties: return self.__props.get_props(ColumnKeys.PROPERTIES)
+    def get_props(self) -> Properties: return self.__props.get_props(ColumnProps.PROPERTIES)
 
     def get_default_value(self) -> Value:
         type: Types = self.get_type()
@@ -92,22 +100,24 @@ class Column:
         if type == Types.DICT: return Value(dict({}))
         raise ValueError(f"Unsupported type {type}")
 
-    def set_name(self, name: str): self.__props.set_string(ColumnKeys.NAME, name)
-    def set_alias(self, alias: str): self.__props.set_string(ColumnKeys.ALIAS, alias)
-    def set_type(self, type: Types): self.__props.set_any(ColumnKeys.TYPE, type)
-    def set_length(self, length: int): self.__props.set_integer(ColumnKeys.LENGTH, length)
-    def set_scale(self, scale: int): self.__props.set_integer(ColumnKeys.SCALE, scale)
+    def get_table_props(self) -> Properties: return self.__props.get_props(ColumnProps.TABLE)
+    def get_view_props(self) -> Properties: return self.__props.get_props(ColumnProps.VIEW)
 
-    def set_primary_key(self, primary_key: bool): self.__props.set_bool(ColumnKeys.PRIMARY_KEY, False)
-    def set_nullable(self, nullable: bool): self.__props.set_bool(ColumnKeys.NULLABLE, True)
-    def set_uppercase(self, uppercase: bool): self.__props.set_bool(ColumnKeys.UPPERCASE, False)
+    def set_name(self, name: str): self.__props.set_string(ColumnProps.NAME, name)
+    def set_type(self, type: Types): self.__props.set_any(ColumnProps.TYPE, type)
+    def set_length(self, length: int): self.__props.set_integer(ColumnProps.LENGTH, length)
+    def set_scale(self, scale: int): self.__props.set_integer(ColumnProps.SCALE, scale)
 
-    def set_header(self, header: str): self.__props.set_string(ColumnKeys.HEADER, header)
-    def set_label(self, label: str): self.__props.set_string(ColumnKeys.LABEL, label)
-    def set_description(self, description: str): self.__props.set_string(ColumnKeys.DESCRIPTION, description)
+    def set_primary_key(self, primary_key: bool): self.__props.set_bool(ColumnProps.PRIMARY_KEY, primary_key)
+    def set_nullable(self, nullable: bool): self.__props.set_bool(ColumnProps.NULLABLE, nullable)
+    def set_uppercase(self, uppercase: bool): self.__props.set_bool(ColumnProps.UPPERCASE, uppercase)
 
-    def set_table_props(self, props: Properties): self.__props.set_props(ColumnKeys.TABLE, props)
-    def set_view_props(self, props: Properties): self.__props.set_props(ColumnKeys.VIEW, props)
+    def set_header(self, header: str): self.__props.set_string(ColumnProps.HEADER, header)
+    def set_label(self, label: str): self.__props.set_string(ColumnProps.LABEL, label)
+    def set_description(self, description: str): self.__props.set_string(ColumnProps.DESCRIPTION, description)
+
+    def set_table_props(self, table_props: Properties): self.__props.set_props(ColumnProps.TABLE, table_props)
+    def set_view_props(self, view_props: Properties): self.__props.set_props(ColumnProps.VIEW, view_props)
 
     def __str__(self) -> str:
         col = "[\""
@@ -130,32 +140,30 @@ class ColumnList:
     """ Column list metadata. """
     def __init__(self):
         self.__props = Properties()
-        self.__props.set_list(ColumnListKeys.COLUMNS, [])
-        self.__props.set_list(ColumnListKeys.ALIASES, [])
-        self.__props.set_dict(ColumnListKeys.INDEXES, {})
-        self.__props.set_list(ColumnListKeys.PK_COLUMNS, [])
-        self.__props.set_list(ColumnListKeys.DEFAULT_VALUES, [])
+        self.__props.set_list(ColumnListProps.COLUMNS, [])
+        self.__props.set_list(ColumnListProps.ALIASES, [])
+        self.__props.set_dict(ColumnListProps.INDEXES, {})
+        self.__props.set_list(ColumnListProps.PK_COLUMNS, [])
+        self.__props.set_list(ColumnListProps.DEFAULT_VALUES, [])
 
     @property
-    def __columns(self) -> list: return self.__props.get_list(ColumnListKeys.COLUMNS)
+    def __columns(self) -> list: return self.__props.get_list(ColumnListProps.COLUMNS)
     @property
-    def __aliases(self) -> list: return self.__props.get_list(ColumnListKeys.ALIASES)
+    def __aliases(self) -> list: return self.__props.get_list(ColumnListProps.ALIASES)
     @property
-    def __indexes(self) -> dict: return self.__props.get_dict(ColumnListKeys.INDEXES)
+    def __indexes(self) -> dict: return self.__props.get_dict(ColumnListProps.INDEXES)
     @property
-    def __pk_columns(self) -> list: return self.__props.get_list(ColumnListKeys.PK_COLUMNS)
+    def __pk_columns(self) -> list: return self.__props.get_list(ColumnListProps.PK_COLUMNS)
     @property
-    def __default_values(self) -> list: return self.__props.get_list(ColumnListKeys.DEFAULT_VALUES)
+    def __default_values(self) -> list: return self.__props.get_list(ColumnListProps.DEFAULT_VALUES)
 
     def append(self, column: Column):
-        if column is None or not isinstance(column, Column):
-            raise TypeError("Argument column must be of type Column")
+        if not isinstance(column, Column): raise TypeError("Arg column must be of type Column")
         self.__columns.append(column)
         self.__setup__()
 
     def remove(self, key: (int, str)):
-        if key is None or not isinstance(key, (int, str)):
-            raise TypeError("Argument key must be of type int or str")
+        if not isinstance(key, (int, str)): raise TypeError("Arg key must be of type int or str")
         index = -1
         if isinstance(key, int): index = key
         if isinstance(key, str): index = self.index_of(key)
@@ -168,14 +176,12 @@ class ColumnList:
         self.__setup__()
 
     def index_of(self, alias: str) -> int:
-        if alias is None or not isinstance(alias, str):
-            raise TypeError("Argument alias must be of type str")
+        if not isinstance(alias, str): raise TypeError("Arg alias must be of type str")
         index = self.__indexes.get(alias)
         return -1 if index is None else index
 
     def get_by_alias(self, alias: str) -> Column:
-        if alias is None or not isinstance(alias, str):
-            raise TypeError("Argument alias must be of type str")
+        if not isinstance(alias, str): raise TypeError("Arg alias must be of type str")
         index = self.index_of(alias)
         if index < 0: raise ValueError(f"Invalid alias {alias}")
         return self.__columns[index]
@@ -200,8 +206,8 @@ class ColumnList:
 
         for i in range(len(self.__columns)):
             column: Column = self.__columns[i]
-            self.__aliases.append(column.get_alias())
-            self.__indexes[column.get_alias()] = i
+            self.__aliases.append(column.get_name())
+            self.__indexes[column.get_name()] = i
             if column.is_primary_key():
                 self.__pk_columns.append(column)
             self.__default_values.append(column.get_default_value())
@@ -210,8 +216,91 @@ class Order:
     """ An order definition. """
     def __init__(self):
         self.__props = Properties()
-        self.__props.set_list(OrderKeys.SEGMENTS, [])
+        self.__props.set_list(OrderProps.SEGMENTS, [])
+
+    @property
+    def __segments(self) -> list: return self.__props.get_list(OrderProps.SEGMENTS)
 
     def append(self, column: Column, ascending: bool = True):
-        if column is None or not isinstance(column, Column):
-            raise TypeError("Argument column must be of type Column")
+        if not isinstance(column, Column): raise TypeError("Arg column must be of type Column")
+        self.__segments.append((column, ascending))
+
+    def __iter__(self): return self.__segments.__iter__()
+    def __len__(self) -> int: return len(self.__segments)
+    def __getitem__(self, index: int) -> (Column, bool): return self.__segments[index]
+    """ End of class Order """
+class Index:
+    """ An index definition. """
+    def __init__(self):
+        self.__props = Properties()
+        self.__props.set_list(IndexProps.SEGMENTS, [])
+
+    @property
+    def __segments(self) -> list: return self.__props.get_list(IndexProps.SEGMENTS)
+
+    def append(self, column: Column, asc: bool = True):
+        if not isinstance(column, Column): raise TypeError("Arg column must be of type Column")
+        self.__segments.append((column, asc))
+
+    def get_name(self) -> str: return self.__props.get_string(IndexProps.NAME)
+    def get_schema(self) -> str: return self.__props.get_string(IndexProps.SCHEMA)
+    def get_description(self) -> str: return self.__props.get_string(IndexProps.DESCRIPTION)
+    def is_unique(self) -> bool: return self.__props.get_bool(IndexProps.UNIQUE)
+
+    def get_table_props(self) -> Properties: return self.__props.get_props(IndexProps.TABLE)
+
+    def set_name(self, name: str): self.__props.set_string(IndexProps.NAME, name)
+    def set_schema(self, schema: str): self.__props.set_string(IndexProps.SCHEMA, schema)
+    def set_description(self, description: str): self.__props.set_string(IndexProps.DESCRIPTION, description)
+    def set_unique(self, unique: bool): self.__props.set_bool(IndexProps.UNIQUE, unique)
+
+    def set_table_props(self, props: Properties): self.__props.set_props(IndexProps.TABLE, props)
+
+    def __iter__(self): return self.__segments.__iter__()
+    def __len__(self) -> int: return len(self.__segments)
+    def __getitem__(self, index: int) -> (Column, bool): return self.__segments[index]
+    """ End of class Index """
+class ForeignKey:
+    """ An foreign key definition. """
+    def __init__(self):
+        self.__props = Properties()
+        self.__props.set_list(ForeignKeyProps.SEGMENTS, [])
+
+    @property
+    def __segments(self) -> list:
+        return self.__props.get_list(ForeignKeyProps.SEGMENTS)
+
+    def get_name(self) -> str:
+        return self.__props.get_string(ForeignKeyProps.NAME)
+    def get_on_delete(self) -> str:
+        return self.__props.get_string(ForeignKeyProps.ON_DELETE)
+    def is_persistent(self) -> bool:
+        return self.__props.get_bool(ForeignKeyProps.PERSISTENT)
+
+    def get_local_table_props(self) -> Properties:
+        return self.__props.get_props(ForeignKeyProps.LOCAL_TABLE)
+    def get_foreign_table_props(self) -> Properties:
+        return self.__props.get_props(ForeignKeyProps.FOREIGN_TABLE)
+
+    def set_name(self, name: str):
+        self.__props.set_string(ForeignKeyProps.NAME, name)
+    def set_on_delete(self, on_delete: str):
+        if not on_delete in ("CASCADE", "SET NULL", "SET DEFAULT", "NO ACTION", "RESTRICT"):
+            raise ValueError(f"Invalid value for on_delete {on_delete}")
+        self.__props.set_string(ForeignKeyProps.ON_DELETE, on_delete)
+    def set_persistent(self, persistent: bool):
+        self.__props.set_bool(ForeignKeyProps.PERSISTENT, persistent)
+
+    def set_local_table_props(self, props: Properties):
+        self.__props.set_props(ForeignKeyProps.LOCAL_TABLE, props)
+    def set_foreign_table_props(self, props: Properties):
+        self.__props.set_props(ForeignKeyProps.LOCAL_TABLE, props)
+
+    def append(self, local_column: Column, foreign_column: Column):
+        self.__segments.append((local_column, foreign_column))
+
+
+    def __iter__(self): return self.__segments.__iter__()
+    def __len__(self) -> int: return len(self.__segments)
+    def __getitem__(self, index: int) -> (Column, Column): return self.__segments[index]
+    """ End of class ForeignKey """
