@@ -1,5 +1,5 @@
 from msfx.lib.db import Types
-from msfx.lib.db.meta import Column
+from msfx.lib.db.md import Column
 
 col = Column()
 print(col.get_type())

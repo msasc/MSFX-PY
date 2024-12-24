@@ -1,5 +1,5 @@
 from msfx.lib.db import Types
-from msfx.lib.db.meta import Column, ColumnList
+from msfx.lib.db.md import Column, ColumnList
 
 carticle = Column()
 carticle.set_name("CARTICLE")
