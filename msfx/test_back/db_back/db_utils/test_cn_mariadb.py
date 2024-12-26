@@ -7,7 +7,9 @@ pool = MariaDBConnectionPool(
 conn = pool.get_connection()
 cursor = conn.cursor(buffered=False)
 
-cursor.execute("SELECT * FROM qtfx_dkcp.eurusd_mn001")
+# cursor.execute("SELECT * FROM qtfx_dkcp.eurusd_mn001")
+# cursor.execute("SELECT * FROM qtfx.articles")
+cursor.execute("SELECT ART.CARTICLE, ART.DARTICLE FROM qtfx.articles ART")
 
 count = 0
 row = cursor.fetchone()

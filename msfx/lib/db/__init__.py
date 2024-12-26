@@ -20,7 +20,12 @@ from typing import Optional
 from msfx.lib import round_dec
 
 class Types(Enum):
-    """ Types accepted within this database SQL metadata. """
+    """
+    Types accepted within this database SQL metadata.
+
+    Boolean values are stored in a VARCHAR(1) column with Y/N for readability,
+    although when read (Y/N), (T/F), (1,0) are accepted and empty/NULL is False.
+    """
     BOOLEAN = "BOOLEAN"
     DECIMAL = "DECIMAL"
     INTEGER = "INTEGER"
@@ -202,13 +207,13 @@ class Value:
 
     def set_bool(self, value: bool):
         self.__set__(value)
-    def set_decimal(self, value: float):
+    def set_decimal(self, value: Decimal):
         self.__set__(value)
     def set_integer(self, value: int):
         self.__set__(value)
     def set_float(self, value: float):
         self.__set__(value)
-    def set_complex(self, value: float):
+    def set_complex(self, value: complex):
         self.__set__(value)
     def set_date(self, value: Optional[date]):
         self.__set__(value)
@@ -216,7 +221,7 @@ class Value:
         self.__set__(value)
     def set_datetime(self, value: Optional[datetime]):
         self.__set__(value)
-    def set_binary(self, value: bool):
+    def set_binary(self, value: (bytes, bytearray)):
         self.__set__(value)
     def set_string(self, value: str):
         self.__set__(value)

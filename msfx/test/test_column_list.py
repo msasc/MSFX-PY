@@ -20,3 +20,7 @@ cols.append(qsales)
 
 print(cols.get_by_alias("CARTICLE"))
 print(cols.get_by_alias("QSALES"))
+
+cols_ro = cols.columns
+print(cols_ro.get_by_alias("QSALES"))
+# cols_ro.append(carticle)

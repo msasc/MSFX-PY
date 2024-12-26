@@ -4,7 +4,9 @@ pool = ConnectionPool(pool_name='test_back', host='localhost', user='root', pass
 conn = pool.get_connection()
 
 cursor = conn.cursor(buffered=False)
-cursor.execute("SELECT * FROM qtfx_dkcp.eurusd_mn001")
+# cursor.execute("SELECT * FROM qtfx_dkcp.eurusd_mn001")
+cursor.execute("SELECT ART.CARTICLE, ART.DARTICLE FROM qtfx.articles ART")
+# cursor.execute("SELECT CARTICLE, DARTICLE FROM qtfx.articles")
 
 count = 0
 # batch_size = 100
@@ -19,19 +21,19 @@ count = 0
 
 print("OK")
 print(cursor.rowcount)
-# print("Column names and types:")
-# for column in cursor.description:
-#     print(f"Column: {column[0]}, Type: {type(column[1])}")
-#
-# print()
+print("Column names and types:")
+for column in cursor.description:
+    print(column)
 
-row = cursor.fetchone()
-while row is not None:
-    count += 1
-    print(row)
-    if count >= 1000000: break
-    row = cursor.fetchone()
-print(cursor.rowcount)
+print()
+
+# row = cursor.fetchone()
+# while row is not None:
+#     count += 1
+#     print(row)
+#     if count >= 1000000: break
+#     row = cursor.fetchone()
+# print(cursor.rowcount)
 
 cursor.close()
 conn.close()

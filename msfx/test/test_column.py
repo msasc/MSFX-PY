@@ -14,3 +14,5 @@ col.get_props().set_string("TURURUT", "SETZE HORES")
 print(col.get_props().get_string("TURURUT"))
 
 print(col)
+
+col_copy = col.copy()

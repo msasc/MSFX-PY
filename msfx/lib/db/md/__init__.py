@@ -20,6 +20,7 @@ from msfx.lib.props import Properties
 
 class ColumnProps(Enum):
     NAME = "NAME"
+    ALIAS = "ALIAS"
     TYPE = "TYPE"
     LENGTH = "LENGTH"
     SCALE = "SCALE"
@@ -30,7 +31,6 @@ class ColumnProps(Enum):
     LABEL = "LABEL"
     DESCRIPTION = "DESCRIPTION"
     TABLE = "TABLE"
-    VIEW = "VIEW"
     PROPERTIES = "PROPERTIES"
 class ColumnListProps(Enum):
     COLUMNS = "COLUMNS"
@@ -56,6 +56,7 @@ class ForeignKeyProps(Enum):
     SEGMENTS = "SEGMENTS"
 class TableProps(Enum):
     NAME = "NAME"
+    ALIAS = "ALIAS"
     SCHEMA = "SCHEMA"
     DESCRIPTION = "DESCRIPTION"
     PERSISTENT = "PERSISTENT"
@@ -63,18 +64,24 @@ class TableProps(Enum):
     COLUMNS = "COLUMNS"
     INDEXES = "INDEXES"
     FOREIGN_KEYS = "FOREIGN_KEYS"
+    PROPERTIES = "PROPERTIES"
 
 class Column:
     """ Column metadata. """
 
     def __init__(self):
         self.__props = Properties()
-
-        # Extra properties initialized so directly can be used.
         self.__props.set_props(ColumnProps.PROPERTIES, Properties())
+
+    def copy(self):
+        col = Column()
+        col.__props = self.__props.copy()
+        return col
 
     def get_name(self) -> str:
         return self.__props.get_string(ColumnProps.NAME)
+    def get_alias(self) -> str:
+        return self.__props.get_string(ColumnProps.ALIAS, self.get_name())
     def get_type(self) -> Types:
         return self.__props.get_any(ColumnProps.TYPE, Types.STRING)
     def get_length(self) -> int:
@@ -118,11 +125,11 @@ class Column:
 
     def get_table_props(self) -> Properties:
         return self.__props.get_props(ColumnProps.TABLE)
-    def get_view_props(self) -> Properties:
-        return self.__props.get_props(ColumnProps.VIEW)
 
     def set_name(self, name: str):
         self.__props.set_string(ColumnProps.NAME, name)
+    def set_alias(self, alias: str):
+        self.__props.set_string(ColumnProps.ALIAS, alias)
     def set_type(self, type: Types):
         self.__props.set_any(ColumnProps.TYPE, type)
     def set_length(self, length: int):
@@ -146,8 +153,6 @@ class Column:
 
     def set_table_props(self, table_props: Properties):
         self.__props.set_props(ColumnProps.TABLE, table_props)
-    def set_view_props(self, view_props: Properties):
-        self.__props.set_props(ColumnProps.VIEW, view_props)
 
     def __str__(self) -> str:
         col = "[\""
@@ -169,13 +174,18 @@ class Column:
     """ End of class Column """
 class ColumnList:
     """ Column list metadata. """
-    def __init__(self):
-        self.__props = Properties()
-        self.__props.set_list(ColumnListProps.COLUMNS, [])
-        self.__props.set_list(ColumnListProps.ALIASES, [])
-        self.__props.set_dict(ColumnListProps.INDEXES, {})
-        self.__props.set_list(ColumnListProps.PK_COLUMNS, [])
-        self.__props.set_list(ColumnListProps.DEFAULT_VALUES, [])
+    def __init__(self, column_list_props: Properties = None):
+        if isinstance(column_list_props, Properties):
+            self.__read_only = True
+            self.__props = column_list_props
+        else:
+            self.__read_only = False
+            self.__props = Properties()
+            self.__props.set_list(ColumnListProps.COLUMNS, [])
+            self.__props.set_list(ColumnListProps.ALIASES, [])
+            self.__props.set_dict(ColumnListProps.INDEXES, {})
+            self.__props.set_list(ColumnListProps.PK_COLUMNS, [])
+            self.__props.set_list(ColumnListProps.DEFAULT_VALUES, [])
 
     # Private properties.
 
@@ -196,9 +206,10 @@ class ColumnList:
         return self.__props.get_list(ColumnListProps.DEFAULT_VALUES)
 
     # Public properties.
+
     @property
-    def columns(self) -> list:
-        return list(self.__columns)
+    def columns(self):
+        return ColumnList(self.__props)
     @property
     def aliases(self) -> list:
         return list(self.__aliases)
@@ -210,11 +221,15 @@ class ColumnList:
         return list(self.__default_values)
 
     def append(self, column: Column):
+        if self.__read_only:
+            raise PermissionError("Read-only status")
         if not isinstance(column, Column):
             raise TypeError("Arg column must be of type Column")
         self.__columns.append(column)
         self.__setup__()
     def remove(self, key: (int, str)):
+        if self.__read_only:
+            raise PermissionError("Read-only status")
         if not isinstance(key, (int, str)):
             raise TypeError("Arg key must be of type int or str")
         index = -1
@@ -226,6 +241,8 @@ class ColumnList:
             del self.__columns[index]
             self.__setup__()
     def clear(self):
+        if self.__read_only:
+            raise PermissionError("Read-only status")
         self.__columns.clear()
         self.__setup__()
 
@@ -256,8 +273,8 @@ class ColumnList:
 
         for i in range(len(self.__columns)):
             column: Column = self.__columns[i]
-            self.__aliases.append(column.get_name())
-            self.__indexes[column.get_name()] = i
+            self.__aliases.append(column.get_alias())
+            self.__indexes[column.get_alias()] = i
             if column.is_primary_key():
                 self.__pk_columns.append(column)
             self.__default_values.append(column.get_default_value())
@@ -388,6 +405,7 @@ class Table:
             self.__props.set_any(TableProps.COLUMNS, ColumnList())
             self.__props.set_list(TableProps.INDEXES, [])
             self.__props.set_list(TableProps.FOREIGN_KEYS, [])
+            self.__props.set_props(TableProps.PROPERTIES, Properties())
 
     # Private accessors to columns, indexes and foreign keys.
 
@@ -405,7 +423,7 @@ class Table:
     # that protect private members to be modified.
 
     @property
-    def columns(self) -> list:
+    def columns(self) -> ColumnList:
         return self.__columns.columns
     @property
     def indexes(self) -> list:
@@ -416,6 +434,8 @@ class Table:
 
     def get_name(self) -> str:
         return self.__props.get_string(TableProps.NAME)
+    def get_alias(self) -> str:
+        return self.__props.get_string(TableProps.ALIAS, self.get_name())
     def get_schema(self) -> str:
         return self.__props.get_string(TableProps.SCHEMA)
     def get_description(self) -> str:
@@ -425,8 +445,13 @@ class Table:
     def get_primary_key(self) -> Index:
         return self.__props.get_any(TableProps.PRIMARY_KEY)
 
+    def get_props(self) -> Properties:
+        return self.__props.get_props(TableProps.PROPERTIES)
+
     def set_name(self, name: str):
         self.__props.set_string(TableProps.NAME, name)
+    def set_alias(self, alias: str):
+        self.__props.set_string(TableProps.ALIAS, alias)
     def set_schema(self, schema: str):
         self.__props.set_string(TableProps.SCHEMA, schema)
     def set_description(self, description: str):
