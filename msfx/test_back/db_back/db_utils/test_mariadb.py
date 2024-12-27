@@ -5,7 +5,7 @@ conn = pool.get_connection()
 
 cursor = conn.cursor(buffered=False)
 # cursor.execute("SELECT * FROM qtfx_dkcp.eurusd_mn001")
-cursor.execute("SELECT ART.CARTICLE, ART.DARTICLE FROM qtfx.articles ART")
+cursor.execute("SELECT ART.CARTICLE AS CART, ART.DARTICLE AS DART FROM qtfx.articles ART")
 # cursor.execute("SELECT CARTICLE, DARTICLE FROM qtfx.articles")
 
 count = 0

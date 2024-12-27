@@ -29,16 +29,20 @@ class DBAdapter(ABC):
         """ Returns the database current date as a string. """
         pass
     @abstractmethod
-    def get_current_time(self) -> str:
+    def get_current_time(self, prec: int) -> str:
         """ Returns the database current time as a string. """
         pass
     @abstractmethod
-    def get_current_datetime(self) -> str:
+    def get_current_datetime(self, prec: int) -> str:
         """ Returns the database current datetime as a string. """
         pass
 
     @abstractmethod
-    def get_column_def(self, column: Column) -> str:
+    def get_column(self, descr: tuple) -> Column:
+        """ Returns the database column from the given cursor tuple description. """
+        pass
+    @abstractmethod
+    def get_column_db_def(self, column: Column) -> str:
         """ Returns the database column definition as a string. """
         pass
     @abstractmethod

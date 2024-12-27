@@ -15,7 +15,29 @@
 """ Implementation of the db_back connector interface for MariaDB. """
 from mariadb import Cursor, Connection, ConnectionPool
 
-from msfx.lib.db.cn import DBCursor, DBConnection, DBConnectionPool
+from msfx.lib.db.cn import DBCursor, DBConnection, DBConnectionPool, DBAdapter
+from msfx.lib.db.md import Column
+
+class MariaDBAdapter(DBAdapter):
+    def __init__(self): pass
+
+    def get_current_date(self) -> str: return "CURRENT_DATE"
+
+    def get_current_time(self, prec) -> str:
+        current_time = "CURRENT_TIME"
+        if isinstance(prec, int) and 0 < prec <= 6:
+            current_time += "(" + str(prec) + ")"
+        return current_time
+
+    def get_current_datetime(self, prec) -> str:
+        current_timestamp = "CURRENT_TIMESTAMP"
+        if isinstance(prec, int) and 0 < prec <= 6:
+            current_timestamp += "(" + str(prec) + ")"
+        return current_timestamp
+
+    def get_column(self, descr: tuple) -> Column:
+        pass
+
 
 class MariaDBCursor(DBCursor):
     def __init__(self, cursor: Cursor):
