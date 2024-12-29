@@ -30,7 +30,9 @@ class ColumnProps(Enum):
     HEADER = "HEADER"
     LABEL = "LABEL"
     DESCRIPTION = "DESCRIPTION"
-    TABLE = "TABLE"
+    TABLE_NAME = "TABLE_NAME"
+    TABLE_ALIAS = "TABLE_ALIAS"
+    DB_TYPE = "DB_TYPE"
     PROPERTIES = "PROPERTIES"
 class ColumnListProps(Enum):
     COLUMNS = "COLUMNS"
@@ -123,8 +125,13 @@ class Column:
         if type == Types.DICT: return Value(dict({}))
         raise ValueError(f"Unsupported type {type}")
 
-    def get_table_props(self) -> Properties:
-        return self.__props.get_props(ColumnProps.TABLE)
+    def get_table_name(self) -> str:
+        return self.__props.get_string(ColumnProps.TABLE_NAME)
+    def get_table_alias(self) -> str:
+        return self.__props.get_string(ColumnProps.TABLE_ALIAS)
+
+    def get_db_type(self) -> str:
+        return self.__props.get_string(ColumnProps.DB_TYPE)
 
     def set_name(self, name: str):
         self.__props.set_string(ColumnProps.NAME, name)
@@ -151,8 +158,12 @@ class Column:
     def set_description(self, description: str):
         self.__props.set_string(ColumnProps.DESCRIPTION, description)
 
-    def set_table_props(self, table_props: Properties):
-        self.__props.set_props(ColumnProps.TABLE, table_props)
+    def set_table_name(self, name: str):
+        self.__props.set_string(ColumnProps.TABLE_NAME, name)
+    def set_table_alias(self, alias: str):
+        self.__props.set_string(ColumnProps.TABLE_ALIAS, alias)
+    def set_db_type(self, type: str):
+        self.__props.set_string(ColumnProps.DB_TYPE, type)
 
     def __str__(self) -> str:
         col = "[\""
