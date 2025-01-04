@@ -77,7 +77,7 @@ class MariaDBAdapter(DBAdapter):
         """
         column_alias: str = descr[0]
         t_code: int = descr[1]
-        length: int = descr[2]
+        t_length: int = descr[2]
         i_length: int = descr[3]
         precision: int = descr[4]
         scale: int = descr[5]
@@ -93,10 +93,10 @@ class MariaDBAdapter(DBAdapter):
         if t_code == 253 and t_ext == 0: db_type = "VARCHAR"
         elif t_code == 254 and t_ext == 0: db_type = "CHAR"
 
-        elif t_code == 252 and t_ext == 16 and length == 255: db_type = "TINYTEXT"
-        elif t_code == 252 and t_ext == 16 and length == 65535: db_type = "TEXT"
-        elif t_code == 252 and t_ext == 16 and length == 16777215: db_type = "MEDIUMTEXT"
-        elif t_code == 252 and t_ext == 16 and length == 1073741823: db_type = "LONGTEXT"
+        elif t_code == 252 and t_ext == 16 and t_length == 255: db_type = "TINYTEXT"
+        elif t_code == 252 and t_ext == 16 and t_length == 65535: db_type = "TEXT"
+        elif t_code == 252 and t_ext == 16 and t_length == 16777215: db_type = "MEDIUMTEXT"
+        elif t_code == 252 and t_ext == 16 and t_length == 1073741823: db_type = "LONGTEXT"
 
         elif t_code == 1 and t_ext == 32768: db_type = "TINYINT"
         elif t_code == 2 and t_ext == 32768: db_type = "SMALLINT"
@@ -145,17 +145,37 @@ class MariaDBAdapter(DBAdapter):
 
         if column_type is None: raise TypeError("Not supported database type {}".format(db_type))
 
+        # Proper length.
+
+        length: Optional[int] = None
+        if db_type in ("VARCHAR", "CHAR", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT", "LONGBLOB"):
+            length = t_length
+        if db_type in ("VARBINARY", "BINARY", "TINYBLOB", "BLOB", "MEDIUMBLOB"):
+            length = i_length
+        if db_type == "DECIMAL":
+            length = precision - 2
+
         # Complete the database type if required.
+
+        if db_type in ("VARCHAR", "CHAR", "VARBINARY", "BINARY"):
+            db_type += "(" + str(length) + ")"
+        if db_type == "DECIMAL":
+            db_type += "(" + str(length) + "," + str(scale) + ")"
 
         column = Column()
         column.set_name(column_name)
         column.set_alias(column_alias)
         column.set_type(column_type)
+        if length is not None:
+            column.set_length(length)
+        if db_type.startswith("DECIMAL"):
+            column.set_scale(scale)
+
+        column.set_nullable(nullable)
 
         column.set_table_name(table_name)
         column.set_table_alias(table_alias)
         column.set_db_type(db_type)
-
 
         return column
 

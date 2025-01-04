@@ -11,11 +11,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import decimal
+from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
+from typing import Tuple, List, Any
 
 from msfx.lib import round_dec
-from msfx.lib.db import Types, Value
+from msfx.lib.db import Types, Value, get_default_value
 from msfx.lib.props import Properties
 
 class ColumnProps(Enum):
@@ -109,21 +111,7 @@ class Column:
         return self.__props.get_props(ColumnProps.PROPERTIES)
 
     def get_default_value(self) -> Value:
-        type: Types = self.get_type()
-        scale: int = self.get_scale()
-        if type == Types.BOOLEAN: return Value(False)
-        if type == Types.DECIMAL: return Value(round_dec(0, scale))
-        if type == Types.INTEGER: return Value(int(0))
-        if type == Types.FLOAT: return Value(float(0))
-        if type == Types.COMPLEX: return Value(complex(0))
-        if type == Types.DATE: return Value(Types.DATE)
-        if type == Types.TIME: return Value(Types.TIME)
-        if type == Types.DATETIME: return Value(Types.DATETIME)
-        if type == Types.BINARY: return Value(bytes([]))
-        if type == Types.STRING: return Value(str(""))
-        if type == Types.LIST: return Value(list([]))
-        if type == Types.DICT: return Value(dict({}))
-        raise ValueError(f"Unsupported type {type}")
+        return get_default_value(self.get_type(), self.get_scale())
 
     def get_table_name(self) -> str:
         return self.__props.get_string(ColumnProps.TABLE_NAME)
@@ -132,6 +120,49 @@ class Column:
 
     def get_db_type(self) -> str:
         return self.__props.get_string(ColumnProps.DB_TYPE)
+
+    def get_value(self, raw_value) -> Value:
+        type: Types = self.get_type()
+        if isinstance(raw_value, bool):
+            if type == Types.BOOLEAN: return Value(bool(raw_value))
+        if isinstance(raw_value, (Decimal, float, int)):
+            if type == Types.DECIMAL:
+                # Preserve scale
+                scale: int = self.get_scale()
+                value = Decimal(raw_value).quantize(Decimal(f"1e-{scale}"), rounding=ROUND_HALF_UP)
+                return Value(value)
+            if type == Types.FLOAT:
+                return Value(float(raw_value))
+            if type == Types.INTEGER:
+                return Value(int(raw_value))
+            if type == Types.COMPLEX:
+                return Value(complex(raw_value))
+        if isinstance(raw_value, complex):
+            if type == Types.DECIMAL:
+                # Preserve scale
+                scale: int = self.get_scale()
+                value = Decimal(raw_value.real).quantize(Decimal(f"1e-{scale}"), rounding=ROUND_HALF_UP)
+                return Value(value)
+            if type == Types.FLOAT:
+                return Value(float(raw_value.real))
+            if type == Types.INTEGER:
+                return Value(int(raw_value.real))
+            if type == Types.COMPLEX:
+                return Value(complex(raw_value))
+        if isinstance(raw_value, str):
+            return Value(raw_value)
+        # if not isinstance(raw_value, (Decimal, float, int, complex)):
+        #     if type == Types.DECIMAL: return Value(Decimal(raw_value))
+        #     if type == Types.FLOAT:
+        #     if not isinstance(raw_value, (Decimal, float, int, complex)):
+        #         raise TypeError("raw_value must be float")
+        #     if isinstance(raw_value, (Decimal, float, int)):
+        #         return Value(Decimal(raw_value))
+        #     return Value(Decimal(raw_value.real))
+        # if type == Types.FLOAT:
+        #     if not isinstance(raw_value, (Decimal, float, int, complex)):
+        #         pass
+        pass
 
     def set_name(self, name: str):
         self.__props.set_string(ColumnProps.NAME, name)
@@ -276,6 +307,16 @@ class ColumnList:
             raise ValueError("Index out of range")
         return self.__columns[index]
 
+    def get_values_from_raw(self, raw_values: Tuple[Any, ...]) -> Tuple[Value, ...]:
+        if not isinstance(raw_values, tuple):
+            raise TypeError("Arg raw_values must be of type tuple")
+        if len(self) != len(raw_values):
+            raise ValueError("Raw values length {} must be {}".format(len(raw_values), len(self)))
+        values: List[Value] = []
+        for i in range(len(self)):
+            pass
+        return tuple(values)
+
     def __setup__(self):
         self.__aliases.clear()
         self.__indexes.clear()
@@ -289,6 +330,11 @@ class ColumnList:
             if column.is_primary_key():
                 self.__pk_columns.append(column)
             self.__default_values.append(column.get_default_value())
+
+    def __iter__(self):
+        return self.__columns.__iter__()
+    def __len__(self) -> int:
+        return len(self.__columns)
     """ End of class ColumnList """
 class Order:
     """ An order definition. """

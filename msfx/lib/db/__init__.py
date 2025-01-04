@@ -15,7 +15,8 @@
 from datetime import date, time, datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Optional
+from numbers import Complex
+from typing import Optional, Dict, Any
 
 from msfx.lib import round_dec
 
@@ -59,6 +60,11 @@ class Types(Enum):
     def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL, Types.COMPLEX
     @staticmethod
     def get_types_length() -> tuple: return Types.DECIMAL, Types.STRING, Types.BINARY
+
+    def is_numeric(self) -> bool: return self in Types.get_types_numeric()
+    def requires_length(self) -> bool: return self in Types.get_types_length()
+    def accepts_none(self) -> bool: return self in Types.get_types_none()
+
     """ End of class Types """
 class Value:
     """ Encapsulates a mutable value of one of the supported types. """
@@ -425,3 +431,67 @@ class OrderKey:
     def __ge__(self, other) -> bool:
         return self.__segments >= other.__segments
     """ End of class OrderKey """
+
+TYPE_MAPPING = {
+    Types.BOOLEAN: bool,
+    Types.DECIMAL: Decimal,
+    Types.INTEGER: int,
+    Types.FLOAT: float,
+    Types.COMPLEX: Complex,
+    Types.DATETIME: datetime,
+    Types.TIME: time,
+    Types.BINARY: bytes,
+    Types.STRING: str,
+    Types.LIST: list,
+    Types.DICT: dict,
+}
+
+def get_default_value(type: Types, scale: int) -> Value:
+    """
+    Returns a default value for the given type and optional scale for decimals.
+    :param type: The type to get the default value for.
+    :param scale: The scale to apply for decimals.
+    :return: The default value.
+    """
+    if type == Types.BOOLEAN: return Value(False)
+    if type == Types.DECIMAL: return Value(round_dec(0, scale))
+    if type == Types.INTEGER: return Value(int(0))
+    if type == Types.FLOAT: return Value(float(0))
+    if type == Types.COMPLEX: return Value(complex(0))
+    if type == Types.DATE: return Value(Types.DATE)
+    if type == Types.TIME: return Value(Types.TIME)
+    if type == Types.DATETIME: return Value(Types.DATETIME)
+    if type == Types.BINARY: return Value(bytes([]))
+    if type == Types.STRING: return Value(str(""))
+    if type == Types.LIST: return Value(list([]))
+    if type == Types.DICT: return Value(dict({}))
+    raise ValueError(f"Unsupported type {type}")
+
+def get_value(type: Types, scale: int, raw_value: any) -> Value:
+    """
+    Returns a value for the given type, optional scale for decimals and a raw value.
+    :param type: The type to get the value for.
+    :param scale: The scale to apply for decimals.
+    :param raw_value: The raw value to use.
+    :return: The corresponding value.
+    """
+
+    # The type must be correct.
+    if not isinstance(type, Types):
+        raise TypeError(f"Type {type} is not a Types instance")
+
+    # If the type is DECIMAL then the scale must be GE 0.
+    if type == Types.DECIMAL:
+        if not isinstance(scale, int) or scale < 0:
+            raise ValueError(f"Scale {scale} is not a positive integer")
+
+    # If the raw value is None return the default value for the type.
+    if raw_value is None:
+        return get_default_value(type, scale)
+
+    # Direct matches
+    expected_instance = TYPE_MAPPING.get(type)
+    if expected_instance and isinstance(raw_value, expected_instance):
+        return Value(raw_value)
+
+    pass

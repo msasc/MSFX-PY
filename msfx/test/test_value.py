@@ -17,6 +17,16 @@ value.set_float(3.637)
 print(value)
 print(value.get_float())
 
+dec = Decimal(3.57)
+print(float(dec))
+
+b = bytes([72, 101, 108, 108, 111])
+print(b.decode('utf-8'))
+ba = bytearray(b)
+print(ba.decode('utf-8'))
+print(bytes(ba))
+print(bytearray(bytes(ba)))
+
 
 # value_date: Value = Value(datetime.now().date())
 # value_time: Value = Value(datetime.now().time())
