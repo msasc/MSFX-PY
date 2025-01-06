@@ -23,6 +23,7 @@ print(cols.get_by_alias("QSALES"))
 
 cols_ro = cols.columns
 print(cols_ro.get_by_alias("QSALES"))
+print(cols_ro[0])
 # cols_ro.append(carticle)
 
 print(len(cols))

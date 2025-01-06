@@ -16,8 +16,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Tuple, List, Any
 
-from msfx.lib import round_dec
-from msfx.lib.db import Types, Value, get_default_value
+from msfx.lib import round_num
+from msfx.lib.db import Types, Value, get_default_value, get_value
 from msfx.lib.props import Properties
 
 class ColumnProps(Enum):
@@ -73,9 +73,19 @@ class TableProps(Enum):
 class Column:
     """ Column metadata. """
 
-    def __init__(self):
+    def __init__(self, **kvargs):
         self.__props = Properties()
         self.__props.set_props(ColumnProps.PROPERTIES, Properties())
+        if "name" in kvargs: self.set_name(kvargs["name"])
+        if "type" in kvargs: self.set_type(kvargs["type"])
+        if "length" in kvargs: self.set_length(kvargs["length"])
+        if "scale" in kvargs: self.set_scale(kvargs["scale"])
+        if "nullable" in kvargs: self.set_nullable(kvargs["nullable"])
+        if "primary_key" in kvargs: self.set_primary_key(kvargs["primary_key"])
+        if "uppercase" in kvargs: self.set_uppercase(kvargs["uppercase"])
+        if "header" in kvargs: self.set_header(kvargs["header"])
+        if "label" in kvargs: self.set_label(kvargs["label"])
+        if "description" in kvargs: self.set_description(kvargs["description"])
 
     def copy(self):
         col = Column()
@@ -120,49 +130,6 @@ class Column:
 
     def get_db_type(self) -> str:
         return self.__props.get_string(ColumnProps.DB_TYPE)
-
-    def get_value(self, raw_value) -> Value:
-        type: Types = self.get_type()
-        if isinstance(raw_value, bool):
-            if type == Types.BOOLEAN: return Value(bool(raw_value))
-        if isinstance(raw_value, (Decimal, float, int)):
-            if type == Types.DECIMAL:
-                # Preserve scale
-                scale: int = self.get_scale()
-                value = Decimal(raw_value).quantize(Decimal(f"1e-{scale}"), rounding=ROUND_HALF_UP)
-                return Value(value)
-            if type == Types.FLOAT:
-                return Value(float(raw_value))
-            if type == Types.INTEGER:
-                return Value(int(raw_value))
-            if type == Types.COMPLEX:
-                return Value(complex(raw_value))
-        if isinstance(raw_value, complex):
-            if type == Types.DECIMAL:
-                # Preserve scale
-                scale: int = self.get_scale()
-                value = Decimal(raw_value.real).quantize(Decimal(f"1e-{scale}"), rounding=ROUND_HALF_UP)
-                return Value(value)
-            if type == Types.FLOAT:
-                return Value(float(raw_value.real))
-            if type == Types.INTEGER:
-                return Value(int(raw_value.real))
-            if type == Types.COMPLEX:
-                return Value(complex(raw_value))
-        if isinstance(raw_value, str):
-            return Value(raw_value)
-        # if not isinstance(raw_value, (Decimal, float, int, complex)):
-        #     if type == Types.DECIMAL: return Value(Decimal(raw_value))
-        #     if type == Types.FLOAT:
-        #     if not isinstance(raw_value, (Decimal, float, int, complex)):
-        #         raise TypeError("raw_value must be float")
-        #     if isinstance(raw_value, (Decimal, float, int)):
-        #         return Value(Decimal(raw_value))
-        #     return Value(Decimal(raw_value.real))
-        # if type == Types.FLOAT:
-        #     if not isinstance(raw_value, (Decimal, float, int, complex)):
-        #         pass
-        pass
 
     def set_name(self, name: str):
         self.__props.set_string(ColumnProps.NAME, name)
@@ -307,16 +274,6 @@ class ColumnList:
             raise ValueError("Index out of range")
         return self.__columns[index]
 
-    def get_values_from_raw(self, raw_values: Tuple[Any, ...]) -> Tuple[Value, ...]:
-        if not isinstance(raw_values, tuple):
-            raise TypeError("Arg raw_values must be of type tuple")
-        if len(self) != len(raw_values):
-            raise ValueError("Raw values length {} must be {}".format(len(raw_values), len(self)))
-        values: List[Value] = []
-        for i in range(len(self)):
-            pass
-        return tuple(values)
-
     def __setup__(self):
         self.__aliases.clear()
         self.__indexes.clear()
@@ -335,6 +292,7 @@ class ColumnList:
         return self.__columns.__iter__()
     def __len__(self) -> int:
         return len(self.__columns)
+    def __getitem__(self, index: int) -> Column: return self.__columns[index]
     """ End of class ColumnList """
 class Order:
     """ An order definition. """
@@ -520,7 +478,8 @@ class Table:
         self.__props.set_any(TableProps.PRIMARY_KEY, primary_key)
 
     def append_column(self, column: Column):
-        column.set_table_props(self.__props)
+        column.set_table_name(self.get_name())
+        column.set_alias(self.get_alias())
         self.__columns.append(column)
     def append_index(self, index: Index):
         index.set_table_props(self.__props)

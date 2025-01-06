@@ -12,13 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import date, time, datetime
-from decimal import Decimal
+from datetime import date, time, datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from numbers import Complex
 from typing import Optional, Dict, Any
 
-from msfx.lib import round_dec
+from msfx.lib import round_num
 
 class Types(Enum):
     """
@@ -60,6 +60,8 @@ class Types(Enum):
     def get_types_numeric() -> tuple: return Types.INTEGER, Types.FLOAT, Types.DECIMAL, Types.COMPLEX
     @staticmethod
     def get_types_length() -> tuple: return Types.DECIMAL, Types.STRING, Types.BINARY
+    @staticmethod
+    def get_types_date_time() -> tuple: return Types.DATE, Types.TIME, Types.DATETIME
 
     def is_numeric(self) -> bool: return self in Types.get_types_numeric()
     def requires_length(self) -> bool: return self in Types.get_types_length()
@@ -274,7 +276,7 @@ class Value:
             if self.is_decimal():
                 # self is decimal and not None, preserve scale
                 scale = self.get_scale()
-                self.__value = round_dec(value, scale)
+                self.__value = round_num(value, scale)
             else:
                 if self.is_integer():
                     self.__value = int(value)
@@ -438,8 +440,9 @@ TYPE_MAPPING = {
     Types.INTEGER: int,
     Types.FLOAT: float,
     Types.COMPLEX: Complex,
-    Types.DATETIME: datetime,
+    Types.DATE: date,
     Types.TIME: time,
+    Types.DATETIME: datetime,
     Types.BINARY: bytes,
     Types.STRING: str,
     Types.LIST: list,
@@ -454,7 +457,7 @@ def get_default_value(type: Types, scale: int) -> Value:
     :return: The default value.
     """
     if type == Types.BOOLEAN: return Value(False)
-    if type == Types.DECIMAL: return Value(round_dec(0, scale))
+    if type == Types.DECIMAL: return Value(round_num(0, scale))
     if type == Types.INTEGER: return Value(int(0))
     if type == Types.FLOAT: return Value(float(0))
     if type == Types.COMPLEX: return Value(complex(0))
@@ -485,6 +488,10 @@ def get_value(type: Types, scale: int, raw_value: any) -> Value:
         if not isinstance(scale, int) or scale < 0:
             raise ValueError(f"Scale {scale} is not a positive integer")
 
+    # Decimal match, ensure scale.
+    if type == Types.DECIMAL and isinstance(raw_value, Decimal):
+        return Value(round_num(raw_value, scale))
+
     # If the raw value is None return the default value for the type.
     if raw_value is None:
         return get_default_value(type, scale)
@@ -494,4 +501,31 @@ def get_value(type: Types, scale: int, raw_value: any) -> Value:
     if expected_instance and isinstance(raw_value, expected_instance):
         return Value(raw_value)
 
-    pass
+    # Conversion of numeric types
+    if type == Types.COMPLEX and isinstance(raw_value, (Decimal, int, float)):
+        return Value(complex(raw_value))
+    if type == Types.DECIMAL and isinstance(raw_value, (int, float)):
+        value = Decimal(str(raw_value))
+        return Value(round_num(raw_value, scale))
+    if type == Types.INTEGER and isinstance(raw_value, (Decimal, float)):
+        return Value(int(raw_value))
+    if type == Types.FLOAT and isinstance(raw_value, (Decimal, int)):
+        return Value(float(raw_value))
+    if type.is_numeric() and isinstance(raw_value, complex):
+        if type == Types.DECIMAL: return Value(Decimal(raw_value.real))
+        if type == Types.INTEGER: return Value(int(raw_value.real))
+        if type == Types.FLOAT: return Value(float(raw_value.real))
+
+    # Conversion of time_delta to time.
+    if type == Types.TIME and isinstance(raw_value, timedelta):
+        time_of_day = (datetime.min + raw_value).time()
+        return Value(time_of_day)
+
+    # Conversion on int (time in millis) to datetime
+    if type in Types.get_types_date_time() and isinstance(raw_value, int):
+        value = datetime.fromtimestamp(raw_value / 1000)
+        if type == Types.DATE: return Value(value.date())
+        if type == Types.TIME: return Value(value.time())
+        if type == Types.DATETIME: return Value(value)
+
+    raise ValueError(f"Unsupported value {raw_value} for type {type}")

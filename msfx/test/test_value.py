@@ -27,6 +27,8 @@ print(ba.decode('utf-8'))
 print(bytes(ba))
 print(bytearray(bytes(ba)))
 
+print(complex(dec))
+
 
 # value_date: Value = Value(datetime.now().date())
 # value_time: Value = Value(datetime.now().time())

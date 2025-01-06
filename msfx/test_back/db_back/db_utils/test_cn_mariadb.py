@@ -3,7 +3,7 @@ pool = MariaDBConnectionPool(
     pool_name='test_back',
     pool_size=50,
     pool_validation_interval=5000,
-    host='localhost', user='root', password='carrlasass')
+    host='localhost', port=3306, user='root', password='carrlasass')
 conn = pool.get_connection()
 cursor = conn.cursor(buffered=False)
 
@@ -20,6 +20,7 @@ while row is not None:
     row = cursor.fetchone()
 
 print(cursor.count())
+print(count)
 
 cursor.close()
 conn.close()

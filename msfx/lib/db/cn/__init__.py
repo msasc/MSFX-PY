@@ -17,13 +17,14 @@
 from abc import ABC, abstractmethod
 from datetime import date, time, datetime
 from decimal import Decimal
+from typing import Callable, Optional
 
 from msfx.lib.db import Types, Value
-from msfx.lib.db.md import Column
+from msfx.lib.db.md import Column, ColumnList
+from msfx.lib.db.rs import Record
 
 
 class DBAdapter(ABC):
-
     @abstractmethod
     def get_current_date(self) -> str:
         """ Returns the database current date as a string. """
@@ -38,7 +39,7 @@ class DBAdapter(ABC):
         pass
 
     @abstractmethod
-    def get_column(self, descr: tuple) -> Column:
+    def get_column_from_cursor_descr(self, descr: tuple) -> Column:
         """ Returns the database column from the given cursor tuple description. """
         pass
     @abstractmethod
@@ -98,8 +99,10 @@ class DBAdapter(ABC):
             if value.is_binary(): return self.to_sql_binary(value.get_binary())
             if value.is_string(): return "'" + value.get_string() + "'"
         raise TypeError(f"Unsupported value: " + str(value))
-
+    """ End class DBAdapter """
 class DBCursor(ABC):
+    @abstractmethod
+    def get_adapter(self) -> DBAdapter: pass
     @abstractmethod
     def execute(self, operation, **parameters): pass
     @abstractmethod
@@ -110,12 +113,32 @@ class DBCursor(ABC):
     def fetchmany(self, size=100) -> object: pass
     @abstractmethod
     def count(self) -> int: pass
+    @property
     @abstractmethod
-    def description(self) -> object: pass
+    def description(self): pass
+    @property
+    @abstractmethod
+    def rowcount(self): pass
     @abstractmethod
     def close(self): pass
 
+    @abstractmethod
+    def executeSelect(self, select: str, columns: Optional[ColumnList], callback: Callable[[int, Record], bool]):
+        """
+        Execute a SELECT query and scan the cursor calling the callback function
+        and passing a Record as argument. If a column list is provided, the record
+        will be created using those columns, if not, the columns will be created
+        using the description of the cursor.
+        :param select: The SELECT query to execute.
+        :param columns: The optional column list that defines the types of the select columns.
+        :param callback: The callback function that will be called with the record. The callback
+        function must return a boolean indicating whether to continue execution or not.
+        """
+        pass
+    """ End class DBCursor """
 class DBConnection(ABC):
+    @abstractmethod
+    def get_adapter(self) -> DBAdapter: pass
     @abstractmethod
     def close(self): pass
     @abstractmethod
@@ -123,11 +146,38 @@ class DBConnection(ABC):
     @abstractmethod
     def rollback(self): pass
     @abstractmethod
-    def cursor(self, **parameters) -> DBCursor: pass
-
+    def cursor(self, **parameters) -> DBCursor:
+        """
+        Returns a cursor with the given parameters. If no parameters are given,
+        the cursor must be explicitly non buffered.
+        :param parameters: Cursor parameters
+        :return: The cursor
+        """
+        pass
+    """ End class DBConnection """
 class DBConnectionPool(ABC):
+    @abstractmethod
+    def get_adapter(self) -> DBAdapter: pass
+    @abstractmethod
+    def get_connection(self) -> DBConnection:
+        """
+        Returns a connection with the given parameters. If no parameters are given,
+        the connection must be explicitly not autocommit.
+        :return: The connection.
+        """
+        pass
+    @abstractmethod
+    def close(self):
+        """
+        Explicitly close the connection pool and all connections.
+        """
+        pass
+    """ End class DBConnectionPool """
+class DB(ABC):
+    def __init__(self, **parameters): pass
+    @abstractmethod
+    def get_adapter(self) -> DBAdapter: pass
     @abstractmethod
     def get_connection(self) -> DBConnection: pass
     @abstractmethod
     def close(self): pass
-
